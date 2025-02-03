@@ -18,6 +18,7 @@ const Calendar = () => {
   
   const prevMonth = () => setCurrentMonth(currentMonth.subtract(1, "month"));
   const nextMonth = () => setCurrentMonth(currentMonth.add(1, "month"));
+  const goToToday = () => setCurrentMonth(today);
 
   const generateDays = () => {
     let days = [];
@@ -28,8 +29,8 @@ const Calendar = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex p-4">
-      <aside className="w-1/4 bg-black p-4 rounded-2xl shadow-md">
+    <div className="min-h-screen bg-black text-white flex p-4">
+      <aside className="w-1/4 bg-black p-4 rounded-2xl shadow-md border border-gray-700">
         <div className="flex items-center gap-2 text-lg font-bold">
           <img src={logo} alt="Logo" className="w-10 h-10" />
           <span>My Calendar</span>
@@ -55,7 +56,9 @@ const Calendar = () => {
           <h1 className="text-3xl font-bold">{currentMonth.format("MMMM YYYY")}</h1>
           <button onClick={nextMonth} className="text-xl px-2">▶</button>
         </div>
-
+        <div className="flex justify-center mb-4">
+          <button onClick={goToToday} className="bg-green-500 text-black px-4 py-2 rounded">Today</button>
+        </div>
         <div className="grid grid-cols-7 gap-1 text-center text-sm">
           {daysOfWeek.map((day) => (
             <div key={day} className="p-2 text-gray-300 font-bold">{day}</div>
