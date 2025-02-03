@@ -7,6 +7,7 @@ dayjs.locale("fr");
 
 const Calendar = () => {
   const [currentMonth, setCurrentMonth] = useState(dayjs());
+  const today = dayjs();
 
   const daysOfWeek = ["Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam.", "Dim."];
   
@@ -60,18 +61,26 @@ const Calendar = () => {
             <div key={day} className="p-2 text-gray-300 font-bold">{day}</div>
           ))}
 
-          {generateDays().map((day, index) => (
-            <div
-              key={index}
-              className={`p-4 border rounded-md text-lg ${day ? "border-gray-700" : "bg-transparent"} 
-              ${[9, 18, 25, 30].includes(day) ? "bg-green-500 text-black font-bold" : ""}`}
-            >
-              {day}
-              {[9, 18, 25, 30].includes(day) && (
-                <span className="block text-xs mt-1">Évènement interne</span>
-              )}
-            </div>
-          ))}
+          {generateDays().map((day, index) => {
+            const isToday =
+              day === today.date() &&
+              currentMonth.month() === today.month() &&
+              currentMonth.year() === today.year();
+
+            return (
+              <div
+                key={index}
+                className={`p-4 border rounded-md text-lg ${day ? "border-gray-700" : "bg-transparent"} 
+                ${[9, 18, 25, 30].includes(day) ? "bg-green-500 text-black font-bold" : ""} 
+                ${isToday ? "border-2 border-green-500" : ""}`}
+              >
+                {day}
+                {[9, 18, 25, 30].includes(day) && (
+                  <span className="block text-xs mt-1">Évènement interne</span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </main>
     </div>
