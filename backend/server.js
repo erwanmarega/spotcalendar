@@ -1,55 +1,72 @@
 const express = require("express");
-const fetch = require("node-fetch");
-const querystring = require("querystring");
 const cors = require("cors");
-require("dotenv").config(); 
+const axios = require("axios");
 
 const app = express();
-const port = 3000;
+app.use(cors());
+app.use(express.json());
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-const redirectUri = process.env.REDIRECT_URI;
-
-app.use(express.json());
-app.use(cors({ origin: "http://localhost:3000" }));
+const redirectUri = "http://localhost:5173/callback";
 
 app.post("/api/token", async (req, res) => {
   const { code } = req.body;
-
-  if (!code) {
-    return res.status(400).json({ error: "Code manquant" });
-  }
+  console.log("Backend : Requête POST /api/token reçue avec code :", code);
 
   try {
-    const response = await fetch("https://accounts.spotify.com/api/token", {
-      method: "POST",
+    console.log("Backend : Envoi de la requête à Spotify pour échanger le code");
+    const response = await axios({
+      method: "post",
+      url: "https://accounts.spotify.com/api/token",
+      data: new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: redirectUri,
+        client_id: clientId,
+        client_secret: clientSecret,
+      }),
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: "Basic " + Buffer.from(`${clientId}:${clientSecret}`).toString("base64"),
       },
-      body: querystring.stringify({
-        grant_type: "authorization_code",
-        code: code,
-        redirect_uri: redirectUri,
-      }),
     });
 
-    const data = await response.json();
-    if (response.ok) {
-      res.json({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-        expires_in: data.expires_in,
-      });
-    } else {
-      res.status(response.status).json(data);
-    }
+    console.log("Backend : Réponse de Spotify :", response.data);
+    res.json(response.data);
   } catch (error) {
-    res.status(500).json({ error: "Erreur serveur : " + error.message });
+    console.error("Backend : Erreur lors de l'échange du code contre le jeton :", error.response?.data || error.message);
+    res.status(500).json({ error: "Échec de l'échange du code contre le jeton" });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Serveur lancé sur http://localhost:${port}`);
+app.post("/api/refresh-token", async (req, res) => {
+  const { refresh_token } = req.body;
+  console.log("Backend : Requête POST /api/refresh-token reçue avec refresh_token :", refresh_token);
+
+  try {
+    console.log("Backend : Envoi de la requête à Spotify pour rafraîchir le token");
+    const response = await axios({
+      method: "post",
+      url: "https://accounts.spotify.com/api/token",
+      data: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token,
+        client_id: clientId,
+        client_secret: clientSecret,
+      }),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    console.log("Backend : Réponse de Spotify :", response.data);
+    res.json(response.data);
+  } catch (error) {
+    console.error("Backend : Erreur lors du rafraîchissement du jeton :", error.response?.data || error.message);
+    res.status(500).json({ error: "Échec du rafraîchissement du jeton" });
+  }
+});
+
+app.listen(3000, () => {
+  console.log("Serveur démarré sur le port 3000");
 });
