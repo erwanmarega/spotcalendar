@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 
 const Callback = () => {
   const navigate = useNavigate();
-  const [hasProcessed, setHasProcessed] = useState(false); // État pour éviter les doubles appels
+  const [hasProcessed, setHasProcessed] = useState(false); 
 
   useEffect(() => {
-    if (hasProcessed) return; // Évite les doubles appels
+    if (hasProcessed) return; 
 
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
