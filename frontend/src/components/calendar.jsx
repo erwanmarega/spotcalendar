@@ -13,7 +13,7 @@ dayjs.locale("fr");
 
 const Calendar = () => {
   const [moisActuel, setMoisActuel] = useState(dayjs());
-  const [ongletActif, setOngletActif] = useState("genres");
+  const [ongletActif, setOngletActif] = useState("artists"); 
   const [artistes, setArtistes] = useState([]);
   const [donneesGenres, setDonneesGenres] = useState({ labels: [], datasets: [] });
   const [typeGraphique, setTypeGraphique] = useState("pie");
@@ -25,6 +25,8 @@ const Calendar = () => {
   const [evenementsSelectionnes, setEvenementsSelectionnes] = useState([]);
   const [afficherPopup, setAfficherPopup] = useState(false);
   const [utilisateur, setUtilisateur] = useState(null);
+  const [filtreType, setFiltreType] = useState("tous");
+  const [filtrePeriode, setFiltrePeriode] = useState(6);
 
   const aujourdHui = dayjs();
   const navigate = useNavigate();
@@ -264,6 +266,7 @@ const Calendar = () => {
       date: dayjs(item.release_date),
       titre: item.name,
       type: item.album_type,
+      lienSpotify: item.external_urls.spotify,
     }));
 
     setToutesSorties(sortiesFormatees);
@@ -300,10 +303,10 @@ const Calendar = () => {
           <ul className="space-y-2">
             <li>
               <button
-                className={`w-full flex items-center gap-2 p-2 rounded ${ongletActif === "genres" ? "bg-gray-700 text-green-400" : "text-gray-400 hover:bg-gray-800"}`}
-                onClick={() => setOngletActif("genres")}
+                className={`w-full flex items-center gap-2 p-2 rounded ${ongletActif === "artists" ? "bg-gray-700 text-green-400" : "text-gray-400 hover:bg-gray-800"}`}
+                onClick={() => setOngletActif("artists")}
               >
-                <FaChartPie className="text-lg" /> Genres
+                <FaUserFriends className="text-lg" /> Artistes
               </button>
             </li>
             <li>
@@ -316,16 +319,157 @@ const Calendar = () => {
             </li>
             <li>
               <button
-                className={`w-full flex items-center gap-2 p-2 rounded ${ongletActif === "artists" ? "bg-gray-700 text-green-400" : "text-gray-400 hover:bg-gray-800"}`}
-                onClick={() => setOngletActif("artists")}
+                className={`w-full flex items-center gap-2 p-2 rounded ${ongletActif === "genres" ? "bg-gray-700 text-green-400" : "text-gray-400 hover:bg-gray-800"}`}
+                onClick={() => setOngletActif("genres")}
               >
-                <FaUserFriends className="text-lg" /> Artistes
+                <FaChartPie className="text-lg" /> Genres
               </button>
             </li>
           </ul>
         </nav>
 
         <div className="flex-1 overflow-y-auto">
+          {ongletActif === "artists" && (
+            <div>
+              <h2 className="text-green-400 mt-4">Artistes suivis</h2>
+              {chargement ? (
+                <p className="text-gray-400 mt-4">Chargement...</p>
+              ) : msgErreur ? (
+                <p className="text-red-500 mt-4">{msgErreur}</p>
+              ) : (
+                <div>
+                  <ul className="mt-4 space-y-2 text-sm">
+                    {artistes.length > 0 ? (
+                      artistes.map(artiste => (
+                        <li key={artiste.id} className="border-b border-gray-600 pb-1">
+                          <button
+                            onClick={() => {
+                              setArtisteChoisi(artiste);
+                              recupererSortiesArtiste(artiste.id);
+                            }}
+                            className="text-left w-full hover:text-green-400"
+                          >
+                            {artiste.name}
+                          </button>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-gray-400">Aucun artiste suivi.</li>
+                    )}
+                  </ul>
+
+                  {artisteChoisi && (
+                    <div className="mt-4">
+                      <h3 className="text-green-400">Prochaines sorties de {artisteChoisi.name}</h3>
+                      {chargement ? (
+                        <p className="text-gray-400 mt-2">Chargement...</p>
+                      ) : msgErreur ? (
+                        <p className="text-red-500 mt-2">{msgErreur}</p>
+                      ) : sortiesArtiste.length > 0 ? (
+                        <ul className="mt-2 space-y-2 text-sm">
+                          {sortiesArtiste.map((sortie, i) => (
+                            <li key={i} className="border-b border-gray-600 pb-1">
+                              <a
+                                href={sortie.lienSpotify}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-green-400 hover:underline"
+                              >
+                                {sortie.titre}
+                              </a>{" "}
+                              - Sortie prévue le : {sortie.date.format("DD/MM/YYYY")} ({sortie.type})
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-gray-400 mt-2">Aucune sortie future pour cet artiste.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {ongletActif === "history" && (
+            <div>
+              <h2 className="text-green-400 mt-4">Historique des sorties (6 derniers mois)</h2>
+              {artisteChoisi ? (
+                <div className="mt-4">
+                  <h3 className="text-green-400">Sorties de {artisteChoisi.name}</h3>
+                  <div className="mt-2 flex gap-2">
+                    <select
+                      value={filtreType}
+                      onChange={(e) => setFiltreType(e.target.value)}
+                      className="p-2 bg-gray-700 rounded text-white border border-gray-600"
+                    >
+                      <option value="tous">Tous les types</option>
+                      <option value="album">Albums</option>
+                      <option value="single">Singles</option>
+                      <option value="compilation">Compilations</option>
+                      <option value="appears_on">Feats</option>
+                    </select>
+                    <select
+                      value={filtrePeriode}
+                      onChange={(e) => setFiltrePeriode(Number(e.target.value))}
+                      className="p-2 bg-gray-700 rounded text-white border border-gray-600"
+                    >
+                      <option value={1}>1 mois</option>
+                      <option value={3}>3 mois</option>
+                      <option value={6}>6 mois</option>
+                    </select>
+                  </div>
+                  {chargement ? (
+                    <p className="text-gray-400 mt-2">Chargement...</p>
+                  ) : msgErreur ? (
+                    <p className="text-red-500 mt-2">{msgErreur}</p>
+                  ) : toutesSorties.length > 0 ? (
+                    <div>
+                      <ul className="mt-2 space-y-2 text-sm">
+                        {toutesSorties
+                          .filter(sortie => {
+                            const periodeAvant = aujourdHui.subtract(filtrePeriode, "month");
+                            const dansPeriode = sortie.date.isAfter(periodeAvant) && sortie.date.isBefore(aujourdHui);
+                            const typeMatch =
+                              filtreType === "tous" ||
+                              (filtreType === "album" && sortie.type === "album") ||
+                              (filtreType === "single" && sortie.type === "single") ||
+                              (filtreType === "compilation" && sortie.type === "compilation") ||
+                              (filtreType === "appears_on" && sortie.type === "appears_on");
+                            return dansPeriode && typeMatch;
+                          })
+                          .sort((a, b) => b.date - a.date)
+                          .map((sortie, i) => (
+                            <li key={i} className="border-b border-gray-600 pb-1">
+                              <a
+                                href={sortie.lienSpotify}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-green-400 hover:underline"
+                              >
+                                {sortie.titre}
+                              </a>{" "}
+                              - Sortie le : {sortie.date.format("DD/MM/YYYY")} ({sortie.type})
+                            </li>
+                          ))}
+                      </ul>
+                      {toutesSorties.filter(sortie => {
+                        const sixMoisAvant = aujourdHui.subtract(6, "month");
+                        return sortie.date.isAfter(sixMoisAvant) && sortie.date.isBefore(aujourdHui);
+                      }).length === 0 && (
+                        <p className="text-gray-400 mt-2">Aucune sortie dans cette période avec ce filtre.</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-gray-400 mt-2">Aucune sortie récente pour cet artiste.</p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-gray-400 mt-4">Veuillez sélectionner un artiste pour voir son historique.</p>
+              )}
+            </div>
+          )}
+
           {ongletActif === "genres" && (
             <div>
               <h2 className="text-green-400 mt-4">Genres les plus écoutés (En Boucle)</h2>
@@ -376,67 +520,6 @@ const Calendar = () => {
               )}
             </div>
           )}
-
-          {ongletActif === "history" && (
-            <div>
-              <h2 className="text-green-400 mt-4">Historique des sorties (6 derniers mois)</h2>
-              <p className="text-gray-400 mt-4">Veuillez sélectionner un artiste pour voir son historique.</p>
-            </div>
-          )}
-
-          {ongletActif === "artists" && (
-            <div>
-              <h2 className="text-green-400 mt-4">Artistes suivis</h2>
-              {chargement ? (
-                <p className="text-gray-400 mt-4">Chargement...</p>
-              ) : msgErreur ? (
-                <p className="text-red-500 mt-4">{msgErreur}</p>
-              ) : (
-                <div>
-                  <ul className="mt-4 space-y-2 text-sm">
-                    {artistes.length > 0 ? (
-                      artistes.map(artiste => (
-                        <li key={artiste.id} className="border-b border-gray-600 pb-1">
-                          <button
-                            onClick={() => {
-                              setArtisteChoisi(artiste);
-                              recupererSortiesArtiste(artiste.id);
-                            }}
-                            className="text-left w-full hover:text-green-400"
-                          >
-                            {artiste.name}
-                          </button>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="text-gray-400">Aucun artiste suivi.</li>
-                    )}
-                  </ul>
-
-                  {artisteChoisi && (
-                    <div className="mt-4">
-                      <h3 className="text-green-400">Prochaines sorties de {artisteChoisi.name}</h3>
-                      {chargement ? (
-                        <p className="text-gray-400 mt-2">Chargement...</p>
-                      ) : msgErreur ? (
-                        <p className="text-red-500 mt-2">{msgErreur}</p>
-                      ) : sortiesArtiste.length > 0 ? (
-                        <ul className="mt-2 space-y-2 text-sm">
-                          {sortiesArtiste.map((sortie, i) => (
-                            <li key={i} className="border-b border-gray-600 pb-1">
-                              {sortie.titre} - Sortie prévue le : {sortie.date.format("DD/MM/YYYY")} ({sortie.type})
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-400 mt-2">Aucune sortie future pour cet artiste.</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         <div className="mt-auto pt-4 border-t border-gray-600">
@@ -475,7 +558,7 @@ const Calendar = () => {
             return (
               <div
                 key={index}
-                className={`p-4 border rounded-md text-lg ${jour ? "border-gray-700" : "bg-transparent"} ${evenementsJour.length > 0 ? evenementsJour.some(event => event.date.isAfter(aujourdHui)) ? "bg-green-500 text-black font-bold cursor-pointer" : "bg-orange-500 text-black font-bold cursor-pointer" : ""} ${estAujourdHui ? "border-2 border-green-500" : ""}`}
+                className={`p-4 border rounded-md text-lg ${jour ? "border-gray-700" : "bg-transparent"} ${evenementsJour.length > 0 ? evenementsJour.some(event => event.date.isAfter(aujourdHui)) ? "bg-green-500 text-black font-bold cursor-pointer" : "bg-green-500 text-black font-bold cursor-pointer" : ""} ${estAujourdHui ? "border-2 border-green-500" : ""}`}
                 onClick={() => {
                   if (jour && evenementsJour.length > 0) {
                     setEvenementsSelectionnes(evenementsJour);
@@ -487,7 +570,16 @@ const Calendar = () => {
                 {evenementsJour.length > 0 && (
                   <div className="text-xs mt-1">
                     {evenementsJour.map((event, i) => (
-                      <div key={i}>{event.titre}</div>
+                      <div key={i}>
+                        <a
+                          href={event.lienSpotify}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-black hover:underline "
+                        >
+                          {event.titre}
+                        </a>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -514,7 +606,16 @@ const Calendar = () => {
                       {evenementsSelectionnes
                         .filter(event => event.type === "album" && event.date.isAfter(aujourdHui))
                         .map((event, i) => (
-                          <li key={i} className="border-b border-gray-600 pb-1">{event.titre}</li>
+                          <li key={i} className="border-b border-gray-600 pb-1">
+                            <a
+                              href={event.lienSpotify}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-400 hover:underline"
+                            >
+                              {event.titre}
+                            </a>
+                          </li>
                         ))}
                     </ul>
                   </div>
@@ -526,7 +627,16 @@ const Calendar = () => {
                       {evenementsSelectionnes
                         .filter(event => event.type === "single" && event.date.isAfter(aujourdHui))
                         .map((event, i) => (
-                          <li key={i} className="border-b border-gray-600 pb-1">{event.titre}</li>
+                          <li key={i} className="border-b border-gray-600 pb-1">
+                            <a
+                              href={event.lienSpotify}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-400 hover:underline"
+                            >
+                              {event.titre}
+                            </a>
+                          </li>
                         ))}
                     </ul>
                   </div>
@@ -538,7 +648,16 @@ const Calendar = () => {
                       {evenementsSelectionnes
                         .filter(event => (event.type === "compilation" || event.type === "appears_on") && event.date.isAfter(aujourdHui))
                         .map((event, i) => (
-                          <li key={i} className="border-b border-gray-600 pb-1">{event.titre}</li>
+                          <li key={i} className="border-b border-gray-600 pb-1">
+                            <a
+                              href={event.lienSpotify}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-400 hover:underline"
+                            >
+                              {event.titre}
+                            </a>
+                          </li>
                         ))}
                     </ul>
                   </div>
@@ -556,7 +675,16 @@ const Calendar = () => {
                       {evenementsSelectionnes
                         .filter(event => event.type === "album" && !event.date.isAfter(aujourdHui))
                         .map((event, i) => (
-                          <li key={i} className="border-b border-gray-600 pb-1">{event.titre}</li>
+                          <li key={i} className="border-b border-gray-600 pb-1">
+                            <a
+                              href={event.lienSpotify}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-400 hover:underline"
+                            >
+                              {event.titre}
+                            </a>
+                          </li>
                         ))}
                     </ul>
                   </div>
@@ -568,7 +696,16 @@ const Calendar = () => {
                       {evenementsSelectionnes
                         .filter(event => event.type === "single" && !event.date.isAfter(aujourdHui))
                         .map((event, i) => (
-                          <li key={i} className="border-b border-gray-600 pb-1">{event.titre}</li>
+                          <li key={i} className="border-b border-gray-600 pb-1">
+                            <a
+                              href={event.lienSpotify}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-400 hover:underline"
+                            >
+                              {event.titre}
+                            </a>
+                          </li>
                         ))}
                     </ul>
                   </div>
@@ -580,7 +717,16 @@ const Calendar = () => {
                       {evenementsSelectionnes
                         .filter(event => (event.type === "compilation" || event.type === "appears_on") && !event.date.isAfter(aujourdHui))
                         .map((event, i) => (
-                          <li key={i} className="border-b border-gray-600 pb-1">{event.titre}</li>
+                          <li key={i} className="border-b border-gray-600 pb-1">
+                            <a
+                              href={event.lienSpotify}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-400 hover:underline"
+                            >
+                              {event.titre}
+                            </a>
+                          </li>
                         ))}
                     </ul>
                   </div>

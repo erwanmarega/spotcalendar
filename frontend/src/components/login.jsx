@@ -18,7 +18,7 @@ const Login = () => {
 
   if (!idClient || !uriRedirection) {
     console.error("Erreur : Variables d'environnement manquantes (VITE_SPOTIFY_CLIENT_ID, VITE_REDIRECT_URI)");
-    return <div className="text-red-500 text-center">Erreur de configuration. Veuillez contacter l'administrateur.</div>;
+    return <div className="text-red-500 text-center">Erreur de configuration. Veuillez contacter l'administrateur : <s>erwanmarega25@gmail.com</s></div>;
   }
 
   const urlAuth = `https://accounts.spotify.com/authorize?${new URLSearchParams({
@@ -33,7 +33,7 @@ const Login = () => {
     const tokenAcces = localStorage.getItem("access_token");
     const expireA = localStorage.getItem("expires_at");
     if (tokenAcces && expireA && Date.now() < parseInt(expireA)) {
-      navigate("/calendrier");
+      navigate("/calendar");
     }
   }, [navigate]);
 

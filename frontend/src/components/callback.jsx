@@ -35,7 +35,7 @@ const Callback = () => {
           localStorage.setItem("token_type", "Bearer");
 
           setATraite(true);
-          navigate("/calendrier");
+          navigate("/calendar");
         } catch (erreur) {
           navigate("/");
         }
