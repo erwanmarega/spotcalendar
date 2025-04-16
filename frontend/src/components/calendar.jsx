@@ -13,7 +13,7 @@ dayjs.locale("fr");
 
 const Calendar = () => {
   const [moisActuel, setMoisActuel] = useState(dayjs());
-  const [ongletActif, setOngletActif] = useState("artists"); 
+  const [ongletActif, setOngletActif] = useState("artists");
   const [artistes, setArtistes] = useState([]);
   const [donneesGenres, setDonneesGenres] = useState({ labels: [], datasets: [] });
   const [typeGraphique, setTypeGraphique] = useState("pie");
@@ -27,6 +27,10 @@ const Calendar = () => {
   const [utilisateur, setUtilisateur] = useState(null);
   const [filtreType, setFiltreType] = useState("tous");
   const [filtrePeriode, setFiltrePeriode] = useState(6);
+  const [rechercheArtiste, setRechercheArtiste] = useState("");
+  const [filtreGenre, setFiltreGenre] = useState("tous");
+  const [genresDisponibles, setGenresDisponibles] = useState([]);
+  const [triHistorique, setTriHistorique] = useState("date-desc"); 
 
   const aujourdHui = dayjs();
   const navigate = useNavigate();
@@ -126,7 +130,11 @@ const Calendar = () => {
 
   const recupererArtistes = async () => {
     const data = await fetchAvecAuth("https://api.spotify.com/v1/me/following?type=artist&limit=50");
-    if (data) setArtistes(data.artists.items);
+    if (data) {
+      setArtistes(data.artists.items);
+      const genres = [...new Set(data.artists.items.flatMap(artist => artist.genres))].sort();
+      setGenresDisponibles(genres);
+    }
   };
 
   const recupererChansonsRecentes = async () => {
@@ -267,6 +275,7 @@ const Calendar = () => {
       titre: item.name,
       type: item.album_type,
       lienSpotify: item.external_urls.spotify,
+      image: item.images[0]?.url || iconeProfil,
     }));
 
     setToutesSorties(sortiesFormatees);
@@ -286,18 +295,59 @@ const Calendar = () => {
     navigate("/");
   };
 
+  const artistesFiltres = artistes.filter(artiste =>
+    artiste.name.toLowerCase().includes(rechercheArtiste.toLowerCase()) &&
+    (filtreGenre === "tous" || artiste.genres.includes(filtreGenre))
+  );
+
+  const sortiesFiltreesEtTriees = toutesSorties
+    .filter(sortie => {
+      const periodeAvant = aujourdHui.subtract(filtrePeriode, "month");
+      const dansPeriode = sortie.date.isAfter(periodeAvant) && sortie.date.isBefore(aujourdHui);
+      const typeMatch =
+        filtreType === "tous" ||
+        (filtreType === "album" && sortie.type === "album") ||
+        (filtreType === "single" && sortie.type === "single") ||
+        (filtreType === "compilation" && sortie.type === "compilation") ||
+        (filtreType === "appears_on" && sortie.type === "appears_on");
+      return dansPeriode && typeMatch;
+    })
+    .sort((a, b) => {
+      if (triHistorique === "date-desc") return b.date - a.date;
+      if (triHistorique === "date-asc") return a.date - b.date;
+      if (triHistorique === "title-asc") return a.titre.localeCompare(b.titre);
+      if (triHistorique === "title-desc") return b.titre.localeCompare(a.titre);
+      return 0;
+    });
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_100%)] text-white flex">
-      <aside className="w-1/4 trueGray-900 p-4 rounded-2xl shadow-md border border-white-400 h-screen flex flex-col">
+      <aside className="w-1/4 trueGray-900 p-4 rounded-2xl shadow-md border border-gray-400 h-screen flex flex-col">
         <div className="flex items-center gap-2 text-lg font-bold mb-4">
           <img src={logo} alt="Logo" className="w-10 h-10" />
         </div>
 
-        <input
-          type="text"
-          placeholder="Rechercher un artiste..."
-          className="w-full p-2 mb-4 bg-gray-700 rounded text-white border border-gray-600"
-        />
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Rechercher un artiste..."
+            value={rechercheArtiste}
+            onChange={(e) => setRechercheArtiste(e.target.value)}
+            className="w-full p-2 bg-gray-700 rounded text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+            aria-label="Rechercher un artiste"
+          />
+          <select
+            value={filtreGenre}
+            onChange={(e) => setFiltreGenre(e.target.value)}
+            className="w-full mt-2 p-2 bg-gray-700 rounded text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+            aria-label="Filtrer par genre"
+          >
+            <option value="tous">Tous les genres</option>
+            {genresDisponibles.map(genre => (
+              <option key={genre} value={genre}>{genre}</option>
+            ))}
+          </select>
+        </div>
 
         <nav className="flex-1">
           <ul className="space-y-2">
@@ -305,6 +355,7 @@ const Calendar = () => {
               <button
                 className={`w-full flex items-center gap-2 p-2 rounded ${ongletActif === "artists" ? "bg-gray-700 text-green-400" : "text-gray-400 hover:bg-gray-800"}`}
                 onClick={() => setOngletActif("artists")}
+                aria-label="Voir les artistes suivis"
               >
                 <FaUserFriends className="text-lg" /> Artistes
               </button>
@@ -313,6 +364,7 @@ const Calendar = () => {
               <button
                 className={`w-full flex items-center gap-2 p-2 rounded ${ongletActif === "history" ? "bg-gray-700 text-green-400" : "text-gray-400 hover:bg-gray-800"}`}
                 onClick={() => setOngletActif("history")}
+                aria-label="Voir l'historique des sorties"
               >
                 <FaHistory className="text-lg" /> Historique
               </button>
@@ -321,6 +373,7 @@ const Calendar = () => {
               <button
                 className={`w-full flex items-center gap-2 p-2 rounded ${ongletActif === "genres" ? "bg-gray-700 text-green-400" : "text-gray-400 hover:bg-gray-800"}`}
                 onClick={() => setOngletActif("genres")}
+                aria-label="Voir les genres les plus écoutés"
               >
                 <FaChartPie className="text-lg" /> Genres
               </button>
@@ -331,53 +384,112 @@ const Calendar = () => {
         <div className="flex-1 overflow-y-auto">
           {ongletActif === "artists" && (
             <div>
-              <h2 className="text-green-400 mt-4">Artistes suivis</h2>
+              <h2 className="text-green-400 mt-4 text-lg font-semibold">Artistes suivis</h2>
               {chargement ? (
-                <p className="text-gray-400 mt-4">Chargement...</p>
+                <div className="mt-4 space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="animate-pulse flex items-center gap-4 p-3 bg-gray-800 rounded-lg">
+                      <div className="w-12 h-12 bg-gray-700 rounded-full"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : msgErreur ? (
                 <p className="text-red-500 mt-4">{msgErreur}</p>
               ) : (
                 <div>
-                  <ul className="mt-4 space-y-2 text-sm">
-                    {artistes.length > 0 ? (
-                      artistes.map(artiste => (
-                        <li key={artiste.id} className="border-b border-gray-600 pb-1">
-                          <button
-                            onClick={() => {
+                  <ul className="mt-4 space-y-4">
+                    {artistesFiltres.length > 0 ? (
+                      artistesFiltres.map(artiste => (
+                        <li
+                          key={artiste.id}
+                          className="flex items-center gap-4 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-all duration-200 cursor-pointer"
+                          onClick={() => {
+                            setArtisteChoisi(artiste);
+                            recupererSortiesArtiste(artiste.id);
+                          }}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
                               setArtisteChoisi(artiste);
                               recupererSortiesArtiste(artiste.id);
-                            }}
-                            className="text-left w-full hover:text-green-400"
-                          >
-                            {artiste.name}
-                          </button>
+                            }
+                          }}
+                          aria-label={`Voir les sorties de ${artiste.name}`}
+                        >
+                          <img
+                            src={artiste.images?.[0]?.url || iconeProfil}
+                            alt={`Photo de ${artiste.name}`}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <h3 className="text-white font-medium">{artiste.name}</h3>
+                            <p className="text-gray-400 text-sm">
+                              {artiste.genres?.length > 0 ? artiste.genres.join(", ") : "Aucun genre"}
+                            </p>
+                            <div className="mt-1">
+                              <span className="text-gray-500 text-xs">Popularité: </span>
+                              <div className="w-24 bg-gray-600 rounded-full h-1.5 inline-block">
+                                <div
+                                  className="bg-green-500 h-1.5 rounded-full"
+                                  style={{ width: `${artiste.popularity}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
                         </li>
                       ))
                     ) : (
-                      <li className="text-gray-400">Aucun artiste suivi.</li>
+                      <p className="text-gray-400 mt-4">Aucun artiste correspondant aux critères.</p>
                     )}
                   </ul>
 
                   {artisteChoisi && (
-                    <div className="mt-4">
-                      <h3 className="text-green-400">Prochaines sorties de {artisteChoisi.name}</h3>
+                    <div className="mt-6">
+                      <h3 className="text-green-400 text-lg font-semibold">Prochaines sorties de {artisteChoisi.name}</h3>
                       {chargement ? (
-                        <p className="text-gray-400 mt-2">Chargement...</p>
+                        <div className="mt-4 space-y-4">
+                          {[...Array(2)].map((_, i) => (
+                            <div key={i} className="animate-pulse flex items-center gap-4 p-3 bg-gray-800 rounded-lg">
+                              <div className="w-10 h-10 bg-gray-700 rounded"></div>
+                              <div className="flex-1">
+                                <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+                                <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       ) : msgErreur ? (
                         <p className="text-red-500 mt-2">{msgErreur}</p>
                       ) : sortiesArtiste.length > 0 ? (
-                        <ul className="mt-2 space-y-2 text-sm">
+                        <ul className="mt-4 space-y-4">
                           {sortiesArtiste.map((sortie, i) => (
-                            <li key={i} className="border-b border-gray-600 pb-1">
-                              <a
-                                href={sortie.lienSpotify}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-green-400 hover:underline"
-                              >
-                                {sortie.titre}
-                              </a>{" "}
-                              - Sortie prévue le : {sortie.date.format("DD/MM/YYYY")} ({sortie.type})
+                            <li
+                              key={i}
+                              className="flex items-center gap-4 p-3 bg-gray-800 rounded-lg"
+                            >
+                              <img
+                                src={sortie.image}
+                                alt={`Couverture de ${sortie.titre}`}
+                                className="w-10 h-10 rounded object-cover"
+                              />
+                              <div>
+                                <a
+                                  href={sortie.lienSpotify}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-green-400 hover:underline"
+                                >
+                                  {sortie.titre}
+                                </a>
+                                <p className="text-gray-400 text-sm">
+                                  Sortie prévue: {sortie.date.format("DD/MM/YYYY")} ({sortie.type})
+                                </p>
+                              </div>
                             </li>
                           ))}
                         </ul>
@@ -393,15 +505,16 @@ const Calendar = () => {
 
           {ongletActif === "history" && (
             <div>
-              <h2 className="text-green-400 mt-4">Historique des sorties (6 derniers mois)</h2>
+              <h2 className="text-green-400 mt-4 text-lg font-semibold">Historique des sorties</h2>
               {artisteChoisi ? (
                 <div className="mt-4">
-                  <h3 className="text-green-400">Sorties de {artisteChoisi.name}</h3>
-                  <div className="mt-2 flex gap-2">
+                  <h3 className="text-green-400 text-base font-medium">Sorties de {artisteChoisi.name}</h3>
+                  <div className="mt-2 flex flex-wrap gap-2">
                     <select
                       value={filtreType}
                       onChange={(e) => setFiltreType(e.target.value)}
-                      className="p-2 bg-gray-700 rounded text-white border border-gray-600"
+                      className="p-2 bg-gray-700 rounded text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      aria-label="Filtrer par type de sortie"
                     >
                       <option value="tous">Tous les types</option>
                       <option value="album">Albums</option>
@@ -412,56 +525,78 @@ const Calendar = () => {
                     <select
                       value={filtrePeriode}
                       onChange={(e) => setFiltrePeriode(Number(e.target.value))}
-                      className="p-2 bg-gray-700 rounded text-white border border-gray-600"
+                      className="p-2 bg-gray-700 rounded text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      aria-label="Filtrer par période"
                     >
                       <option value={1}>1 mois</option>
                       <option value={3}>3 mois</option>
                       <option value={6}>6 mois</option>
+                      <option value={12}>12 mois</option>
+                    </select>
+                    <select
+                      value={triHistorique}
+                      onChange={(e) => setTriHistorique(e.target.value)}
+                      className="p-2 bg-gray-700 rounded text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      aria-label="Trier les sorties"
+                    >
+                      <option value="date-desc">Date (récent d'abord)</option>
+                      <option value="date-asc">Date (ancien d'abord)</option>
+                      <option value="title-asc">Titre (A-Z)</option>
+                      <option value="title-desc">Titre (Z-A)</option>
                     </select>
                   </div>
                   {chargement ? (
-                    <p className="text-gray-400 mt-2">Chargement...</p>
+                    <div className="mt-4 space-y-4">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="animate-pulse flex items-center gap-4 p-3 bg-gray-800 rounded-lg">
+                          <div className="w-12 h-12 bg-gray-700 rounded"></div>
+                          <div className="flex-1">
+                            <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   ) : msgErreur ? (
                     <p className="text-red-500 mt-2">{msgErreur}</p>
-                  ) : toutesSorties.length > 0 ? (
-                    <div>
-                      <ul className="mt-2 space-y-2 text-sm">
-                        {toutesSorties
-                          .filter(sortie => {
-                            const periodeAvant = aujourdHui.subtract(filtrePeriode, "month");
-                            const dansPeriode = sortie.date.isAfter(periodeAvant) && sortie.date.isBefore(aujourdHui);
-                            const typeMatch =
-                              filtreType === "tous" ||
-                              (filtreType === "album" && sortie.type === "album") ||
-                              (filtreType === "single" && sortie.type === "single") ||
-                              (filtreType === "compilation" && sortie.type === "compilation") ||
-                              (filtreType === "appears_on" && sortie.type === "appears_on");
-                            return dansPeriode && typeMatch;
-                          })
-                          .sort((a, b) => b.date - a.date)
-                          .map((sortie, i) => (
-                            <li key={i} className="border-b border-gray-600 pb-1">
-                              <a
-                                href={sortie.lienSpotify}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-green-400 hover:underline"
-                              >
-                                {sortie.titre}
-                              </a>{" "}
-                              - Sortie le : {sortie.date.format("DD/MM/YYYY")} ({sortie.type})
-                            </li>
-                          ))}
-                      </ul>
-                      {toutesSorties.filter(sortie => {
-                        const sixMoisAvant = aujourdHui.subtract(6, "month");
-                        return sortie.date.isAfter(sixMoisAvant) && sortie.date.isBefore(aujourdHui);
-                      }).length === 0 && (
-                        <p className="text-gray-400 mt-2">Aucune sortie dans cette période avec ce filtre.</p>
-                      )}
-                    </div>
+                  ) : sortiesFiltreesEtTriees.length > 0 ? (
+                    <ul className="mt-4 space-y-4">
+                      {sortiesFiltreesEtTriees.map((sortie, i) => (
+                        <li
+                          key={i}
+                          className="flex items-center gap-4 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-all duration-200"
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              window.open(sortie.lienSpotify, "_blank", "noopener,noreferrer");
+                            }
+                          }}
+                          aria-label={`Ouvrir ${sortie.titre} sur Spotify`}
+                        >
+                          <img
+                            src={sortie.image}
+                            alt={`Couverture de ${sortie.titre}`}
+                            className="w-12 h-12 rounded object-cover"
+                          />
+                          <div className="flex-1">
+                            <a
+                              href={sortie.lienSpotify}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-400 hover:underline font-medium"
+                            >
+                              {sortie.titre}
+                            </a>
+                            <p className="text-gray-400 text-sm">
+                              Sortie le : {sortie.date.format("DD/MM/YYYY")} ({sortie.type})
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
                   ) : (
-                    <p className="text-gray-400 mt-2">Aucune sortie récente pour cet artiste.</p>
+                    <p className="text-gray-400 mt-2">Aucune sortie dans cette période avec ces filtres.</p>
                   )}
                 </div>
               ) : (
@@ -470,72 +605,68 @@ const Calendar = () => {
             </div>
           )}
 
-{ongletActif === "genres" && (
-  <div>
-    <h2 className="text-green-400 mt-4">Genres les plus écoutés (En Boucle)</h2>
-
-    {donneesGenres.labels.length >= 3 && (
-      <div className="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-600 shadow-md">
-        <h3 className="text-white font-semibold mb-2 text-sm">🎧 Top 3 genres :</h3>
-        <ol className="list-decimal list-inside text-green-400 text-sm space-y-1">
-          <li>{donneesGenres.labels[0]}</li>
-          <li>{donneesGenres.labels[1]}</li>
-          <li>{donneesGenres.labels[2]}</li>
-        </ol>
-      </div>
-    )}
-
-    <div className="mt-4 flex gap-2">
-      <button
-        onClick={() => setTypeGraphique("pie")}
-        className={`p-2 rounded ${typeGraphique === "pie" ? "bg-green-500 text-black" : "bg-gray-700 text-white"}`}
-      >
-        Graphique en secteurs
-      </button>
-      <button
-        onClick={() => setTypeGraphique("bar")}
-        className={`p-2 rounded ${typeGraphique === "bar" ? "bg-green-500 text-black" : "bg-gray-700 text-white"}`}
-      >
-        Histogramme
-      </button>
-    </div>
-
-    {chargement ? (
-      <p className="text-gray-400 mt-4">Chargement...</p>
-    ) : msgErreur ? (
-      <p className="text-red-500 mt-4">{msgErreur}</p>
-    ) : donneesGenres.labels.length > 0 ? (
-      <div className="mt-4">
-        {typeGraphique === "pie" ? (
-          <Pie
-            data={donneesGenres}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: { position: "bottom", labels: { color: "white" } },
-              },
-            }}
-          />
-        ) : (
-          <Bar
-            data={donneesGenres}
-            options={{
-              responsive: true,
-              scales: {
-                x: { ticks: { color: "white" } },
-                y: { beginAtZero: true, ticks: { color: "white", stepSize: 1 } },
-              },
-              plugins: { legend: { display: false } },
-            }}
-          />
-        )}
-      </div>
-    ) : (
-      <p className="text-gray-400 mt-4">Aucun genre disponible pour la playlist 'En Boucle'.</p>
-    )}
-  </div>
-)}
-
+          {ongletActif === "genres" && (
+            <div>
+              <h2 className="text-green-400 mt-4">Genres les plus écoutés (En Boucle)</h2>
+              {donneesGenres.labels.length >= 3 && (
+                <div className="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-600 shadow-md">
+                  <h3 className="text-white font-semibold mb-2 text-sm">🎧 Top 3 genres :</h3>
+                  <ol className="list-decimal list-inside text-green-400 text-sm space-y-1">
+                    <li>{donneesGenres.labels[0]}</li>
+                    <li>{donneesGenres.labels[1]}</li>
+                    <li>{donneesGenres.labels[2]}</li>
+                  </ol>
+                </div>
+              )}
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => setTypeGraphique("pie")}
+                  className={`p-2 rounded ${typeGraphique === "pie" ? "bg-green-500 text-black" : "bg-gray-700 text-white"}`}
+                >
+                  Graphique en secteurs
+                </button>
+                <button
+                  onClick={() => setTypeGraphique("bar")}
+                  className={`p-2 rounded ${typeGraphique === "bar" ? "bg-green-500 text-black" : "bg-gray-700 text-white"}`}
+                >
+                  Histogramme
+                </button>
+              </div>
+              {chargement ? (
+                <p className="text-gray-400 mt-4">Chargement...</p>
+              ) : msgErreur ? (
+                <p className="text-red-500 mt-4">{msgErreur}</p>
+              ) : donneesGenres.labels.length > 0 ? (
+                <div className="mt-4">
+                  {typeGraphique === "pie" ? (
+                    <Pie
+                      data={donneesGenres}
+                      options={{
+                        responsive: true,
+                        plugins: {
+                          legend: { position: "bottom", labels: { color: "white" } },
+                        },
+                      }}
+                    />
+                  ) : (
+                    <Bar
+                      data={donneesGenres}
+                      options={{
+                        responsive: true,
+                        scales: {
+                          x: { ticks: { color: "white" } },
+                          y: { beginAtZero: true, ticks: { color: "white", stepSize: 1 } },
+                        },
+                        plugins: { legend: { display: false } },
+                      }}
+                    />
+                  )}
+                </div>
+              ) : (
+                <p className="text-gray-400 mt-4">Aucun genre disponible pour la playlist 'En Boucle'.</p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="mt-auto pt-4 border-t border-gray-600">
@@ -551,17 +682,15 @@ const Calendar = () => {
         </div>
       </aside>
 
-      <main className="fixed top-0 right-0 w-3/4 h-screen trueGray-900 p-6 rounded-2xl shadow-md border border-white-400 overflow-hidden">
+      <main className="fixed top-0 right-0 w-3/4 h-screen trueGray-900 p-6 rounded-2xl shadow-md border border-gray-400 overflow-hidden">
         <div className="flex justify-between items-center mb-4 text-white">
           <button onClick={moisPrecedent} className="text-xl px-2">◀</button>
           <h1 className="text-3xl font-bold">{moisActuel.format("MMMM YYYY")}</h1>
           <button onClick={moisSuivant} className="text-xl px-2">▶</button>
         </div>
-
         <div className="flex justify-center mb-4">
           <button onClick={allerAujourdHui} className="bg-green-500 text-black px-4 py-2 rounded">Aujourd'hui</button>
         </div>
-
         <div className="grid grid-cols-7 gap-1 text-center text-sm">
           {joursSemaine.map(jour => (
             <div key={jour} className="p-2 text-gray-300 font-bold">{jour}</div>
@@ -591,7 +720,7 @@ const Calendar = () => {
                           href={event.lienSpotify}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-black hover:underline "
+                          className="text-black hover:underline"
                         >
                           {event.titre}
                         </a>
@@ -611,7 +740,6 @@ const Calendar = () => {
             <h3 className="text-green-400 text-lg font-bold mb-4">
               Sorties le {evenementsSelectionnes[0].date.format("DD/MM/YYYY")}
             </h3>
-
             {evenementsSelectionnes.some(event => event.date.isAfter(aujourdHui)) && (
               <div>
                 <h4 className="text-green-400 font-semibold mb-2">Sorties futures</h4>
@@ -680,7 +808,6 @@ const Calendar = () => {
                 )}
               </div>
             )}
-
             {evenementsSelectionnes.some(event => !event.date.isAfter(aujourdHui)) && (
               <div>
                 <h4 className="text-orange-400 font-semibold mb-2">Sorties anciennes</h4>
@@ -749,7 +876,6 @@ const Calendar = () => {
                 )}
               </div>
             )}
-
             <button
               onClick={() => setAfficherPopup(false)}
               className="mt-4 bg-green-500 text-black px-4 py-2 rounded hover:bg-green-600"
