@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 const Callback = () => {
   const navigate = useNavigate();
   const [aTraite, setATraite] = useState(false);
+  const [erreur, setErreur] = useState(null);
 
   useEffect(() => {
     if (aTraite) return;
@@ -17,9 +18,9 @@ const Callback = () => {
           const reponse = await fetch("http://localhost:3000/api/token", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
+              "Content-Type": "application/x-www-form-urlencoded", 
             },
-            body: JSON.stringify({ code }),
+            body: new URLSearchParams({ code }), 
           });
 
           if (!reponse.ok) {
@@ -37,17 +38,18 @@ const Callback = () => {
           setATraite(true);
           navigate("/calendar");
         } catch (erreur) {
-          navigate("/");
+          setErreur("Erreur lors de l'authentification : " + erreur.message);
+          navigate("/", { state: { error: "Erreur lors de l'authentification : " + erreur.message } });
         }
       };
 
       echangerCodeContreToken();
     } else {
-      navigate("/");
+      navigate("/", { state: { error: "Aucun code d'authentification reçu" } });
     }
   }, [navigate, aTraite]);
 
-  return <div>Chargement...</div>;
+  return <div>{erreur ? <p className="text-red-500 text-center">{erreur}</p> : "Chargement..."}</div>;
 };
 
 export default Callback;

@@ -470,56 +470,72 @@ const Calendar = () => {
             </div>
           )}
 
-          {ongletActif === "genres" && (
-            <div>
-              <h2 className="text-green-400 mt-4">Genres les plus écoutés (En Boucle)</h2>
-              <div className="mt-2 flex gap-2">
-                <button
-                  onClick={() => setTypeGraphique("pie")}
-                  className={`p-2 rounded ${typeGraphique === "pie" ? "bg-green-500 text-black" : "bg-gray-700 text-white"}`}
-                >
-                  Graphique en secteurs
-                </button>
-                <button
-                  onClick={() => setTypeGraphique("bar")}
-                  className={`p-2 rounded ${typeGraphique === "bar" ? "bg-green-500 text-black" : "bg-gray-700 text-white"}`}
-                >
-                  Histogramme
-                </button>
-              </div>
-              {chargement ? (
-                <p className="text-gray-400 mt-4">Chargement...</p>
-              ) : msgErreur ? (
-                <p className="text-red-500 mt-4">{msgErreur}</p>
-              ) : donneesGenres.labels.length > 0 ? (
-                <div className="mt-4">
-                  {typeGraphique === "pie" ? (
-                    <Pie
-                      data={donneesGenres}
-                      options={{
-                        responsive: true,
-                        plugins: { legend: { position: "bottom", labels: { color: "white" } } },
-                      }}
-                    />
-                  ) : (
-                    <Bar
-                      data={donneesGenres}
-                      options={{
-                        responsive: true,
-                        scales: {
-                          x: { ticks: { color: "white" } },
-                          y: { beginAtZero: true, ticks: { color: "white", stepSize: 1 } },
-                        },
-                        plugins: { legend: { display: false } },
-                      }}
-                    />
-                  )}
-                </div>
-              ) : (
-                <p className="text-gray-400 mt-4">Aucun genre disponible pour la playlist 'En Boucle'.</p>
-              )}
-            </div>
-          )}
+{ongletActif === "genres" && (
+  <div>
+    <h2 className="text-green-400 mt-4">Genres les plus écoutés (En Boucle)</h2>
+
+    {donneesGenres.labels.length >= 3 && (
+      <div className="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-600 shadow-md">
+        <h3 className="text-white font-semibold mb-2 text-sm">🎧 Top 3 genres :</h3>
+        <ol className="list-decimal list-inside text-green-400 text-sm space-y-1">
+          <li>{donneesGenres.labels[0]}</li>
+          <li>{donneesGenres.labels[1]}</li>
+          <li>{donneesGenres.labels[2]}</li>
+        </ol>
+      </div>
+    )}
+
+    <div className="mt-4 flex gap-2">
+      <button
+        onClick={() => setTypeGraphique("pie")}
+        className={`p-2 rounded ${typeGraphique === "pie" ? "bg-green-500 text-black" : "bg-gray-700 text-white"}`}
+      >
+        Graphique en secteurs
+      </button>
+      <button
+        onClick={() => setTypeGraphique("bar")}
+        className={`p-2 rounded ${typeGraphique === "bar" ? "bg-green-500 text-black" : "bg-gray-700 text-white"}`}
+      >
+        Histogramme
+      </button>
+    </div>
+
+    {chargement ? (
+      <p className="text-gray-400 mt-4">Chargement...</p>
+    ) : msgErreur ? (
+      <p className="text-red-500 mt-4">{msgErreur}</p>
+    ) : donneesGenres.labels.length > 0 ? (
+      <div className="mt-4">
+        {typeGraphique === "pie" ? (
+          <Pie
+            data={donneesGenres}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { position: "bottom", labels: { color: "white" } },
+              },
+            }}
+          />
+        ) : (
+          <Bar
+            data={donneesGenres}
+            options={{
+              responsive: true,
+              scales: {
+                x: { ticks: { color: "white" } },
+                y: { beginAtZero: true, ticks: { color: "white", stepSize: 1 } },
+              },
+              plugins: { legend: { display: false } },
+            }}
+          />
+        )}
+      </div>
+    ) : (
+      <p className="text-gray-400 mt-4">Aucun genre disponible pour la playlist 'En Boucle'.</p>
+    )}
+  </div>
+)}
+
         </div>
 
         <div className="mt-auto pt-4 border-t border-gray-600">

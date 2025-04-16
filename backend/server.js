@@ -1,18 +1,28 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+require("dotenv").config();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+app.use(cors({ origin: "http://localhost:5173" }));
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirectUri = "http://localhost:5173/callback";
 
+app.get("/", (req, res) => {
+  res.json({ message: "Bienvenue sur l'API de ton application !" });
+});
+
 app.post("/api/token", async (req, res) => {
+  console.log("Requête reçue, req.body :", req.body); 
   const { code } = req.body;
-  console.log("Backend : Requête POST /api/token reçue avec code :", code);
+
+  if (!code) {
+    return res.status(400).json({ error: "Aucun code fourni dans la requête" });
+  }
 
   try {
     console.log("Backend : Envoi de la requête à Spotify pour échanger le code");
