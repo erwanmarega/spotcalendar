@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import logo from "../assets/my-calendar.png";
 import iconeProfil from "../assets/profile-icon.avif";
 import dayjs from "dayjs";
@@ -30,7 +32,7 @@ const Calendar = () => {
   const [rechercheArtiste, setRechercheArtiste] = useState("");
   const [filtreGenre, setFiltreGenre] = useState("tous");
   const [genresDisponibles, setGenresDisponibles] = useState([]);
-  const [triHistorique, setTriHistorique] = useState("date-desc"); 
+  const [triHistorique, setTriHistorique] = useState("date-desc");
 
   const aujourdHui = dayjs();
   const navigate = useNavigate();
@@ -291,8 +293,31 @@ const Calendar = () => {
   }, []);
 
   const deconnexion = () => {
-    localStorage.clear();
-    navigate("/");
+    toast.info("Déconnexion en cours... 👋", {
+      position: "bottom-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "dark",
+    });
+    setTimeout(() => {
+      localStorage.clear();
+      navigate("/");
+    }, 2000);
+  };
+
+  const handleSpotifyLinkClick = (titre) => {
+    toast.success(`Redirection vers Spotify 🎧 : ${titre}`, {
+      position: "bottom-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "dark",
+    });
   };
 
   const artistesFiltres = artistes.filter(artiste =>
@@ -483,6 +508,7 @@ const Calendar = () => {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-green-400 hover:underline"
+                                  onClick={() => handleSpotifyLinkClick(sortie.titre)}
                                 >
                                   {sortie.titre}
                                 </a>
@@ -569,6 +595,7 @@ const Calendar = () => {
                           tabIndex={0}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
+                              handleSpotifyLinkClick(sortie.titre);
                               window.open(sortie.lienSpotify, "_blank", "noopener,noreferrer");
                             }
                           }}
@@ -585,6 +612,7 @@ const Calendar = () => {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-green-400 hover:underline font-medium"
+                              onClick={() => handleSpotifyLinkClick(sortie.titre)}
                             >
                               {sortie.titre}
                             </a>
@@ -677,19 +705,31 @@ const Calendar = () => {
               className="w-8 h-8 rounded-full border border-gray-400 cursor-pointer"
             />
             {utilisateur ? <span className="text-gray-400 text-sm">{utilisateur.display_name}</span> : <span className="text-gray-400 text-sm">Chargement...</span>}
-            <button onClick={deconnexion} className="text-gray-400 text-sm hover:text-white ml-auto">Déconnexion</button>
+            <button
+              onClick={deconnexion}
+              className="text-gray-400 text-sm hover:text-white ml-auto"
+              aria-label="Se déconnecter"
+            >
+              Déconnexion
+            </button>
           </div>
         </div>
       </aside>
 
       <main className="fixed top-0 right-0 w-3/4 h-screen trueGray-900 p-6 rounded-2xl shadow-md border border-gray-400 overflow-hidden">
         <div className="flex justify-between items-center mb-4 text-white">
-          <button onClick={moisPrecedent} className="text-xl px-2">◀</button>
+          <button onClick={moisPrecedent} className="text-xl px-2" aria-label="Mois précédent">◀</button>
           <h1 className="text-3xl font-bold">{moisActuel.format("MMMM YYYY")}</h1>
-          <button onClick={moisSuivant} className="text-xl px-2">▶</button>
+          <button onClick={moisSuivant} className="text-xl px-2" aria-label="Mois suivant">▶</button>
         </div>
         <div className="flex justify-center mb-4">
-          <button onClick={allerAujourdHui} className="bg-green-500 text-black px-4 py-2 rounded">Aujourd'hui</button>
+          <button
+            onClick={allerAujourdHui}
+            className="bg-green-500 text-black px-4 py-2 rounded"
+            aria-label="Aller à aujourd'hui"
+          >
+            Aujourd'hui
+          </button>
         </div>
         <div className="grid grid-cols-7 gap-1 text-center text-sm">
           {joursSemaine.map(jour => (
@@ -710,6 +750,15 @@ const Calendar = () => {
                     setAfficherPopup(true);
                   }
                 }}
+                role={evenementsJour.length > 0 ? "button" : undefined}
+                tabIndex={evenementsJour.length > 0 ? 0 : undefined}
+                onKeyDown={(e) => {
+                  if (evenementsJour.length > 0 && (e.key === "Enter" || e.key === " ")) {
+                    setEvenementsSelectionnes(evenementsJour);
+                    setAfficherPopup(true);
+                  }
+                }}
+                aria-label={jour ? `Jour ${jour} du mois` : "Jour vide"}
               >
                 {jour}
                 {evenementsJour.length > 0 && (
@@ -721,6 +770,7 @@ const Calendar = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-black hover:underline"
+                          onClick={() => handleSpotifyLinkClick(event.titre)}
                         >
                           {event.titre}
                         </a>
@@ -756,6 +806,7 @@ const Calendar = () => {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-green-400 hover:underline"
+                              onClick={() => handleSpotifyLinkClick(event.titre)}
                             >
                               {event.titre}
                             </a>
@@ -777,6 +828,7 @@ const Calendar = () => {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-green-400 hover:underline"
+                              onClick={() => handleSpotifyLinkClick(event.titre)}
                             >
                               {event.titre}
                             </a>
@@ -798,6 +850,7 @@ const Calendar = () => {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-green-400 hover:underline"
+                              onClick={() => handleSpotifyLinkClick(event.titre)}
                             >
                               {event.titre}
                             </a>
@@ -824,6 +877,7 @@ const Calendar = () => {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-green-400 hover:underline"
+                              onClick={() => handleSpotifyLinkClick(event.titre)}
                             >
                               {event.titre}
                             </a>
@@ -845,6 +899,7 @@ const Calendar = () => {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-green-400 hover:underline"
+                              onClick={() => handleSpotifyLinkClick(event.titre)}
                             >
                               {event.titre}
                             </a>
@@ -866,6 +921,7 @@ const Calendar = () => {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-green-400 hover:underline"
+                              onClick={() => handleSpotifyLinkClick(event.titre)}
                             >
                               {event.titre}
                             </a>
@@ -879,12 +935,28 @@ const Calendar = () => {
             <button
               onClick={() => setAfficherPopup(false)}
               className="mt-4 bg-green-500 text-black px-4 py-2 rounded hover:bg-green-600"
+              aria-label="Fermer la popup"
             >
               Fermer
             </button>
           </div>
         </div>
       )}
+
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        toastClassName="bg-gray-800 text-white border border-gray-600 rounded-lg shadow-lg"
+        progressClassName="bg-green-500"
+      />
     </div>
   );
 };
