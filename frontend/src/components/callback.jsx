@@ -1,55 +1,53 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Callback = () => {
   const navigate = useNavigate();
-  const [aTraite, setATraite] = useState(false);
-  const [erreur, setErreur] = useState(null);
+  const location = useLocation();
+  const hasRun = useRef(false);
+
+  const echangerCodeContreToken = async (code) => {
+    try {
+      const res = await fetch("http://localhost:3000/api/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Erreur du serveur :", errorData);
+        throw new Error(errorData.error || `Erreur HTTP : ${res.status}`);
+      }
+
+      navigate("/calendar");
+    } catch (e) {
+      console.error("Erreur lors de l'échange du code :", e);
+      navigate("/login");
+    }
+  };
 
   useEffect(() => {
-    if (aTraite) return;
+    if (hasRun.current) return;
+    hasRun.current = true;
 
-    const paramsUrl = new URLSearchParams(window.location.search);
-    const code = paramsUrl.get("code");
+    const params = new URLSearchParams(location.search);
+    const code = params.get("code");
 
     if (code) {
-      const echangerCodeContreToken = async () => {
-        try {
-          const reponse = await fetch("http://localhost:3000/api/token", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded", 
-            },
-            body: new URLSearchParams({ code }), 
-          });
-
-          if (!reponse.ok) {
-            const texteErreur = await reponse.text();
-            throw new Error(`Erreur HTTP : ${reponse.status} - ${texteErreur}`);
-          }
-
-          const donnees = await reponse.json();
-
-          localStorage.setItem("access_token", donnees.access_token);
-          localStorage.setItem("refresh_token", donnees.refresh_token);
-          localStorage.setItem("expires_at", Date.now() + donnees.expires_in * 1000);
-          localStorage.setItem("token_type", "Bearer");
-
-          setATraite(true);
-          navigate("/calendar");
-        } catch (erreur) {
-          setErreur("Erreur lors de l'authentification : " + erreur.message);
-          navigate("/", { state: { error: "Erreur lors de l'authentification : " + erreur.message } });
-        }
-      };
-
-      echangerCodeContreToken();
+      echangerCodeContreToken(code);
     } else {
-      navigate("/", { state: { error: "Aucun code d'authentification reçu" } });
+      console.error("Aucun code d'autorisation trouvé dans l'URL");
+      navigate("/login");
     }
-  }, [navigate, aTraite]);
+  }, [location, navigate]);
 
-  return <div>{erreur ? <p className="text-red-500 text-center">{erreur}</p> : "Chargement..."}</div>;
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_100%)]">
+      <div className="text-white text-2xl">Connexion en cours...</div>
+    </div>
+  );
 };
 
 export default Callback;

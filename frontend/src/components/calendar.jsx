@@ -55,30 +55,43 @@ const Calendar = () => {
     return jours;
   }, [jourDebut, joursDansMois]);
 
-  const rafraichirToken = async () => {
-    const refreshTok = localStorage.getItem("refresh_token");
-    if (!refreshTok) {
-      navigate("/");
+  const getAuthTokens = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/api/check-tokens", {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
+      return await res.json();
+    } catch (e) {
+      console.error("Échec de la vérification des tokens :", e);
       return null;
+    }
+  };
+
+  const rafraichirToken = async () => {
+    const tokens = await getAuthTokens();
+    if (!tokens?.refresh_token_exists) {
+      navigate("/login");
+      return false;
     }
 
     try {
       const res = await fetch("http://localhost:3000/api/refresh-token", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: refreshTok }),
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
-      const data = await res.json();
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("expires_at", (Date.now() + data.expires_in * 1000).toString());
-      return data.access_token;
+      return true;
     } catch (e) {
       console.error("Échec du rafraîchissement du token :", e);
-      localStorage.clear();
-      navigate("/");
-      return null;
+      await fetch("http://localhost:3000/api/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      navigate("/login");
+      return false;
     }
   };
 
@@ -86,13 +99,10 @@ const Calendar = () => {
     setChargement(true);
     setMsgErreur(null);
 
-    let tok = localStorage.getItem("access_token");
-    const expires = localStorage.getItem("expires_at");
-    const tokType = localStorage.getItem("token_type") || "Bearer";
-
-    if (!tok || !expires || Date.now() >= parseInt(expires)) {
-      tok = await rafraichirToken();
-      if (!tok) {
+    const tokens = await getAuthTokens();
+    if (!tokens?.access_token_exists || !tokens?.expires_at || Date.now() >= parseInt(tokens.expires_at)) {
+      const refreshed = await rafraichirToken();
+      if (!refreshed) {
         setMsgErreur("Échec de connexion, veuillez vous reconnecter");
         setChargement(false);
         return null;
@@ -104,8 +114,8 @@ const Calendar = () => {
         ...options,
         headers: {
           ...(options.headers || {}),
-          Authorization: `${tokType} ${tok}`,
         },
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
@@ -120,12 +130,12 @@ const Calendar = () => {
   };
 
   const recupererProfilUtilisateur = useCallback(async () => {
-    const data = await fetchAvecAuth("https://api.spotify.com/v1/me");
+    const data = await fetchAvecAuth("http://localhost:3000/api/spotify/me");
     if (data) setUtilisateur(data);
   }, []);
 
   const recupererArtistes = useCallback(async () => {
-    const data = await fetchAvecAuth("https://api.spotify.com/v1/me/following?type=artist&limit=50");
+    const data = await fetchAvecAuth("http://localhost:3000/api/spotify/me/following?type=artist&limit=50");
     if (data) {
       setArtistes(data.artists.items);
       setGenresDisponibles([...new Set(data.artists.items.flatMap(artist => artist.genres))].sort());
@@ -133,7 +143,7 @@ const Calendar = () => {
   }, []);
 
   const recupererChansonsRecentes = useCallback(async () => {
-    const data = await fetchAvecAuth("https://api.spotify.com/v1/me/player/recently-played?limit=50");
+    const data = await fetchAvecAuth("http://localhost:3000/api/spotify/me/player/recently-played?limit=50");
     if (!data) return;
 
     const chansons = data.items.map(item => item.track).filter(track => track);
@@ -143,7 +153,7 @@ const Calendar = () => {
     }
 
     const idsArtistes = [...new Set(chansons.flatMap(chanson => chanson.artists.map(artiste => artiste.id)))];
-    const donneesArtistes = await fetchAvecAuth(`https://api.spotify.com/v1/artists?ids=${idsArtistes.join(",")}`);
+    const donneesArtistes = await fetchAvecAuth(`http://localhost:3000/api/spotify/artists?ids=${idsArtistes.join(",")}`);
     if (!donneesArtistes) return;
 
     const compteGenres = {};
@@ -179,7 +189,7 @@ const Calendar = () => {
 
   const recupererPlaylistEnBoucle = useCallback(async () => {
     let playlists = [];
-    let url = "https://api.spotify.com/v1/me/playlists?limit=50";
+    let url = "http://localhost:3000/api/spotify/me/playlists?limit=50";
 
     while (url) {
       const data = await fetchAvecAuth(url);
@@ -194,7 +204,7 @@ const Calendar = () => {
       return;
     }
 
-    const donneesChansons = await fetchAvecAuth(`https://api.spotify.com/v1/playlists/${playlistEnBoucle.id}/tracks?limit=50`);
+    const donneesChansons = await fetchAvecAuth(`http://localhost:3000/api/spotify/playlists/${playlistEnBoucle.id}/tracks?limit=50`);
     if (!donneesChansons) return;
 
     const chansons = donneesChansons.items.map(item => item.track).filter(track => track);
@@ -204,7 +214,7 @@ const Calendar = () => {
     }
 
     const idsArtistes = [...new Set(chansons.flatMap(chanson => chanson.artists.map(artiste => artiste.id)))];
-    const donneesArtistes = await fetchAvecAuth(`https://api.spotify.com/v1/artists?ids=${idsArtistes.join(",")}`);
+    const donneesArtistes = await fetchAvecAuth(`http://localhost:3000/api/spotify/artists?ids=${idsArtistes.join(",")}`);
     if (!donneesArtistes) return;
 
     const compteGenres = {};
@@ -240,15 +250,15 @@ const Calendar = () => {
 
   const recupererSortiesArtiste = useCallback(async (idArtiste) => {
     let toutesSorties = [];
-    let url = `https://api.spotify.com/v1/artists/${idArtiste}/albums?include_groups=album,single,compilation,appears_on&limit=50&market=FR`;
-
+    let url = `http://localhost:3000/api/spotify/artists/${idArtiste}/albums?include_groups=album,single,compilation,appears_on&limit=50&market=FR`;
+  
     while (url) {
       const data = await fetchAvecAuth(url);
       if (!data) return;
       toutesSorties = [...toutesSorties, ...data.items];
-      url = data.next;
+      url = data.next ? data.next.replace('https://api.spotify.com/v1', 'http://localhost:3000/api/spotify') : null;
     }
-
+  
     const sortiesFormatees = toutesSorties.map(item => ({
       date: dayjs(item.release_date),
       titre: item.name,
@@ -256,7 +266,7 @@ const Calendar = () => {
       lienSpotify: item.external_urls.spotify,
       image: item.images[0]?.url || iconeProfil,
     }));
-
+  
     setToutesSorties(sortiesFormatees);
     const dateActuelle = new Date("2025-04-06");
     setSortiesArtiste(sortiesFormatees.filter(item => new Date(item.date) > dateActuelle));
@@ -274,9 +284,17 @@ const Calendar = () => {
       autoClose: 2000,
       theme: "dark",
     });
-    setTimeout(() => {
-      localStorage.clear();
-      navigate("/");
+    setTimeout(async () => {
+      try {
+        await fetch("http://localhost:3000/api/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+        navigate("/login");
+      } catch (e) {
+        console.error("Erreur lors de la déconnexion :", e);
+        navigate("/login");
+      }
     }, 2000);
   }, [navigate]);
 
@@ -308,7 +326,7 @@ const Calendar = () => {
         if (triHistorique === "date-desc") return b.date - a.date;
         if (triHistorique === "date-asc") return a.date - b.date;
         if (triHistorique === "title-asc") return a.titre.localeCompare(b.titre);
-        if (triHistorique === "title-desc") return b.titre.localeCompare(a.titre);
+        if (triHistorique === "title-desc") return b.titre.localeCompare(b.titre);
         return 0;
       }), [toutesSorties, filtrePeriode, filtreType, triHistorique, aujourdHui]);
 
@@ -338,13 +356,13 @@ const Calendar = () => {
             placeholder="Rechercher un artiste..."
             value={rechercheArtiste}
             onChange={(e) => setRechercheArtiste(e.target.value)}
-            className="w-full p-3 bg-gray-700 rounded-lg text-white border border-gray-600 focus:ring-2 focus:ring-green-500"
+            className="w-full p-3 bg-black rounded-lg text-white border border-gray-600 focus:ring-2 focus:ring-green-500"
             aria-label="Rechercher un artiste"
           />
           <select
             value={filtreGenre}
             onChange={(e) => setFiltreGenre(e.target.value)}
-            className="w-full p-3 bg-gray-700 rounded-lg text-white border border-gray-600 focus:ring-2 focus:ring-green-500"
+            className="w-full p-3 bg-black rounded-lg text-white border border-gray-600 focus:ring-2 focus:ring-green-500"
             aria-label="Filtrer par genre"
           >
             <option value="tous">Tous les genres</option>
@@ -401,7 +419,7 @@ const Calendar = () => {
                       artistesFiltres.map(artiste => (
                         <li
                           key={artiste.id}
-                          className="flex items-center gap-4 p-3 bg-gray-700 rounded-lg hover:bg-gray-600 cursor-pointer transition-all duration-200"
+                          className="flex items-center gap-4 p-3 bg-black rounded-lg hover:bg-gray-600 cursor-pointer transition-all duration-200"
                           onClick={() => {
                             setArtisteChoisi(artiste);
                             recupererSortiesArtiste(artiste.id);
@@ -464,7 +482,7 @@ const Calendar = () => {
                       ) : sortiesArtiste.length ? (
                         <ul className="mt-4 space-y-4">
                           {sortiesArtiste.map((sortie, i) => (
-                            <li key={i} className="flex items-center gap-4 p-3 bg-gray-700 rounded-lg">
+                            <li key={i} className="flex items-center gap-4 p-3 bg-black rounded-lg">
                               <img
                                 src={sortie.image}
                                 alt={`Couverture de ${sortie.titre}`}

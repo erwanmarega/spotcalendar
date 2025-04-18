@@ -30,11 +30,23 @@ const Login = () => {
   })}`;
 
   useEffect(() => {
-    const tokenAcces = localStorage.getItem("access_token");
-    const expireA = localStorage.getItem("expires_at");
-    if (tokenAcces && expireA && Date.now() < parseInt(expireA)) {
-      navigate("/calendar");
-    }
+    const verifierAuth = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/check-tokens", {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
+        const data = await res.json();
+        if (data.access_token_exists && data.expires_at && Date.now() < parseInt(data.expires_at)) {
+          navigate("/calendar");
+        }
+      } catch (e) {
+        console.error("Échec de la vérification des tokens :", e);
+      }
+    };
+
+    verifierAuth();
   }, [navigate]);
 
   const gererConnexion = () => {

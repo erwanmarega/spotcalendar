@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./components/login";
 import Callback from "./components/callback";
 import Calendar from "./components/calendar";
-import IntroVideo from "./components/introvideo"; 
+import IntroVideo from "./components/introvideo";
 
 function App() {
   const [showIntro, setShowIntro] = useState(true);
@@ -21,16 +21,16 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       {showIntro ? (
         <IntroVideo onFinish={handleIntroEnd} />
       ) : (
         <Router>
           <Routes>
             <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/callback" element={<Callback />} />
             <Route path="/calendar" element={<Calendar />} />
-
           </Routes>
         </Router>
       )}
