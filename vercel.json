@@ -5,27 +5,20 @@
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist",
-        "buildCommand": "cd frontend && npm run build && mv -f frontend/dist ."
+        "distDir": "dist"
       }
     },
     {
       "src": "api/server.js",
       "use": "@vercel/node",
-      "config": { "runtime": "nodejs18.x" }
+      "config": {
+        "runtime": "nodejs18.x"
+      }
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "api/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "headers": {
-        "Cache-Control": "public, max-age=0, must-revalidate"
-      },
-      "dest": "/dist/index.html"
-    }
+    { "src": "/api/(.*)", "dest": "api/server.js" },
+
+    { "src": "/(.*)", "dest": "frontend/dist/$1" }
   ]
 }
