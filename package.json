@@ -1,12 +1,22 @@
 {
     "name": "spotcalendar",
     "version": "1.0.0",
+    "private": true,
     "scripts": {
-      "install": "cd front-end && npm install && cd ../back-end && npm install",
-      "build": "cd front-end && npm run build",
-      "start": "cd back-end && node server.js"
+      "dev": "vite",
+      "build": "vite build",
+      "preview": "vite preview"
+    },
+    "dependencies": {
+      "react": "^18.x",
+      "react-dom": "^18.x"
+    },
+    "devDependencies": {
+      "vite": "^4.x",
+      "tailwindcss": "^3.x"
     },
     "engines": {
-      "node": "18.x"
+      "node": ">=18"
     }
   }
+  
