@@ -7,13 +7,13 @@
       "config": { "distDir": "dist" }
     },
     {
-      "src": "api/**/*.js",
+      "src": "api/server.js",
       "use": "@vercel/node",
       "config": { "runtime": "nodejs18.x" }
     }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "api/server.js" },
-    { "src": "/(.*)",     "dest": "front-end/dist/$1" }
+    { "src": "/(.*)", "dest": "frontend/dist/$1" }
   ]
 }
