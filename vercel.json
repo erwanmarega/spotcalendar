@@ -3,7 +3,11 @@
   "builds": [
     {
       "src": "frontend/package.json",
-      "use": "@vercel/static-build"
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist",
+        "buildCommand": "npm run build && mv frontend/dist dist"
+      }
     },
     {
       "src": "api/server.js",
@@ -21,7 +25,7 @@
       "headers": {
         "Cache-Control": "public, max-age=0, must-revalidate"
       },
-      "dest": "/frontend/dist/index.html"
+      "dest": "/dist/index.html"
     }
   ]
 }
