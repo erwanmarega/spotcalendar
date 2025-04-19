@@ -6,15 +6,16 @@ require("dotenv").config();
 
 const app = express();
 
-const allowedOrigins = [
-  process.env.NODE_ENV === "production" ? process.env.VERCEL_URL || "https://spotcalendar.vercel.app" : "http://localhost:5173"
-];
+const allowedOrigins = process.env.NODE_ENV === "production"
+  ? [process.env.VERCEL_URL, "https://spotcalendar.vercel.app"].filter(Boolean)
+  : ["http://localhost:5173"];
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Origine non autorisée par CORS"));
+      callback(new Error(`Origine non autorisée par CORS: ${origin}`));
     }
   },
   credentials: true
@@ -25,7 +26,10 @@ app.use(cookieParser());
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-const redirectUri = process.env.REDIRECT_URI || "http://localhost:5173/callback";
+const redirectUri = process.env.REDIRECT_URI;
+if (!redirectUri) {
+  throw new Error("REDIRECT_URI is not defined in .env file");
+}
 
 app.get("/", (req, res) => {
   res.json({ message: "Bienvenue sur l'API de l'application Spotify !" });
