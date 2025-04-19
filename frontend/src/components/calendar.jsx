@@ -57,7 +57,7 @@ const Calendar = () => {
 
   const getAuthTokens = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/check-tokens", {
+      const res = await fetch("/api/check-tokens", {
         method: "GET",
         credentials: "include",
       });
@@ -77,7 +77,7 @@ const Calendar = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/refresh-token", {
+      const res = await fetch("/api/refresh-token", {
         method: "POST",
         credentials: "include",
       });
@@ -86,7 +86,7 @@ const Calendar = () => {
       return true;
     } catch (e) {
       console.error("Échec du rafraîchissement du token :", e);
-      await fetch("http://localhost:3000/api/logout", {
+      await fetch("/api/logout", {
         method: "POST",
         credentials: "include",
       });
@@ -130,12 +130,12 @@ const Calendar = () => {
   };
 
   const recupererProfilUtilisateur = useCallback(async () => {
-    const data = await fetchAvecAuth("http://localhost:3000/api/spotify/me");
+    const data = await fetchAvecAuth("/api/spotify/me");
     if (data) setUtilisateur(data);
   }, []);
 
   const recupererArtistes = useCallback(async () => {
-    const data = await fetchAvecAuth("http://localhost:3000/api/spotify/me/following?type=artist&limit=50");
+    const data = await fetchAvecAuth("/api/spotify/me/following?type=artist&limit=50");
     if (data) {
       setArtistes(data.artists.items);
       setGenresDisponibles([...new Set(data.artists.items.flatMap(artist => artist.genres))].sort());
@@ -143,7 +143,7 @@ const Calendar = () => {
   }, []);
 
   const recupererChansonsRecentes = useCallback(async () => {
-    const data = await fetchAvecAuth("http://localhost:3000/api/spotify/me/player/recently-played?limit=50");
+    const data = await fetchAvecAuth("/api/spotify/me/player/recently-played?limit=50");
     if (!data) return;
 
     const chansons = data.items.map(item => item.track).filter(track => track);
@@ -153,7 +153,7 @@ const Calendar = () => {
     }
 
     const idsArtistes = [...new Set(chansons.flatMap(chanson => chanson.artists.map(artiste => artiste.id)))];
-    const donneesArtistes = await fetchAvecAuth(`http://localhost:3000/api/spotify/artists?ids=${idsArtistes.join(",")}`);
+    const donneesArtistes = await fetchAvecAuth(`/api/spotify/artists?ids=${idsArtistes.join(",")}`);
     if (!donneesArtistes) return;
 
     const compteGenres = {};
@@ -189,7 +189,7 @@ const Calendar = () => {
 
   const recupererPlaylistEnBoucle = useCallback(async () => {
     let playlists = [];
-    let url = "http://localhost:3000/api/spotify/me/playlists?limit=50";
+    let url = "/api/spotify/me/playlists?limit=50";
 
     while (url) {
       const data = await fetchAvecAuth(url);
@@ -204,7 +204,7 @@ const Calendar = () => {
       return;
     }
 
-    const donneesChansons = await fetchAvecAuth(`http://localhost:3000/api/spotify/playlists/${playlistEnBoucle.id}/tracks?limit=50`);
+    const donneesChansons = await fetchAvecAuth(`/api/spotify/playlists/${playlistEnBoucle.id}/tracks?limit=50`);
     if (!donneesChansons) return;
 
     const chansons = donneesChansons.items.map(item => item.track).filter(track => track);
@@ -214,7 +214,7 @@ const Calendar = () => {
     }
 
     const idsArtistes = [...new Set(chansons.flatMap(chanson => chanson.artists.map(artiste => artiste.id)))];
-    const donneesArtistes = await fetchAvecAuth(`http://localhost:3000/api/spotify/artists?ids=${idsArtistes.join(",")}`);
+    const donneesArtistes = await fetchAvecAuth(`/api/spotify/artists?ids=${idsArtistes.join(",")}`);
     if (!donneesArtistes) return;
 
     const compteGenres = {};
@@ -250,15 +250,15 @@ const Calendar = () => {
 
   const recupererSortiesArtiste = useCallback(async (idArtiste) => {
     let toutesSorties = [];
-    let url = `http://localhost:3000/api/spotify/artists/${idArtiste}/albums?include_groups=album,single,compilation,appears_on&limit=50&market=FR`;
-  
+    let url = `/api/spotify/artists/${idArtiste}/albums?include_groups=album,single,compilation,appears_on&limit=50&market=FR`;
+
     while (url) {
       const data = await fetchAvecAuth(url);
       if (!data) return;
       toutesSorties = [...toutesSorties, ...data.items];
-      url = data.next ? data.next.replace('https://api.spotify.com/v1', 'http://localhost:3000/api/spotify') : null;
+      url = data.next ? data.next.replace('https://api.spotify.com/v1', '/api/spotify') : null;
     }
-  
+
     const sortiesFormatees = toutesSorties.map(item => ({
       date: dayjs(item.release_date),
       titre: item.name,
@@ -266,7 +266,7 @@ const Calendar = () => {
       lienSpotify: item.external_urls.spotify,
       image: item.images[0]?.url || iconeProfil,
     }));
-  
+
     setToutesSorties(sortiesFormatees);
     const dateActuelle = new Date("2025-04-06");
     setSortiesArtiste(sortiesFormatees.filter(item => new Date(item.date) > dateActuelle));
@@ -286,7 +286,7 @@ const Calendar = () => {
     });
     setTimeout(async () => {
       try {
-        await fetch("http://localhost:3000/api/logout", {
+        await fetch("/api/logout", {
           method: "POST",
           credentials: "include",
         });

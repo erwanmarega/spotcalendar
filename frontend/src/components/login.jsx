@@ -32,11 +32,15 @@ const Login = () => {
   useEffect(() => {
     const verifierAuth = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/check-tokens", {
+        const res = await fetch("/api/check-tokens", {
           method: "GET",
           credentials: "include",
         });
-        if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("Erreur HTTP :", res.status, text);
+          throw new Error(`Erreur HTTP : ${res.status}`);
+        }
         const data = await res.json();
         if (data.access_token_exists && data.expires_at && Date.now() < parseInt(data.expires_at)) {
           navigate("/calendar");

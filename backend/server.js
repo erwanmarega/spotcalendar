@@ -6,8 +6,17 @@ require("dotenv").config();
 
 const app = express();
 
+const allowedOrigins = [
+  process.env.NODE_ENV === "production" ? process.env.VERCEL_URL || "https://spotcalendar.vercel.app" : "http://localhost:5173"
+];
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Origine non autorisée par CORS"));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -16,28 +25,20 @@ app.use(cookieParser());
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-const redirectUri = "http://localhost:5173/callback";
+const redirectUri = process.env.REDIRECT_URI || "http://localhost:5173/callback";
 
 app.get("/", (req, res) => {
-  res.json({ message: "Bienvenue sur l'API de l'application spotify !" });
+  res.json({ message: "Bienvenue sur l'API de l'application Spotify !" });
 });
 
 app.post("/api/token", async (req, res) => {
-  console.log("Requête reçue pour /api/token, req.body :", req.body);
   const { code } = req.body;
 
   if (!code) {
-    console.log("Erreur : Aucun code fourni dans la requête");
     return res.status(400).json({ error: "Aucun code fourni dans la requête" });
   }
 
   try {
-    console.log("Backend : Configuration de la requête à Spotify");
-    console.log("Client ID :", clientId || "MISSING");
-    console.log("Client Secret :", clientSecret ? "[HIDDEN]" : "MISSING");
-    console.log("Redirect URI :", redirectUri);
-    console.log("Code reçu :", code);
-
     const response = await axios({
       method: "post",
       url: "https://accounts.spotify.com/api/token",
@@ -52,8 +53,6 @@ app.post("/api/token", async (req, res) => {
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
-
-    console.log("Backend : Réponse de Spotify :", response.data);
 
     res.cookie("access_token", response.data.access_token, {
       httpOnly: true,
@@ -82,25 +81,21 @@ app.post("/api/token", async (req, res) => {
 
     res.json({ message: "Tokens stockés dans les cookies" });
   } catch (error) {
-    console.error("Backend : Erreur complète lors de l'échange du code :", error);
-    console.error("Backend : Données de l'erreur :", error.response?.data);
-    console.error("Backend : Statut HTTP :", error.response?.status);
-    console.error("Backend : Message d'erreur :", error.message);
+    console.error("Erreur lors de l'échange du code :", error);
+    console.error("Données de l'erreur :", error.response?.data);
+    console.error("Statut HTTP :", error.response?.status);
     res.status(500).json({ error: "Échec de l'échange du code contre le jeton", details: error.response?.data });
   }
 });
 
 app.post("/api/refresh-token", async (req, res) => {
   const refreshToken = req.cookies.refresh_token;
-  console.log("Backend : Requête POST /api/refresh-token reçue avec refresh_token :", refreshToken);
 
   if (!refreshToken) {
-    console.log("Erreur : Aucun refresh_token fourni");
     return res.status(400).json({ error: "Aucun refresh_token fourni" });
   }
 
   try {
-    console.log("Backend : Envoi de la requête à Spotify pour rafraîchir le token");
     const response = await axios({
       method: "post",
       url: "https://accounts.spotify.com/api/token",
@@ -114,8 +109,6 @@ app.post("/api/refresh-token", async (req, res) => {
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
-
-    console.log("Backend : Réponse de Spotify :", response.data);
 
     res.cookie("access_token", response.data.access_token, {
       httpOnly: true,
@@ -146,10 +139,9 @@ app.post("/api/refresh-token", async (req, res) => {
 
     res.json({ message: "Tokens rafraîchis" });
   } catch (error) {
-    console.error("Backend : Erreur complète lors du rafraîchissement du jeton :", error);
-    console.error("Backend : Données de l'erreur :", error.response?.data);
-    console.error("Backend : Statut HTTP :", error.response?.status);
-    console.error("Backend : Message d'erreur :", error.message);
+    console.error("Erreur lors du rafraîchissement du jeton :", error);
+    console.error("Données de l'erreur :", error.response?.data);
+    console.error("Statut HTTP :", error.response?.status);
     res.status(500).json({ error: "Échec du rafraîchissement du jeton", details: error.response?.data });
   }
 });
@@ -174,7 +166,6 @@ app.post("/api/logout", (req, res) => {
 app.get("/api/spotify/*", async (req, res) => {
   const accessToken = req.cookies.access_token;
   if (!accessToken) {
-    console.log("Erreur : Aucun token d'accès trouvé dans les cookies");
     return res.status(401).json({ error: "Aucun token d'accès" });
   }
 
@@ -187,12 +178,18 @@ app.get("/api/spotify/*", async (req, res) => {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-      res.json(response.data);
+    res.json(response.data);
   } catch (error) {
+    console.error("Erreur lors de la requête Spotify :", error);
+    console.error("Données de l'erreur :", error.response?.data);
+    console.error("Statut HTTP :", error.response?.status);
     res.status(error.response?.status || 500).json({ error: "Échec de la requête Spotify", details: error.response?.data });
   }
 });
 
-app.listen(3000, () => {
-  console.log("Serveur démarré sur le port 3000");
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Serveur démarré sur le port ${port}`);
 });
+
+module.exports = app;

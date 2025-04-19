@@ -1,8 +1,25 @@
 {
-    "routes": [
-      {
-        "src": "/[^.]+",
-        "dest": "/"
-      }
-    ]
+  "version": 2,
+  "builds": [
+    {
+      "src": "front-end/build/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "back-end/server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "back-end/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "front-end/build/$1"
+    }
+  ],
+  "buildCommand": "cd front-end && npm run build",
+  "outputDirectory": "front-end/build"
 }
