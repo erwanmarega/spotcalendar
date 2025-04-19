@@ -180,7 +180,6 @@ app.get("/api/spotify/*", async (req, res) => {
 
   try {
     const spotifyUrl = `https://api.spotify.com/v1${req.url.replace("/api/spotify", "")}`;
-    console.log("Backend : Envoi de la requête à Spotify :", spotifyUrl);
     const response = await axios({
       method: "get",
       url: spotifyUrl,
@@ -188,13 +187,8 @@ app.get("/api/spotify/*", async (req, res) => {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    console.log("Backend : Réponse de Spotify :", response.data);
-    res.json(response.data);
+      res.json(response.data);
   } catch (error) {
-    console.error("Backend : Erreur lors de la requête Spotify :", error);
-    console.error("Backend : Données de l'erreur :", error.response?.data);
-    console.error("Backend : Statut HTTP :", error.response?.status);
-    console.error("Backend : Message d'erreur :", error.message);
     res.status(error.response?.status || 500).json({ error: "Échec de la requête Spotify", details: error.response?.data });
   }
 });
