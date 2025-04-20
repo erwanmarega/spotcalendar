@@ -13,11 +13,14 @@
         "use": "@vercel/node"
       }
     ],
-    "installCommand": "cd ../server && npm install && cd ../client && npm install",
     "routes": [
       {
+        "src": "/api",
+        "dest": "../server/server.js/api"
+      },
+      {
         "src": "/api/(.*)",
-        "dest": "../server/server.js"
+        "dest": "../server/server.js/api/$1"
       },
       {
         "src": "/(.*)",
