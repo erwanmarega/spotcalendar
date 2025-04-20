@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-const axios = require("axios/index.d.cts");
+const axios = require("axios");
 const cookieParser = require("cookie-parser");
-require("dotenv/lib/main").config({
+require("dotenv").config({
   path: `.env.${process.env.NODE_ENV || "development"}`,
 });
 
