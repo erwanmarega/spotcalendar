@@ -13,6 +13,7 @@
         "use": "@vercel/node"
       }
     ],
+    "installCommand": "npm install --prefix ../server && npm install --prefix ../client",
     "routes": [
       {
         "src": "/api",
