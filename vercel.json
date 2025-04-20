@@ -1,29 +1,30 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    },
-    {
-      "src": "server/server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "server/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "headers": {
-        "Cache-Control": "public, max-age=0, must-revalidate"
+    "version": 2,
+    "builds": [
+      {
+        "src": "package.json",
+        "use": "@vercel/static-build",
+        "config": {
+          "distDir": "dist"
+        }
       },
-      "dest": "dist/$1"
-    }
-  ]
-}
+      {
+        "src": "../server/server.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "installCommand": "cd ../server && npm install && cd ../client && npm install",
+    "routes": [
+      {
+        "src": "/api/(.*)",
+        "dest": "../server/server.js"
+      },
+      {
+        "src": "/(.*)",
+        "headers": {
+          "Cache-Control": "public, max-age=0, must-revalidate"
+        },
+        "dest": "dist/$1"
+      }
+    ]
+  }
