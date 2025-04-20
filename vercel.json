@@ -2,29 +2,14 @@
     "version": 2,
     "builds": [
       {
-        "src": "client/package.json",
-        "use": "@vercel/static-build",
-        "config": {
-          "distDir": "dist"
-        }
-      },
-      {
         "src": "server/server.js",
         "use": "@vercel/node"
       }
     ],
     "routes": [
       {
-        "src": "/api/(.*)",
-        "dest": "server/server.js"
-      },
-      {
         "src": "/(.*)",
-        "headers": {
-          "Cache-Control": "public, max-age=0, must-revalidate"
-        },
-        "dest": "/public/$1"
+        "dest": "server/server.js"
       }
-    ],
-    "installCommand": "npm install && mkdir -p public && cp -r client/dist/* public/"
+    ]
   }
