@@ -7,11 +7,22 @@
         "config": {
           "distDir": "dist"
         }
+      },
+      {
+        "src": "../server/server.js",
+        "use": "@vercel/node"
       }
     ],
     "routes": [
       {
+        "src": "/api/(.*)",
+        "dest": "../server/server.js"
+      },
+      {
         "src": "/(.*)",
+        "headers": {
+          "Cache-Control": "public, max-age=0, must-revalidate"
+        },
         "dest": "dist/$1"
       }
     ]
