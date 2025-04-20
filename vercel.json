@@ -9,11 +9,10 @@
         }
       }
     ],
-    "installCommand": "npm install && cd client && npm run build && cd .. && mkdir -p public && cp -r client/dist/* public/",
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "public/$1"
+        "dest": "client/dist/$1"
       }
     ]
   }
