@@ -33,7 +33,8 @@ if (!redirectUri) {
   throw new Error("REDIRECT_URI is not defined in .env file");
 }
 
-app.get("/", (req, res) => {
+// Route explicite pour /api/
+app.get("/api/", (req, res) => {
   res.json({ message: "Bienvenue sur l'API de l'application Spotify !" });
 });
 
@@ -169,14 +170,14 @@ app.post("/api/logout", (req, res) => {
   res.json({ message: "Déconnexion réussie, cookies supprimés" });
 });
 
-app.get("/api/spotify/*", async (req, res) => {
+app.get("/api/spotify/:path(*)", async (req, res) => {
   const accessToken = req.cookies.access_token;
   if (!accessToken) {
     return res.status(401).json({ error: "Aucun token d'accès" });
   }
 
   try {
-    const spotifyUrl = `https://api.spotify.com/v1${req.url.replace("/api/spotify", "")}`;
+    const spotifyUrl = `https://api.spotify.com/v1/${req.params.path}`;
     const response = await axios({
       method: "get",
       url: spotifyUrl,
