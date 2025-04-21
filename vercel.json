@@ -13,7 +13,7 @@
       "use": "@vercel/node"
     }
   ],
-  "installCommand": "rm -rf ../server/node_modules ../server/package-lock.json && npm install --prefix ../server && rm -rf ../client/node_modules ../client/package-lock.json && npm install --prefix ../client && ls ../client/node_modules/.bin",
+  "installCommand": "rm -rf ../server/node_modules ../server/package-lock.json && npm install --prefix ../server && rm -rf ../client/node_modules ../client/package-lock.json && npm install --prefix ../client",
   "routes": [
     {
       "src": "/api",
