@@ -196,4 +196,9 @@ app.get("/api/spotify/:path(*)", async (req, res) => {
   }
 });
 
-module.exports = app;  
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Serveur démarré sur le port ${port}`);
+});
+
+module.exports = app;
