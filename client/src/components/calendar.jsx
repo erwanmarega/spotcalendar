@@ -118,10 +118,13 @@ const Calendar = () => {
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(`Erreur HTTP : ${res.status} - ${errorData.error || 'Erreur inconnue'}${errorData.details ? ` (${errorData.details.error.message})` : ''}`);
+      }
       return await res.json();
     } catch (e) {
-      setMsgErreur("Une erreur est survenue. Veuillez réessayer.");
+      setMsgErreur(e.message || "Une erreur est survenue. Veuillez réessayer.");
       console.error("Erreur lors de la requête :", e);
       return null;
     } finally {
@@ -153,11 +156,21 @@ const Calendar = () => {
     }
 
     const idsArtistes = [...new Set(chansons.flatMap(chanson => chanson.artists.map(artiste => artiste.id)))];
-    const donneesArtistes = await fetchAvecAuth(`/api/spotify/artists?ids=${idsArtistes.join(",")}`);
-    if (!donneesArtistes) return;
+    const artisteData = [];
+    
+    // Divise les IDs en lots de 50 pour respecter la limite de l'API Spotify
+    for (let i = 0; i < idsArtistes.length; i += 50) {
+      const batch = idsArtistes.slice(i, i + 50);
+      const donneesArtistes = await fetchAvecAuth(`/api/spotify/artists?ids=${batch.join(",")}`);
+      if (donneesArtistes) {
+        artisteData.push(...donneesArtistes.artists);
+      }
+    }
+
+    if (!artisteData.length) return;
 
     const compteGenres = {};
-    donneesArtistes.artists.forEach(artiste => {
+    artisteData.forEach(artiste => {
       if (artiste?.genres?.length) {
         artiste.genres.forEach(genre => {
           compteGenres[genre] = (compteGenres[genre] || 0) + 1;
@@ -214,11 +227,21 @@ const Calendar = () => {
     }
 
     const idsArtistes = [...new Set(chansons.flatMap(chanson => chanson.artists.map(artiste => artiste.id)))];
-    const donneesArtistes = await fetchAvecAuth(`/api/spotify/artists?ids=${idsArtistes.join(",")}`);
-    if (!donneesArtistes) return;
+    const artisteData = [];
+
+    // Divise les IDs en lots de 50 pour respecter la limite de l'API Spotify
+    for (let i = 0; i < idsArtistes.length; i += 50) {
+      const batch = idsArtistes.slice(i, i + 50);
+      const donneesArtistes = await fetchAvecAuth(`/api/spotify/artists?ids=${batch.join(",")}`);
+      if (donneesArtistes) {
+        artisteData.push(...donneesArtistes.artists);
+      }
+    }
+
+    if (!artisteData.length) return;
 
     const compteGenres = {};
-    donneesArtistes.artists.forEach(artiste => {
+    artisteData.forEach(artiste => {
       if (artiste?.genres?.length) {
         artiste.genres.forEach(genre => {
           compteGenres[genre] = (compteGenres[genre] || 0) + 1;
