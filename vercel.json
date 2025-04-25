@@ -5,7 +5,14 @@
       "src": "client/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "client/build" 
+        "distDir": "client/build"
+      }
+    },
+    {
+      "src": "server/package.json",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["server/**"]
       }
     },
     {
@@ -16,19 +23,15 @@
   "installCommand": "npm install",
   "routes": [
     {
-      "src": "/api",
-      "dest": "server/server.js/api"
-    },
-    {
       "src": "/api/(.*)",
-      "dest": "server/server.js/api/$1"
+      "dest": "/server/server.js"
     },
     {
       "src": "/(.*)",
       "headers": {
         "Cache-Control": "public, max-age=0, must-revalidate"
       },
-      "dest": "client/build/$1" 
+      "dest": "client/build/$1"
     }
   ]
 }
