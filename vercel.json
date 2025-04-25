@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
+      "src": "client/package.json",  
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist"
       }
     },
     {
-      "src": "../server/server.js",
+      "src": "server/server.js", 
       "use": "@vercel/node"
     }
   ],
@@ -17,18 +17,18 @@
   "routes": [
     {
       "src": "/api",
-      "dest": "../server/server.js/api"
+      "dest": "server/server.js/api"
     },
     {
       "src": "/api/(.*)",
-      "dest": "../server/server.js/api/$1"
+      "dest": "server/server.js/api/$1"
     },
     {
       "src": "/(.*)",
       "headers": {
         "Cache-Control": "public, max-age=0, must-revalidate"
       },
-      "dest": "dist/$1"
+      "dest": "client/dist/$1"  
     }
   ]
 }
