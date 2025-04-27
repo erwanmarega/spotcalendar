@@ -9,7 +9,7 @@ import "dayjs/locale/fr";
 import { FaChartPie, FaHistory, FaUserFriends, FaBars, FaTimes } from "react-icons/fa";
 import { Pie, Bar } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
-import { checkTokens, refreshToken, logout, fetchSpotifyData } from "../api"; 
+import { checkTokens, refreshToken, logout, fetchSpotifyData } from "../api";
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 dayjs.locale("fr");
@@ -58,28 +58,30 @@ const Calendar = () => {
 
   const getAuthTokens = async () => {
     try {
-      return await checkTokens();
+      const tokens = await checkTokens();
+      console.log("Résultat de checkTokens dans getAuthTokens :", tokens);
+      return tokens;
     } catch (e) {
       console.error("Échec de la vérification des tokens :", e);
-      return null;
+      throw e;
     }
   };
 
   const rafraichirToken = async () => {
     const tokens = await getAuthTokens();
+    console.log("Tokens avant rafraîchissement :", tokens);
     if (!tokens?.refresh_token_exists) {
-      navigate("/login");
-      return false;
+      console.log("Aucun refresh_token, redirection vers /login");
+      throw new Error("Aucun refresh_token disponible");
     }
 
     try {
       await refreshToken();
+      console.log("Token rafraîchi avec succès");
       return true;
     } catch (e) {
       console.error("Échec du rafraîchissement du token :", e);
-      await logout();
-      navigate("/login");
-      return false;
+      throw e;
     }
   };
 
@@ -87,18 +89,17 @@ const Calendar = () => {
     setChargement(true);
     setMsgErreur(null);
 
-    const tokens = await getAuthTokens();
-    if (!tokens?.access_token_exists || !tokens?.expires_at || Date.now() >= parseInt(tokens.expires_at)) {
-      const refreshed = await rafraichirToken();
-      if (!refreshed) {
-        setMsgErreur("Échec de connexion, veuillez vous reconnecter");
-        setChargement(false);
-        return null;
-      }
-    }
-
     try {
-      return await fetchSpotifyData(path, options);
+      const tokens = await getAuthTokens();
+      console.log("Tokens avant fetch :", tokens);
+      if (!tokens?.access_token_exists || !tokens?.expires_at || Date.now() >= parseInt(tokens.expires_at)) {
+        console.log("Token expiré ou absent, tentative de rafraîchissement");
+        await rafraichirToken();
+      }
+
+      const data = await fetchSpotifyData(path, options);
+      console.log(`Données récupérées pour ${path} :`, data);
+      return data;
     } catch (e) {
       setMsgErreur(e.message || "Une erreur est survenue. Veuillez réessayer.");
       console.error("Erreur lors de la requête :", e);
