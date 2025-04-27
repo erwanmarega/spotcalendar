@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getToken } from "../api"; 
 
 const Callback = () => {
   const navigate = useNavigate();
@@ -8,19 +9,7 @@ const Callback = () => {
 
   const echangerCodeContreToken = async (code) => {
     try {
-      const res = await fetch("/api/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Erreur du serveur :", errorData);
-        throw new Error(errorData.error || `Erreur HTTP : ${res.status}`);
-      }
-
+      await getToken(code);
       navigate("/calendar");
     } catch (e) {
       console.error("Erreur lors de l'échange du code :", e);

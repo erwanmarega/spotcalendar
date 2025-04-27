@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { checkTokens } from "../api"; 
 import logo from "../assets/my-calendar.png";
 
 const Login = () => {
@@ -32,16 +33,7 @@ const Login = () => {
   useEffect(() => {
     const verifierAuth = async () => {
       try {
-        const res = await fetch("/api/check-tokens", {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("Erreur HTTP :", res.status, text);
-          throw new Error(`Erreur HTTP : ${res.status}`);
-        }
-        const data = await res.json();
+        const data = await checkTokens(); // Utiliser la fonction de src/api.js
         if (data.access_token_exists && data.expires_at && Date.now() < parseInt(data.expires_at)) {
           navigate("/calendar");
         }

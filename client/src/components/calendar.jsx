@@ -9,6 +9,7 @@ import "dayjs/locale/fr";
 import { FaChartPie, FaHistory, FaUserFriends, FaBars, FaTimes } from "react-icons/fa";
 import { Pie, Bar } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
+import { checkTokens, refreshToken, logout, fetchSpotifyData } from "../api"; // Importer les fonctions
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 dayjs.locale("fr");
@@ -57,12 +58,7 @@ const Calendar = () => {
 
   const getAuthTokens = async () => {
     try {
-      const res = await fetch("/api/check-tokens", {
-        method: "GET",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
-      return await res.json();
+      return await checkTokens();
     } catch (e) {
       console.error("Échec de la vérification des tokens :", e);
       return null;
@@ -77,25 +73,17 @@ const Calendar = () => {
     }
 
     try {
-      const res = await fetch("/api/refresh-token", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
+      await refreshToken();
       return true;
     } catch (e) {
       console.error("Échec du rafraîchissement du token :", e);
-      await fetch("/api/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      await logout();
       navigate("/login");
       return false;
     }
   };
 
-  const fetchAvecAuth = async (url, options = {}) => {
+  const fetchAvecAuth = async (path, options = {}) => {
     setChargement(true);
     setMsgErreur(null);
 
@@ -110,19 +98,7 @@ const Calendar = () => {
     }
 
     try {
-      const res = await fetch(url, {
-        ...options,
-        headers: {
-          ...(options.headers || {}),
-        },
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(`Erreur HTTP : ${res.status} - ${errorData.error || 'Erreur inconnue'}${errorData.details ? ` (${errorData.details.error.message})` : ''}`);
-      }
-      return await res.json();
+      return await fetchSpotifyData(path, options);
     } catch (e) {
       setMsgErreur(e.message || "Une erreur est survenue. Veuillez réessayer.");
       console.error("Erreur lors de la requête :", e);
@@ -133,12 +109,12 @@ const Calendar = () => {
   };
 
   const recupererProfilUtilisateur = useCallback(async () => {
-    const data = await fetchAvecAuth("/api/spotify/me");
+    const data = await fetchAvecAuth("me");
     if (data) setUtilisateur(data);
   }, []);
 
   const recupererArtistes = useCallback(async () => {
-    const data = await fetchAvecAuth("/api/spotify/me/following?type=artist&limit=50");
+    const data = await fetchAvecAuth("me/following?type=artist&limit=50");
     if (data) {
       setArtistes(data.artists.items);
       setGenresDisponibles([...new Set(data.artists.items.flatMap(artist => artist.genres))].sort());
@@ -146,7 +122,7 @@ const Calendar = () => {
   }, []);
 
   const recupererChansonsRecentes = useCallback(async () => {
-    const data = await fetchAvecAuth("/api/spotify/me/player/recently-played?limit=50");
+    const data = await fetchAvecAuth("me/player/recently-played?limit=50");
     if (!data) return;
 
     const chansons = data.items.map(item => item.track).filter(track => track);
@@ -161,7 +137,7 @@ const Calendar = () => {
     // Divise les IDs en lots de 50 pour respecter la limite de l'API Spotify
     for (let i = 0; i < idsArtistes.length; i += 50) {
       const batch = idsArtistes.slice(i, i + 50);
-      const donneesArtistes = await fetchAvecAuth(`/api/spotify/artists?ids=${batch.join(",")}`);
+      const donneesArtistes = await fetchAvecAuth(`artists?ids=${batch.join(",")}`);
       if (donneesArtistes) {
         artisteData.push(...donneesArtistes.artists);
       }
@@ -202,13 +178,13 @@ const Calendar = () => {
 
   const recupererPlaylistEnBoucle = useCallback(async () => {
     let playlists = [];
-    let url = "/api/spotify/me/playlists?limit=50";
+    let url = "me/playlists?limit=50";
 
     while (url) {
       const data = await fetchAvecAuth(url);
       if (!data) return;
       playlists = [...playlists, ...data.items];
-      url = data.next;
+      url = data.next ? data.next.replace('https://api.spotify.com/v1', '') : null;
     }
 
     const playlistEnBoucle = playlists.find(p => p.name === "En Boucle" || p.name === "On Repeat");
@@ -217,7 +193,7 @@ const Calendar = () => {
       return;
     }
 
-    const donneesChansons = await fetchAvecAuth(`/api/spotify/playlists/${playlistEnBoucle.id}/tracks?limit=50`);
+    const donneesChansons = await fetchAvecAuth(`playlists/${playlistEnBoucle.id}/tracks?limit=50`);
     if (!donneesChansons) return;
 
     const chansons = donneesChansons.items.map(item => item.track).filter(track => track);
@@ -232,7 +208,7 @@ const Calendar = () => {
     // Divise les IDs en lots de 50 pour respecter la limite de l'API Spotify
     for (let i = 0; i < idsArtistes.length; i += 50) {
       const batch = idsArtistes.slice(i, i + 50);
-      const donneesArtistes = await fetchAvecAuth(`/api/spotify/artists?ids=${batch.join(",")}`);
+      const donneesArtistes = await fetchAvecAuth(`artists?ids=${batch.join(",")}`);
       if (donneesArtistes) {
         artisteData.push(...donneesArtistes.artists);
       }
@@ -273,13 +249,13 @@ const Calendar = () => {
 
   const recupererSortiesArtiste = useCallback(async (idArtiste) => {
     let toutesSorties = [];
-    let url = `/api/spotify/artists/${idArtiste}/albums?include_groups=album,single,compilation,appears_on&limit=50&market=FR`;
+    let url = `artists/${idArtiste}/albums?include_groups=album,single,compilation,appears_on&limit=50&market=FR`;
 
     while (url) {
       const data = await fetchAvecAuth(url);
       if (!data) return;
       toutesSorties = [...toutesSorties, ...data.items];
-      url = data.next ? data.next.replace('https://api.spotify.com/v1', '/api/spotify') : null;
+      url = data.next ? data.next.replace('https://api.spotify.com/v1', '') : null;
     }
 
     const sortiesFormatees = toutesSorties.map(item => ({
@@ -309,10 +285,7 @@ const Calendar = () => {
     });
     setTimeout(async () => {
       try {
-        await fetch("/api/logout", {
-          method: "POST",
-          credentials: "include",
-        });
+        await logout();
         navigate("/login");
       } catch (e) {
         console.error("Erreur lors de la déconnexion :", e);
