@@ -60,6 +60,7 @@ const Calendar = () => {
     try {
       const tokens = await checkTokens();
       console.log("Résultat de checkTokens dans getAuthTokens :", tokens);
+      console.log("Détails des tokens :", JSON.stringify(tokens, null, 2));
       return tokens;
     } catch (e) {
       console.error("Échec de la vérification des tokens :", e);
@@ -101,7 +102,11 @@ const Calendar = () => {
       console.log(`Données récupérées pour ${path} :`, data);
       return data;
     } catch (e) {
-      setMsgErreur(e.message || "Une erreur est survenue. Veuillez réessayer.");
+      if (e.response?.status === 404) {
+        setMsgErreur("Ressource non trouvée. Vérifiez votre requête ou essayez plus tard.");
+      } else {
+        setMsgErreur(e.message || "Une erreur est survenue. Veuillez réessayer.");
+      }
       console.error("Erreur lors de la requête :", e);
       return null;
     } finally {
