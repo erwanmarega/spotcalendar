@@ -98,11 +98,12 @@ const Calendar = () => {
         await rafraichirToken();
       }
 
-      const data = await fetchSpotifyData(path, options);
-      console.log(`Données récupérées pour ${path} :`, data);
+      const cleanPath = path.replace(/^\/+|\/+$/g, '');
+      const data = await fetchSpotifyData(cleanPath, options);
+      console.log(`Données récupérées pour ${cleanPath} :`, data);
       return data;
     } catch (e) {
-      if (e.response?.status === 404) {
+      if (e.message.includes("404")) {
         setMsgErreur("Ressource non trouvée. Vérifiez votre requête ou essayez plus tard.");
       } else {
         setMsgErreur(e.message || "Une erreur est survenue. Veuillez réessayer.");
@@ -257,7 +258,10 @@ const Calendar = () => {
 
     while (url) {
       const data = await fetchAvecAuth(url);
-      if (!data) return;
+      if (!data) {
+        setMsgErreur("Aucune donnée disponible pour cet artiste.");
+        return;
+      }
       toutesSorties = [...toutesSorties, ...data.items];
       url = data.next ? data.next.replace('https://api.spotify.com/v1', '') : null;
     }

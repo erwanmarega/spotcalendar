@@ -50,7 +50,8 @@ export const logout = async () => {
 };
 
 export const fetchSpotifyData = async (path, options = {}) => {
-  const response = await fetch(`${API_BASE_URL}/api/spotify/${path}`, {
+  const cleanPath = path.replace(/^\/+|\/+$/g, '');
+  const response = await fetch(`${API_BASE_URL}/api/spotify/${cleanPath}`, {
     ...options,
     credentials: 'include',
     headers: {
