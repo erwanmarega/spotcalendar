@@ -61,25 +61,20 @@ const Calendar = () => {
       const tokens = await checkTokens();
       return tokens;
     } catch (e) {
-      console.error("Échec de la vérification des tokens :", e);
       throw e;
     }
   };
 
   const rafraichirToken = async () => {
     const tokens = await getAuthTokens();
-    console.log("Tokens avant rafraîchissement :", tokens);
     if (!tokens?.refresh_token_exists) {
-      console.log("Aucun refresh_token, redirection vers /login");
       throw new Error("Aucun refresh_token disponible");
     }
 
     try {
       await refreshToken();
-      console.log("Token rafraîchi avec succès");
       return true;
     } catch (e) {
-      console.error("Échec du rafraîchissement du token :", e);
       throw e;
     }
   };
@@ -90,15 +85,12 @@ const Calendar = () => {
 
     try {
       const tokens = await getAuthTokens();
-      console.log("Tokens avant fetch :", tokens);
       if (!tokens?.access_token_exists || !tokens?.expires_at || Date.now() >= parseInt(tokens.expires_at)) {
-        console.log("Token expiré ou absent, tentative de rafraîchissement");
         await rafraichirToken();
       }
 
       const cleanPath = path.replace(/^\/+|\/+$/g, '');
       const data = await fetchSpotifyData(cleanPath, options);
-      console.log(`Données récupérées pour ${cleanPath} :`, data);
       return data;
     } catch (e) {
       if (e.message.includes("404")) {
@@ -106,7 +98,6 @@ const Calendar = () => {
       } else {
         setMsgErreur(e.message || "Une erreur est survenue. Veuillez réessayer.");
       }
-      console.error("Erreur lors de la requête :", e);
       return null;
     } finally {
       setChargement(false);
