@@ -59,8 +59,6 @@ const Calendar = () => {
   const getAuthTokens = async () => {
     try {
       const tokens = await checkTokens();
-      console.log("Résultat de checkTokens dans getAuthTokens :", tokens);
-      console.log("Détails des tokens :", JSON.stringify(tokens, null, 2));
       return tokens;
     } catch (e) {
       console.error("Échec de la vérification des tokens :", e);
@@ -294,10 +292,9 @@ const Calendar = () => {
     setTimeout(async () => {
       try {
         await logout();
-        navigate("/login");
       } catch (e) {
-        console.error("Erreur lors de la déconnexion :", e);
-        navigate("/login");
+      } finally {
+        navigate("/login", { replace: true }); 
       }
     }, 2000);
   }, [navigate]);
