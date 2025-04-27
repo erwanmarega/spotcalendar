@@ -33,7 +33,7 @@ const Login = () => {
   useEffect(() => {
     const verifierAuth = async () => {
       try {
-        const data = await checkTokens(); // Utiliser la fonction de src/api.js
+        const data = await checkTokens();
         if (data.access_token_exists && data.expires_at && Date.now() < parseInt(data.expires_at)) {
           navigate("/calendar");
         }

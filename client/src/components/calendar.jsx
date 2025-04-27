@@ -9,7 +9,7 @@ import "dayjs/locale/fr";
 import { FaChartPie, FaHistory, FaUserFriends, FaBars, FaTimes } from "react-icons/fa";
 import { Pie, Bar } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
-import { checkTokens, refreshToken, logout, fetchSpotifyData } from "../api"; // Importer les fonctions
+import { checkTokens, refreshToken, logout, fetchSpotifyData } from "../api"; 
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 dayjs.locale("fr");
@@ -134,7 +134,6 @@ const Calendar = () => {
     const idsArtistes = [...new Set(chansons.flatMap(chanson => chanson.artists.map(artiste => artiste.id)))];
     const artisteData = [];
     
-    // Divise les IDs en lots de 50 pour respecter la limite de l'API Spotify
     for (let i = 0; i < idsArtistes.length; i += 50) {
       const batch = idsArtistes.slice(i, i + 50);
       const donneesArtistes = await fetchAvecAuth(`artists?ids=${batch.join(",")}`);
@@ -205,7 +204,6 @@ const Calendar = () => {
     const idsArtistes = [...new Set(chansons.flatMap(chanson => chanson.artists.map(artiste => artiste.id)))];
     const artisteData = [];
 
-    // Divise les IDs en lots de 50 pour respecter la limite de l'API Spotify
     for (let i = 0; i < idsArtistes.length; i += 50) {
       const batch = idsArtistes.slice(i, i + 50);
       const donneesArtistes = await fetchAvecAuth(`artists?ids=${batch.join(",")}`);
