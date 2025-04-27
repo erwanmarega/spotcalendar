@@ -31,6 +31,11 @@ const Login = () => {
   })}`;
 
   useEffect(() => {
+    if (location.state?.fromLogout) {
+      // On vient de se déconnecter => on ne fait PAS de checkTokens
+      return;
+    }
+  
     const verifierAuth = async () => {
       try {
         const data = await checkTokens();
@@ -41,9 +46,9 @@ const Login = () => {
         console.error("Échec de la vérification des tokens :", e);
       }
     };
-
+  
     verifierAuth();
-  }, [navigate]);
+  }, [navigate, location]);
 
   const gererConnexion = () => {
     window.location.href = urlAuth;

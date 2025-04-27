@@ -285,7 +285,7 @@ const Calendar = () => {
         await logout();
       } catch (e) {
       } finally {
-        navigate("/login", { replace: true }); 
+        navigate("/login", { replace: true, state: { fromLogout: true } });
       }
     }, 2000);
   }, [navigate]);
