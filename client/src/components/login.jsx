@@ -32,7 +32,6 @@ const Login = () => {
 
   useEffect(() => {
     if (location.state?.fromLogout) {
-      // On vient de se déconnecter => on ne fait PAS de checkTokens
       return;
     }
   
