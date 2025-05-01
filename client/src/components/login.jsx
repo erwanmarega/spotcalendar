@@ -57,7 +57,9 @@ const Login = () => {
     <div className="min-h-screen bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_100%)] flex items-center justify-center p-4">
       <div className="bg-black p-8 rounded-2xl shadow-md border border-white-400 w-full max-w-md">
         <div className="flex items-center gap-3 mb-8">
-          <img src={logo} alt="Logo" className="w-12 h-12" />
+          <a href="/">
+            <img src={logo} alt="Logo" className="w-12 h-12" />
+          </a>
           <h1 className="text-2xl font-bold text-white">Calendrier Spotify</h1>
         </div>
 
