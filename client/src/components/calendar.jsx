@@ -6,19 +6,43 @@ import logo from "../assets/my-calendar.png";
 import iconeProfil from "../assets/profile-icon.avif";
 import dayjs from "dayjs";
 import "dayjs/locale/fr";
-import { FaChartPie, FaHistory, FaUserFriends, FaBars, FaTimes } from "react-icons/fa";
+import {
+  FaChartPie,
+  FaHistory,
+  FaUserFriends,
+  FaBars,
+  FaTimes,
+} from "react-icons/fa";
 import { Pie, Bar } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import { checkTokens, refreshToken, logout, fetchSpotifyData } from "../api";
 
-ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+);
 dayjs.locale("fr");
 
 const Calendar = () => {
   const [moisActuel, setMoisActuel] = useState(dayjs());
   const [ongletActif, setOngletActif] = useState("artists");
   const [artistes, setArtistes] = useState([]);
-  const [donneesGenres, setDonneesGenres] = useState({ labels: [], datasets: [] });
+  const [donneesGenres, setDonneesGenres] = useState({
+    labels: [],
+    datasets: [],
+  });
   const [typeGraphique, setTypeGraphique] = useState("pie");
   const [chargement, setChargement] = useState(false);
   const [msgErreur, setMsgErreur] = useState(null);
@@ -44,13 +68,23 @@ const Calendar = () => {
   const joursDansMois = finMois.date();
   const jourDebut = debutMois.day();
 
-  const moisPrecedent = useCallback(() => setMoisActuel(moisActuel.subtract(1, "month")), [moisActuel]);
-  const moisSuivant = useCallback(() => setMoisActuel(moisActuel.add(1, "month")), [moisActuel]);
+  const moisPrecedent = useCallback(
+    () => setMoisActuel(moisActuel.subtract(1, "month")),
+    [moisActuel]
+  );
+  const moisSuivant = useCallback(
+    () => setMoisActuel(moisActuel.add(1, "month")),
+    [moisActuel]
+  );
   const allerAujourdHui = useCallback(() => setMoisActuel(aujourdHui), []);
 
   const genererJours = useMemo(() => {
     const jours = [];
-    for (let i = 1 - (jourDebut === 0 ? 6 : jourDebut - 1); i <= joursDansMois; i++) {
+    for (
+      let i = 1 - (jourDebut === 0 ? 6 : jourDebut - 1);
+      i <= joursDansMois;
+      i++
+    ) {
       jours.push(i > 0 ? i : "");
     }
     return jours;
@@ -70,7 +104,6 @@ const Calendar = () => {
     if (!tokens?.refresh_token_exists) {
       throw new Error("Aucun refresh_token disponible");
     }
-
     try {
       await refreshToken();
       return true;
@@ -82,21 +115,27 @@ const Calendar = () => {
   const fetchAvecAuth = async (path, options = {}) => {
     setChargement(true);
     setMsgErreur(null);
-
     try {
       const tokens = await getAuthTokens();
-      if (!tokens?.access_token_exists || !tokens?.expires_at || Date.now() >= parseInt(tokens.expires_at)) {
+      if (
+        !tokens?.access_token_exists ||
+        !tokens?.expires_at ||
+        Date.now() >= parseInt(tokens.expires_at)
+      ) {
         await rafraichirToken();
       }
-
-      const cleanPath = path.replace(/^\/+|\/+$/g, '');
+      const cleanPath = path.replace(/^\/+|\/+$/g, "");
       const data = await fetchSpotifyData(cleanPath, options);
       return data;
     } catch (e) {
       if (e.message.includes("404")) {
-        setMsgErreur("Ressource non trouvée. Vérifiez votre requête ou essayez plus tard.");
+        setMsgErreur(
+          "Ressource non trouvée. Vérifiez votre requête ou essayez plus tard."
+        );
       } else {
-        setMsgErreur(e.message || "Une erreur est survenue. Veuillez réessayer.");
+        setMsgErreur(
+          e.message || "Une erreur est survenue. Veuillez réessayer."
+        );
       }
       return null;
     } finally {
@@ -113,138 +152,180 @@ const Calendar = () => {
     const data = await fetchAvecAuth("me/following?type=artist&limit=50");
     if (data) {
       setArtistes(data.artists.items);
-      setGenresDisponibles([...new Set(data.artists.items.flatMap(artist => artist.genres))].sort());
+      setGenresDisponibles(
+        [
+          ...new Set(data.artists.items.flatMap((artist) => artist.genres)),
+        ].sort()
+      );
     }
   }, []);
 
   const recupererChansonsRecentes = useCallback(async () => {
     const data = await fetchAvecAuth("me/player/recently-played?limit=50");
     if (!data) return;
-
-    const chansons = data.items.map(item => item.track).filter(track => track);
+    const chansons = data.items
+      .map((item) => item.track)
+      .filter((track) => track);
     if (chansons.length === 0) {
-      setMsgErreur("Aucune chanson récente. Écoutez de la musique pour voir des données.");
+      setMsgErreur(
+        "Aucune chanson récente. Écoutez de la musique pour voir des données."
+      );
       return;
     }
-
-    const idsArtistes = [...new Set(chansons.flatMap(chanson => chanson.artists.map(artiste => artiste.id)))];
+    const idsArtistes = [
+      ...new Set(
+        chansons.flatMap((chanson) =>
+          chanson.artists.map((artiste) => artiste.id)
+        )
+      ),
+    ];
     const artisteData = [];
-    
     for (let i = 0; i < idsArtistes.length; i += 50) {
       const batch = idsArtistes.slice(i, i + 50);
-      const donneesArtistes = await fetchAvecAuth(`artists?ids=${batch.join(",")}`);
-      if (donneesArtistes) {
-        artisteData.push(...donneesArtistes.artists);
-      }
+      const donneesArtistes = await fetchAvecAuth(
+        `artists?ids=${batch.join(",")}`
+      );
+      if (donneesArtistes) artisteData.push(...donneesArtistes.artists);
     }
-
     if (!artisteData.length) return;
-
     const compteGenres = {};
-    artisteData.forEach(artiste => {
+    artisteData.forEach((artiste) => {
       if (artiste?.genres?.length) {
-        artiste.genres.forEach(genre => {
+        artiste.genres.forEach((genre) => {
           compteGenres[genre] = (compteGenres[genre] || 0) + 1;
         });
       }
     });
-
     if (!Object.keys(compteGenres).length) {
       setMsgErreur("Aucun genre trouvé pour les artistes récents.");
       return;
     }
-
-    const genresTries = Object.entries(compteGenres).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const genresTries = Object.entries(compteGenres)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
     const etiquettes = genresTries.map(([genre]) => genre);
     const nombres = genresTries.map(([, count]) => count);
-    const couleurs = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40", "#66FF66", "#FF66CC", "#66CCCC", "#FF9933"];
-
+    const couleurs = [
+      "#1DB954",
+      "#1ed760",
+      "#17a844",
+      "#148a38",
+      "#FF6384",
+      "#36A2EB",
+      "#FFCE56",
+      "#4BC0C0",
+      "#9966FF",
+      "#FF9F40",
+    ];
     setDonneesGenres({
       labels: etiquettes,
-      datasets: [{
-        label: "Nombre d'artistes",
-        data: nombres,
-        backgroundColor: etiquettes.map((_, index) => couleurs[index % couleurs.length]),
-        borderColor: "#000",
-        borderWidth: 1,
-      }],
+      datasets: [
+        {
+          label: "Artistes",
+          data: nombres,
+          backgroundColor: etiquettes.map(
+            (_, i) => couleurs[i % couleurs.length]
+          ),
+          borderColor: "#121212",
+          borderWidth: 2,
+        },
+      ],
     });
   }, []);
 
   const recupererPlaylistEnBoucle = useCallback(async () => {
     let playlists = [];
     let url = "me/playlists?limit=50";
-
     while (url) {
       const data = await fetchAvecAuth(url);
       if (!data) return;
       playlists = [...playlists, ...data.items];
-      url = data.next ? data.next.replace('https://api.spotify.com/v1', '') : null;
+      url = data.next
+        ? data.next.replace("https://api.spotify.com/v1", "")
+        : null;
     }
-
-    const playlistEnBoucle = playlists.find(p => p.name === "En Boucle" || p.name === "On Repeat");
+    const playlistEnBoucle = playlists.find(
+      (p) => p.name === "En Boucle" || p.name === "On Repeat"
+    );
     if (!playlistEnBoucle) {
       await recupererChansonsRecentes();
       return;
     }
-
-    const donneesChansons = await fetchAvecAuth(`playlists/${playlistEnBoucle.id}/tracks?limit=50`);
+    const donneesChansons = await fetchAvecAuth(
+      `playlists/${playlistEnBoucle.id}/tracks?limit=50`
+    );
     if (!donneesChansons) return;
-
-    const chansons = donneesChansons.items.map(item => item.track).filter(track => track);
+    const chansons = donneesChansons.items
+      .map((item) => item.track)
+      .filter((track) => track);
     if (!chansons.length) {
       await recupererChansonsRecentes();
       return;
     }
-
-    const idsArtistes = [...new Set(chansons.flatMap(chanson => chanson.artists.map(artiste => artiste.id)))];
+    const idsArtistes = [
+      ...new Set(
+        chansons.flatMap((chanson) =>
+          chanson.artists.map((artiste) => artiste.id)
+        )
+      ),
+    ];
     const artisteData = [];
-
     for (let i = 0; i < idsArtistes.length; i += 50) {
       const batch = idsArtistes.slice(i, i + 50);
-      const donneesArtistes = await fetchAvecAuth(`artists?ids=${batch.join(",")}`);
-      if (donneesArtistes) {
-        artisteData.push(...donneesArtistes.artists);
-      }
+      const donneesArtistes = await fetchAvecAuth(
+        `artists?ids=${batch.join(",")}`
+      );
+      if (donneesArtistes) artisteData.push(...donneesArtistes.artists);
     }
-
     if (!artisteData.length) return;
-
     const compteGenres = {};
-    artisteData.forEach(artiste => {
+    artisteData.forEach((artiste) => {
       if (artiste?.genres?.length) {
-        artiste.genres.forEach(genre => {
+        artiste.genres.forEach((genre) => {
           compteGenres[genre] = (compteGenres[genre] || 0) + 1;
         });
       }
     });
-
     if (!Object.keys(compteGenres).length) {
       await recupererChansonsRecentes();
       return;
     }
-
-    const genresTries = Object.entries(compteGenres).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const genresTries = Object.entries(compteGenres)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
     const etiquettes = genresTries.map(([genre]) => genre);
     const nombres = genresTries.map(([, count]) => count);
-    const couleurs = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40", "#66FF66", "#FF66CC", "#66CCCC", "#FF9933"];
-
+    const couleurs = [
+      "#1DB954",
+      "#1ed760",
+      "#17a844",
+      "#148a38",
+      "#FF6384",
+      "#36A2EB",
+      "#FFCE56",
+      "#4BC0C0",
+      "#9966FF",
+      "#FF9F40",
+    ];
     setDonneesGenres({
       labels: etiquettes,
-      datasets: [{
-        label: "Nombre d'artistes",
-        data: nombres,
-        backgroundColor: etiquettes.map((_, index) => couleurs[index % couleurs.length]),
-        borderColor: "#000",
-        borderWidth: 1,
-      }],
+      datasets: [
+        {
+          label: "Artistes",
+          data: nombres,
+          backgroundColor: etiquettes.map(
+            (_, i) => couleurs[i % couleurs.length]
+          ),
+          borderColor: "#121212",
+          borderWidth: 2,
+        },
+      ],
     });
   }, [recupererChansonsRecentes]);
 
   const recupererSortiesArtiste = useCallback(async (idArtiste) => {
     let toutesSorties = [];
     let url = `artists/${idArtiste}/albums?include_groups=album,single,compilation,appears_on&limit=50&market=FR`;
-
     while (url) {
       const data = await fetchAvecAuth(url);
       if (!data) {
@@ -252,27 +333,33 @@ const Calendar = () => {
         return;
       }
       toutesSorties = [...toutesSorties, ...data.items];
-      url = data.next ? data.next.replace('https://api.spotify.com/v1', '') : null;
+      url = data.next
+        ? data.next.replace("https://api.spotify.com/v1", "")
+        : null;
     }
-
-    const sortiesFormatees = toutesSorties.map(item => ({
+    const sortiesFormatees = toutesSorties.map((item) => ({
       date: dayjs(item.release_date),
       titre: item.name,
       type: item.album_type,
       lienSpotify: item.external_urls.spotify,
       image: item.images[0]?.url || iconeProfil,
     }));
-
     setToutesSorties(sortiesFormatees);
     const dateActuelle = new Date("2025-04-06");
-    setSortiesArtiste(sortiesFormatees.filter(item => new Date(item.date) > dateActuelle));
+    setSortiesArtiste(
+      sortiesFormatees.filter((item) => new Date(item.date) > dateActuelle)
+    );
   }, []);
 
   useEffect(() => {
     recupererProfilUtilisateur();
     recupererArtistes();
     recupererPlaylistEnBoucle();
-  }, [recupererProfilUtilisateur, recupererArtistes, recupererPlaylistEnBoucle]);
+  }, [
+    recupererProfilUtilisateur,
+    recupererArtistes,
+    recupererPlaylistEnBoucle,
+  ]);
 
   const deconnexion = useCallback(() => {
     toast.info("Déconnexion en cours... 👋", {
@@ -298,74 +385,102 @@ const Calendar = () => {
     });
   }, []);
 
-  const artistesFiltres = useMemo(() => 
-    artistes.filter(artiste =>
-      artiste.name.toLowerCase().includes(rechercheArtiste.toLowerCase()) &&
-      (filtreGenre === "tous" || artiste.genres.includes(filtreGenre))
-    ), [artistes, rechercheArtiste, filtreGenre]);
+  const artistesFiltres = useMemo(
+    () =>
+      artistes.filter(
+        (artiste) =>
+          artiste.name.toLowerCase().includes(rechercheArtiste.toLowerCase()) &&
+          (filtreGenre === "tous" || artiste.genres.includes(filtreGenre))
+      ),
+    [artistes, rechercheArtiste, filtreGenre]
+  );
 
-  const sortiesFiltreesEtTriees = useMemo(() => 
-    toutesSorties
-      .filter(sortie => {
-        const periodeAvant = aujourdHui.subtract(filtrePeriode, "month");
-        const dansPeriode = sortie.date.isAfter(periodeAvant) && sortie.date.isBefore(aujourdHui);
-        const typeMatch =
-          filtreType === "tous" ||
-          (filtreType === sortie.type);
-        return dansPeriode && typeMatch;
-      })
-      .sort((a, b) => {
-        if (triHistorique === "date-desc") return b.date - a.date;
-        if (triHistorique === "date-asc") return a.date - b.date;
-        if (triHistorique === "title-asc") return a.titre.localeCompare(b.titre);
-        if (triHistorique === "title-desc") return b.titre.localeCompare(b.titre);
-        return 0;
-      }), [toutesSorties, filtrePeriode, filtreType, triHistorique, aujourdHui]);
+  const sortiesFiltreesEtTriees = useMemo(
+    () =>
+      toutesSorties
+        .filter((sortie) => {
+          const periodeAvant = aujourdHui.subtract(filtrePeriode, "month");
+          const dansPeriode =
+            sortie.date.isAfter(periodeAvant) &&
+            sortie.date.isBefore(aujourdHui);
+          const typeMatch = filtreType === "tous" || filtreType === sortie.type;
+          return dansPeriode && typeMatch;
+        })
+        .sort((a, b) => {
+          if (triHistorique === "date-desc") return b.date - a.date;
+          if (triHistorique === "date-asc") return a.date - b.date;
+          if (triHistorique === "title-asc")
+            return a.titre.localeCompare(b.titre);
+          if (triHistorique === "title-desc")
+            return b.titre.localeCompare(b.titre);
+          return 0;
+        }),
+    [toutesSorties, filtrePeriode, filtreType, triHistorique, aujourdHui]
+  );
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_100%)] text-white flex flex-col md:flex-row">
+    <div className="flex h-screen overflow-hidden bg-[#121212] text-white">
       <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-gray-700 rounded-full"
+        className="md:hidden fixed top-4 left-4 z-50 w-9 h-9 flex items-center justify-center bg-[#282828] rounded-full shadow-lg"
         onClick={() => setSidebarOuverte(!sidebarOuverte)}
         aria-label={sidebarOuverte ? "Fermer le menu" : "Ouvrir le menu"}
       >
-        {sidebarOuverte ? <FaTimes size={24} /> : <FaBars size={24} />}
+        {sidebarOuverte ? <FaTimes size={14} /> : <FaBars size={14} />}
       </button>
 
+      {sidebarOuverte && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/60 z-30"
+          onClick={() => setSidebarOuverte(false)}
+        />
+      )}
+
       <aside
-        className={`fixed md:static top-0 left-0 h-full w-3/4 md:w-1/4 bg-black p-6 transform transition-transform duration-300 ease-in-out ${
-          sidebarOuverte ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 z-40 flex flex-col md:h-screen`}
+        className={`
+          fixed md:relative top-0 left-0 h-full w-[272px] flex-shrink-0
+          bg-[#000000] flex flex-col z-40
+          transform transition-transform duration-300 ease-in-out
+          ${
+            sidebarOuverte ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0
+        `}
       >
-        <div className="flex items-center gap-3 mb-6 md:sticky md:top-0 md:z-10 md:bg-black">
-          <img src={logo} alt="Logo" className="w-12 h-12" />
-          <h1 className="text-xl font-bold">Mon Calendrier</h1>
+        <div className="flex items-center gap-3 px-6 pt-6 pb-4">
+          <img src={logo} alt="Logo" className="w-7 h-7" />
+          <span className="font-bold text-sm tracking-tight text-white">
+            Mon Calendrier
+          </span>
         </div>
 
-        <div className="mb-6 space-y-4 md:sticky md:top-[80px] md:z-10 md:bg-black">
+        <div className="px-3 mb-1">
           <input
             type="text"
             placeholder="Rechercher un artiste..."
             value={rechercheArtiste}
             onChange={(e) => setRechercheArtiste(e.target.value)}
-            className="w-full p-3 bg-black rounded-lg text-white border border-gray-600 focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 bg-[#242424] rounded-md text-sm text-white placeholder-[#727272] outline-none focus:ring-1 focus:ring-white/30 transition-all"
             aria-label="Rechercher un artiste"
           />
+        </div>
+
+        <div className="px-3 mb-3">
           <select
             value={filtreGenre}
             onChange={(e) => setFiltreGenre(e.target.value)}
-            className="w-full p-3 bg-black rounded-lg text-white border border-gray-600 focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 bg-[#242424] rounded-md text-sm text-white outline-none focus:ring-1 focus:ring-white/30 transition-all cursor-pointer"
             aria-label="Filtrer par genre"
           >
             <option value="tous">Tous les genres</option>
-            {genresDisponibles.map(genre => (
-              <option key={genre} value={genre}>{genre}</option>
+            {genresDisponibles.map((genre) => (
+              <option key={genre} value={genre}>
+                {genre}
+              </option>
             ))}
           </select>
         </div>
 
-        <nav className="mb-6 md:sticky md:top-[200px] md:z-10 md:bg-black">
-          <ul className="space-y-3">
+        <nav className="px-3 mb-2">
+          <ul className="space-y-0.5">
             {[
               { id: "artists", label: "Artistes", icon: FaUserFriends },
               { id: "history", label: "Historique", icon: FaHistory },
@@ -373,135 +488,163 @@ const Calendar = () => {
             ].map(({ id, label, icon: Icon }) => (
               <li key={id}>
                 <button
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg text-lg ${
-                    ongletActif === id ? "bg-green-500 text-black" : "text-gray-300 hover:bg-gray-700"
-                  } transition-colors duration-200`}
+                  className={`
+                    w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-150
+                    ${
+                      ongletActif === id
+                        ? "bg-[#282828] text-white"
+                        : "text-[#B3B3B3] hover:text-white hover:bg-[#181818]"
+                    }
+                  `}
                   onClick={() => setOngletActif(id)}
                   aria-label={`Voir ${label.toLowerCase()}`}
                 >
-                  <Icon className="text-xl" /> {label}
+                  <Icon
+                    className={`text-base flex-shrink-0 ${
+                      ongletActif === id ? "text-[#1DB954]" : ""
+                    }`}
+                  />
+                  {label}
                 </button>
               </li>
             ))}
           </ul>
         </nav>
 
-        <div className="flex-1 overflow-y-auto mt-6 md:max-h-[calc(100vh-400px)] md:min-h-[200px]">
+        <div className="mx-6 border-t border-[#282828] mb-2" />
+
+        <div className="flex-1 overflow-y-auto px-3 pb-4">
           {ongletActif === "artists" && (
             <div>
-              <h2 className="text-green-400 text-xl font-semibold mb-4">Artistes suivis</h2>
+              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#727272]">
+                Artistes suivis
+              </p>
               {chargement ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="animate-pulse flex items-center gap-4 p-3 bg-gray-700 rounded-lg">
-                      <div className="w-12 h-12 bg-gray-600 rounded-full"></div>
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-gray-600 rounded w-3/4"></div>
-                        <div className="h-3 bg-gray-600 rounded w-1/2"></div>
+                <div className="space-y-1">
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="animate-pulse flex items-center gap-3 px-3 py-2"
+                    >
+                      <div className="w-9 h-9 bg-[#282828] rounded-full flex-shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3 bg-[#282828] rounded w-2/3" />
+                        <div className="h-2.5 bg-[#282828] rounded w-1/2" />
                       </div>
                     </div>
                   ))}
                 </div>
               ) : msgErreur ? (
-                <p className="text-red-500">{msgErreur}</p>
+                <div className="mx-1 p-3 bg-[#2a1010] border border-red-900/50 rounded-lg">
+                  <p className="text-red-400 text-xs">{msgErreur}</p>
+                </div>
               ) : (
-                <div>
-                  <ul className="space-y-4">
-                    {artistesFiltres.length ? (
-                      artistesFiltres.map(artiste => (
-                        <li
-                          key={artiste.id}
-                          className="flex items-center gap-4 p-3 bg-black rounded-lg hover:bg-gray-600 cursor-pointer transition-all duration-200"
-                          onClick={() => {
+                <ul className="space-y-0.5">
+                  {artistesFiltres.length ? (
+                    artistesFiltres.map((artiste) => (
+                      <li
+                        key={artiste.id}
+                        className={`
+                          flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors duration-150 group
+                          ${
+                            artisteChoisi?.id === artiste.id
+                              ? "bg-[#282828]"
+                              : "hover:bg-[#181818]"
+                          }
+                        `}
+                        onClick={() => {
+                          setArtisteChoisi(artiste);
+                          recupererSortiesArtiste(artiste.id);
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
                             setArtisteChoisi(artiste);
                             recupererSortiesArtiste(artiste.id);
-                          }}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              setArtisteChoisi(artiste);
-                              recupererSortiesArtiste(artiste.id);
-                            }
-                          }}
-                          aria-label={`Voir les sorties de ${artiste.name}`}
+                          }
+                        }}
+                        aria-label={`Voir les sorties de ${artiste.name}`}
+                      >
+                        <img
+                          src={artiste.images?.[0]?.url || iconeProfil}
+                          alt={artiste.name}
+                          className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                          loading="lazy"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className={`text-sm font-medium truncate transition-colors ${
+                              artisteChoisi?.id === artiste.id
+                                ? "text-[#1DB954]"
+                                : "text-white"
+                            }`}
+                          >
+                            {artiste.name}
+                          </p>
+                          <p className="text-xs text-[#727272] truncate">
+                            {artiste.genres?.length
+                              ? artiste.genres[0]
+                              : "Artiste"}
+                          </p>
+                        </div>
+                      </li>
+                    ))
+                  ) : (
+                    <p className="px-3 py-4 text-[#727272] text-sm">
+                      Aucun artiste trouvé.
+                    </p>
+                  )}
+                </ul>
+              )}
+
+              {artisteChoisi && !chargement && (
+                <div className="mt-4 px-1">
+                  <div className="flex items-center gap-2 mb-2 px-2">
+                    <div className="w-0.5 h-4 bg-[#1DB954] rounded-full" />
+                    <p className="text-xs font-bold text-white">
+                      Prochaines sorties
+                    </p>
+                  </div>
+                  <p className="px-3 text-[11px] text-[#727272] mb-2">
+                    {artisteChoisi.name}
+                  </p>
+                  {sortiesArtiste.length ? (
+                    <ul className="space-y-0.5">
+                      {sortiesArtiste.map((sortie, i) => (
+                        <li
+                          key={i}
+                          className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-[#181818] transition-colors"
                         >
                           <img
-                            src={artiste.images?.[0]?.url || iconeProfil}
-                            alt={`Photo de ${artiste.name}`}
-                            className="w-12 h-12 rounded-full object-cover"
+                            src={sortie.image}
+                            alt=""
+                            className="w-8 h-8 rounded object-cover flex-shrink-0"
                             loading="lazy"
                           />
-                          <div className="flex-1">
-                            <h3 className="text-white font-medium">{artiste.name}</h3>
-                            <p className="text-gray-400 text-sm">
-                              {artiste.genres?.length ? artiste.genres.join(", ") : "Aucun genre"}
+                          <div className="flex-1 min-w-0">
+                            <a
+                              href={sortie.lienSpotify}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#1DB954] text-xs font-medium hover:underline block truncate"
+                              onClick={() =>
+                                handleSpotifyLinkClick(sortie.titre)
+                              }
+                            >
+                              {sortie.titre}
+                            </a>
+                            <p className="text-[#727272] text-[10px]">
+                              {sortie.date.format("DD/MM/YYYY")} · {sortie.type}
                             </p>
-                            <div className="mt-2">
-                              <span className="text-gray-500 text-xs">Popularité: </span>
-                              <div className="w-24 bg-gray-600 rounded-full h-2">
-                                <div
-                                  className="bg-green-500 h-2 rounded-full"
-                                  style={{ width: `${artiste.popularity}%` }}
-                                ></div>
-                              </div>
-                            </div>
                           </div>
                         </li>
-                      ))
-                    ) : (
-                      <p className="text-gray-400">Aucun artiste trouvé.</p>
-                    )}
-                  </ul>
-
-                  {artisteChoisi && (
-                    <div className="mt-6">
-                      <h3 className="text-green-400 text-xl font-semibold">Prochaines sorties de {artisteChoisi.name}</h3>
-                      {chargement ? (
-                        <div className="mt-4 space-y-4">
-                          {[...Array(2)].map((_, i) => (
-                            <div key={i} className="animate-pulse flex items-center gap-4 p-3 bg-gray-700">
-                              <div className="w-10 h-10 bg-gray-600 rounded"></div>
-                              <div className="flex-1 space-y-2">
-                                <div className="h-4 bg-gray-600 rounded w-3/4"></div>
-                                <div className="h-3 bg-gray-600 rounded w-1/2"></div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : msgErreur ? (
-                        <p className="text-red-500">{msgErreur}</p>
-                      ) : sortiesArtiste.length ? (
-                        <ul className="mt-4 space-y-4">
-                          {sortiesArtiste.map((sortie, i) => (
-                            <li key={i} className="flex items-center gap-4 p-3 bg-black rounded-lg">
-                              <img
-                                src={sortie.image}
-                                alt={`Couverture de ${sortie.titre}`}
-                                className="w-10 h-10 rounded object-cover"
-                                loading="lazy"
-                              />
-                              <div>
-                                <a
-                                  href={sortie.lienSpotify}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-green-400 hover:underline"
-                                  onClick={() => handleSpotifyLinkClick(sortie.titre)}
-                                >
-                                  {sortie.titre}
-                                </a>
-                                <p className="text-gray-400 text-sm">
-                                  Sortie prévue: {sortie.date.format("DD/MM/YYYY")} ({sortie.type})
-                                </p>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-400">Aucune sortie future.</p>
-                      )}
-                    </div>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="px-3 text-[#727272] text-xs">
+                      Aucune sortie à venir.
+                    </p>
                   )}
                 </div>
               )}
@@ -510,148 +653,197 @@ const Calendar = () => {
 
           {ongletActif === "history" && (
             <div>
-              <h2 className="text-green-400 text-xl font-semibold mb-4">Historique des sorties</h2>
+              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#727272]">
+                Historique
+              </p>
               {artisteChoisi ? (
                 <div>
-                  <h3 className="text-green-400 text-lg font-medium mb-4">Sorties de {artisteChoisi.name}</h3>
-                  <div className="flex flex-wrap gap-3 mb-4">
-                    <select
-                      value={filtreType}
-                      onChange={(e) => setFiltreType(e.target.value)}
-                      className="p-3 bg-gray-700 rounded-lg text-white border border-gray-600 focus:ring-2 focus:ring-green-500"
-                      aria-label="Filtrer par type de sortie"
-                    >
-                      <option value="tous">Tous les types</option>
-                      <option value="album">Albums</option>
-                      <option value="single">Singles</option>
-                      <option value="compilation">Compilations</option>
-                      <option value="appears_on">Feats</option>
-                    </select>
-                    <select
-                      value={filtrePeriode}
-                      onChange={(e) => setFiltrePeriode(Number(e.target.value))}
-                      className="p-3 bg-gray-700 rounded-lg text-white border border-gray-600 focus:ring-2 focus:ring-green-500"
-                      aria-label="Filtrer par période"
-                    >
-                      <option value={1}>1 mois</option>
-                      <option value={3}>3 mois</option>
-                      <option value={6}>6 mois</option>
-                      <option value={12}>12 mois</option>
-                    </select>
-                    <select
-                      value={triHistorique}
-                      onChange={(e) => setTriHistorique(e.target.value)}
-                      className="p-3 bg-gray-700 rounded-lg text-white border border-gray-600 focus:ring-2 focus:ring-green-500"
-                      aria-label="Trier les sorties"
-                    >
-                      <option value="date-desc">Date (récent)</option>
-                      <option value="date-asc">Date (ancien)</option>
-                      <option value="title-asc">Titre (A-Z)</option>
-                      <option value="title-desc">Titre (Z-A)</option>
-                    </select>
+                  <p className="px-3 text-sm font-medium text-white mb-3">
+                    {artisteChoisi.name}
+                  </p>
+                  <div className="space-y-1.5 mb-4">
+                    {[
+                      {
+                        value: filtreType,
+                        onChange: (v) => setFiltreType(v),
+                        options: [
+                          ["tous", "Tous"],
+                          ["album", "Albums"],
+                          ["single", "Singles"],
+                          ["compilation", "Compilations"],
+                          ["appears_on", "Feats"],
+                        ],
+                      },
+                      {
+                        value: filtrePeriode,
+                        onChange: (v) => setFiltrePeriode(Number(v)),
+                        options: [
+                          [1, "1 mois"],
+                          [3, "3 mois"],
+                          [6, "6 mois"],
+                          [12, "12 mois"],
+                        ],
+                      },
+                      {
+                        value: triHistorique,
+                        onChange: (v) => setTriHistorique(v),
+                        options: [
+                          ["date-desc", "Récent d'abord"],
+                          ["date-asc", "Ancien d'abord"],
+                          ["title-asc", "Titre A→Z"],
+                          ["title-desc", "Titre Z→A"],
+                        ],
+                      },
+                    ].map((sel, idx) => (
+                      <select
+                        key={idx}
+                        value={sel.value}
+                        onChange={(e) => sel.onChange(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#242424] rounded-md text-xs text-white outline-none cursor-pointer"
+                      >
+                        {sel.options.map(([val, label]) => (
+                          <option key={val} value={val}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    ))}
                   </div>
                   {chargement ? (
-                    <div className="space-y-4">
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="animate-pulse flex items-center gap-4 p-3 bg-gray-700 rounded-lg">
-                          <div className="w-12 h-12 bg-gray-600 rounded"></div>
-                          <div className="flex-1 space-y-2">
-                            <div className="h-4 bg-gray-600 rounded w-3/4"></div>
-                            <div className="h-3 bg-gray-600 rounded w-1/2"></div>
+                    <div className="space-y-1">
+                      {[...Array(4)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="animate-pulse flex items-center gap-3 px-2 py-2"
+                        >
+                          <div className="w-9 h-9 bg-[#282828] rounded flex-shrink-0" />
+                          <div className="flex-1 space-y-1.5">
+                            <div className="h-3 bg-[#282828] rounded w-3/4" />
+                            <div className="h-2.5 bg-[#282828] rounded w-1/2" />
                           </div>
                         </div>
                       ))}
                     </div>
-                  ) : msgErreur ? (
-                    <p className="text-red-500">{msgErreur}</p>
                   ) : sortiesFiltreesEtTriees.length ? (
-                    <ul className="space-y-4">
+                    <ul className="space-y-0.5">
                       {sortiesFiltreesEtTriees.map((sortie, i) => (
                         <li
                           key={i}
-                          className="flex items-center gap-4 p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-all duration-200"
+                          className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-[#181818] transition-colors cursor-pointer"
                           role="button"
                           tabIndex={0}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               handleSpotifyLinkClick(sortie.titre);
-                              window.open(sortie.lienSpotify, "_blank", "noopener,noreferrer");
+                              window.open(
+                                sortie.lienSpotify,
+                                "_blank",
+                                "noopener,noreferrer"
+                              );
                             }
                           }}
-                          aria-label={`Ouvrir ${sortie.titre} sur Spotify`}
                         >
                           <img
                             src={sortie.image}
-                            alt={`Couverture de ${sortie.titre}`}
-                            className="w-12 h-12 rounded object-cover"
+                            alt=""
+                            className="w-9 h-9 rounded object-cover flex-shrink-0"
                             loading="lazy"
                           />
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <a
                               href={sortie.lienSpotify}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-green-400 hover:underline font-medium"
-                              onClick={() => handleSpotifyLinkClick(sortie.titre)}
+                              className="text-white text-xs font-medium hover:text-[#1DB954] transition-colors block truncate"
+                              onClick={() =>
+                                handleSpotifyLinkClick(sortie.titre)
+                              }
                             >
                               {sortie.titre}
                             </a>
-                            <p className="text-gray-400 text-sm">
-                              Sortie: {sortie.date.format("DD/MM/YYYY")} ({sortie.type})
+                            <p className="text-[#727272] text-[10px]">
+                              {sortie.date.format("DD/MM/YYYY")} · {sortie.type}
                             </p>
                           </div>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-gray-400">Aucune sortie pour ces filtres.</p>
+                    <p className="px-3 text-[#727272] text-sm">
+                      Aucune sortie pour ces filtres.
+                    </p>
                   )}
                 </div>
               ) : (
-                <p className="text-gray-400">Sélectionnez un artiste pour voir son historique.</p>
+                <p className="px-3 py-4 text-[#727272] text-sm">
+                  Sélectionnez un artiste pour voir son historique.
+                </p>
               )}
             </div>
           )}
 
           {ongletActif === "genres" && (
             <div>
-              <h2 className="text-green-400 text-xl font-semibold mb-4">Genres les plus écoutés</h2>
+              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#727272]">
+                Genres les plus écoutés
+              </p>
               {donneesGenres.labels.length >= 3 && (
-                <div className="p-4 bg-gray-700 rounded-lg mb-4">
-                  <h3 className="text-white font-semibold mb-2">🎧 Top 3 genres :</h3>
-                  <ol className="list-decimal list-inside text-green-400 text-sm space-y-1">
+                <div className="mx-1 p-3 bg-[#181818] rounded-lg mb-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#727272] mb-2">
+                    Top 3
+                  </p>
+                  <ol className="space-y-1.5">
                     {donneesGenres.labels.slice(0, 3).map((genre, i) => (
-                      <div key={i}>{genre}</div>
+                      <li key={i} className="flex items-center gap-2">
+                        <span className="text-[#1DB954] text-xs font-bold w-4">
+                          {i + 1}
+                        </span>
+                        <span className="text-white text-sm truncate">
+                          {genre}
+                        </span>
+                      </li>
                     ))}
                   </ol>
                 </div>
               )}
-              <div className="flex gap-3 mb-4">
-                <button
-                  onClick={() => setTypeGraphique("pie")}
-                  className={`p-3 rounded-lg ${typeGraphique === "pie" ? "bg-green-500 text-black" : "bg-gray-700 text-gray-400"}`}
-                >
-                  Secteurs
-                </button>
-                <button
-                  onClick={() => setTypeGraphique("bar")}
-                  className={`p-3 rounded-lg ${typeGraphique === "bar" ? "bg-green-500 text-black" : "bg-gray-700 text-gray-400"}`}
-                >
-                  Histogramme
-                </button>
+              <div className="flex gap-1.5 px-1 mb-4">
+                {[
+                  { id: "pie", label: "Secteurs" },
+                  { id: "bar", label: "Barres" },
+                ].map(({ id, label }) => (
+                  <button
+                    key={id}
+                    onClick={() => setTypeGraphique(id)}
+                    className={`flex-1 py-1.5 rounded-full text-xs font-bold transition-all ${
+                      typeGraphique === id
+                        ? "bg-white text-black"
+                        : "bg-[#242424] text-[#B3B3B3] hover:text-white"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
               {chargement ? (
-                <p className="text-gray-400">Chargement...</p>
-              ) : msgErreur ? (
-                <p className="text-red-500">{msgErreur}</p>
+                <p className="px-3 text-[#727272] text-sm">Chargement...</p>
               ) : donneesGenres.labels.length ? (
-                <div className="mt-4">
+                <div className="px-1">
                   {typeGraphique === "pie" ? (
                     <Pie
                       data={donneesGenres}
                       options={{
                         responsive: true,
-                        plugins: { legend: { position: "bottom", labels: { color: "white" } } },
+                        plugins: {
+                          legend: {
+                            position: "bottom",
+                            labels: {
+                              color: "#B3B3B3",
+                              font: { size: 10 },
+                              boxWidth: 12,
+                              padding: 8,
+                            },
+                          },
+                        },
                       }}
                     />
                   ) : (
@@ -660,8 +852,15 @@ const Calendar = () => {
                       options={{
                         responsive: true,
                         scales: {
-                          x: { ticks: { color: "white" } },
-                          y: { beginAtZero: true, ticks: { color: "white", stepSize: 1 } },
+                          x: {
+                            ticks: { color: "#B3B3B3", font: { size: 9 } },
+                            grid: { color: "#282828" },
+                          },
+                          y: {
+                            beginAtZero: true,
+                            ticks: { color: "#B3B3B3", stepSize: 1 },
+                            grid: { color: "#282828" },
+                          },
                         },
                         plugins: { legend: { display: false } },
                       }}
@@ -669,23 +868,27 @@ const Calendar = () => {
                   )}
                 </div>
               ) : (
-                <p className="text-gray-400">Aucun genre disponible.</p>
+                <p className="px-3 text-[#727272] text-sm">
+                  Aucun genre disponible.
+                </p>
               )}
             </div>
           )}
         </div>
 
-        <div className="mt-auto pt-4 border-t border-gray-600 flex items-center gap-3 md:sticky md:bottom-0 md:z-10 md:bg-black">
+        <div className="flex-shrink-0 px-4 py-3 border-t border-[#282828] flex items-center gap-3">
           <img
             src={utilisateur?.images?.[0]?.url || iconeProfil}
             alt="Profil"
-            className="w-10 h-10 rounded-full border border-gray-400"
+            className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-2 ring-[#282828]"
             loading="lazy"
           />
-          <span className="text-gray-300 text-sm">{utilisateur?.display_name || "Chargement..."}</span>
+          <span className="text-sm font-medium text-white flex-1 truncate">
+            {utilisateur?.display_name || "Chargement..."}
+          </span>
           <button
             onClick={deconnexion}
-            className="ml-auto text-gray-300 hover:text-white"
+            className="text-[#B3B3B3] hover:text-white transition-colors text-xs font-medium flex-shrink-0"
             aria-label="Se déconnecter"
           >
             Déconnexion
@@ -693,158 +896,256 @@ const Calendar = () => {
         </div>
       </aside>
 
-      <main className="flex-1 p-6 md:ml-0 overflow-auto">
-        <div className="flex justify-between items-center mb-6">
-          <button onClick={moisPrecedent} className="text-2xl p-2 hover:bg-gray-700 rounded" aria-label="Mois précédent">◀</button>
-          <h1 className="text-3xl font-bold capitalize">{moisActuel.format("MMMM YYYY")}</h1>
-          <button onClick={moisSuivant} className="text-2xl p-2 hover:bg-gray-700 rounded" aria-label="Mois suivant">▶</button>
-        </div>
-        <div className="flex justify-center mb-6">
-          <button
-            onClick={allerAujourdHui}
-            className="bg-green-500 text-black px-6 py-2 rounded-lg hover:bg-green-600"
-            aria-label="Aller à aujourd'hui"
-          >
-            Aujourd'hui
-          </button>
-        </div>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2 text-center text-sm">
-          {joursSemaine.map(jour => (
-            <div key={jour} className="p-2 text-gray-300 font-bold hidden md:block">{jour}</div>
-          ))}
-          {genererJours.map((jour, index) => {
-            const estAujourdHui = jour === aujourdHui.date() && moisActuel.isSame(aujourdHui, "month");
-            const evenementsJour = artisteChoisi
-              ? toutesSorties.filter(sortie => sortie.date.date() === jour && sortie.date.isSame(moisActuel, "month"))
-              : [];
+      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1a1a1a] via-[#161616] to-[#121212]">
+        <div className="px-6 py-8">
+          <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={moisPrecedent}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-[#282828] hover:bg-[#3E3E3E] transition-colors text-sm"
+              aria-label="Mois précédent"
+            >
+              ◀
+            </button>
+            <h1 className="text-2xl font-bold capitalize tracking-tight">
+              {moisActuel.format("MMMM YYYY")}
+            </h1>
+            <button
+              onClick={moisSuivant}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-[#282828] hover:bg-[#3E3E3E] transition-colors text-sm"
+              aria-label="Mois suivant"
+            >
+              ▶
+            </button>
+          </div>
 
-            return (
+          <div className="flex justify-center mb-8">
+            <button
+              onClick={allerAujourdHui}
+              className="bg-white text-black text-xs font-bold px-5 py-2 rounded-full hover:scale-105 active:scale-95 transition-transform"
+              aria-label="Aller à aujourd'hui"
+            >
+              Aujourd'hui
+            </button>
+          </div>
+
+          <div className="grid grid-cols-7 mb-2 hidden md:grid">
+            {joursSemaine.map((jour) => (
               <div
-                key={index}
-                className={`p-4 border rounded-lg text-lg ${
-                  jour ? "border-gray-700 bg-black" : "bg-transparent"
-                } ${evenementsJour.length ? "bg-green-500 text-black font-bold cursor-pointer" : ""} ${
-                  estAujourdHui ? "border-2 border-green-500" : ""
-                } hover:bg-gray-700 transition-all duration-200`}
-                onClick={() => {
-                  if (jour && evenementsJour.length) {
-                    setEvenementsSelectionnes(evenementsJour);
-                    setAfficherPopup(true);
-                  }
-                }}
-                role={evenementsJour.length ? "button" : undefined}
-                tabIndex={evenementsJour.length ? 0 : undefined}
-                onKeyDown={(e) => {
-                  if (evenementsJour.length && (e.key === "Enter" || e.key === " ")) {
-                    setEvenementsSelectionnes(evenementsJour);
-                    setAfficherPopup(true);
-                  }
-                }}
-                aria-label={jour ? `Jour ${jour}` : "Jour vide"}
+                key={jour}
+                className="text-center text-[10px] font-bold uppercase tracking-widest text-[#727272] py-2"
               >
                 {jour}
-                {evenementsJour.length > 0 && (
-                  <div className="text-xs mt-2">
-                    {evenementsJour.map((event, i) => (
-                      <div key={i}>
-                        <a
-                          href={event.lienSpotify}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-black hover:underline"
-                          onClick={() => handleSpotifyLinkClick(event.titre)}
-                        >
-                          {event.titre}
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-1.5">
+            {genererJours.map((jour, index) => {
+              const estAujourdHui =
+                jour === aujourdHui.date() &&
+                moisActuel.isSame(aujourdHui, "month");
+              const evenementsJour = artisteChoisi
+                ? toutesSorties.filter(
+                    (sortie) =>
+                      sortie.date.date() === jour &&
+                      sortie.date.isSame(moisActuel, "month")
+                  )
+                : [];
+
+              return (
+                <div
+                  key={index}
+                  className={`
+                    relative min-h-[80px] md:min-h-[100px] p-3 rounded-lg flex flex-col
+                    transition-all duration-150
+                    ${
+                      !jour
+                        ? "bg-transparent pointer-events-none"
+                        : evenementsJour.length
+                        ? "bg-[#1DB954] text-black cursor-pointer hover:bg-[#1ed760] font-bold shadow-lg shadow-[#1DB954]/20"
+                        : `bg-[#181818] cursor-default ${
+                            estAujourdHui
+                              ? "ring-2 ring-[#1DB954]"
+                              : "hover:bg-[#1f1f1f]"
+                          }`
+                    }
+                  `}
+                  onClick={() => {
+                    if (jour && evenementsJour.length) {
+                      setEvenementsSelectionnes(evenementsJour);
+                      setAfficherPopup(true);
+                    }
+                  }}
+                  role={evenementsJour.length ? "button" : undefined}
+                  tabIndex={evenementsJour.length ? 0 : undefined}
+                  onKeyDown={(e) => {
+                    if (
+                      evenementsJour.length &&
+                      (e.key === "Enter" || e.key === " ")
+                    ) {
+                      setEvenementsSelectionnes(evenementsJour);
+                      setAfficherPopup(true);
+                    }
+                  }}
+                  aria-label={jour ? `Jour ${jour}` : "Jour vide"}
+                >
+                  <span
+                    className={`text-sm font-semibold leading-none ${
+                      estAujourdHui && !evenementsJour.length
+                        ? "text-[#1DB954]"
+                        : ""
+                    }`}
+                  >
+                    {jour}
+                  </span>
+                  {evenementsJour.length > 0 && (
+                    <div className="mt-1.5 space-y-0.5 overflow-hidden">
+                      {evenementsJour.slice(0, 2).map((event, i) => (
+                        <div
+                          key={i}
+                          className="text-[9px] font-bold truncate leading-tight"
+                        >
+                          <a
+                            href={event.lienSpotify}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSpotifyLinkClick(event.titre);
+                            }}
+                          >
+                            {event.titre}
+                          </a>
+                        </div>
+                      ))}
+                      {evenementsJour.length > 2 && (
+                        <div className="text-[9px] opacity-70">
+                          +{evenementsJour.length - 2} autres
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </main>
 
       {afficherPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-600 max-w-md w-full transform transition-all duration-300 scale-95 animate-popup">
-            <h3 className="text-green-400 text-lg font-bold mb-4">
-              Sorties le {evenementsSelectionnes[0].date.format("DD/MM/YYYY")}
-            </h3>
-            {evenementsSelectionnes.some(event => event.date.isAfter(aujourdHui)) && (
-              <div>
-                <h4 className="text-green-400 font-semibold mb-2">Sorties futures</h4>
-                {["album", "single", "compilation,appears_on"].map(type => {
-                  const filteredEvents = evenementsSelectionnes.filter(event => 
-                    (type.includes(",") ? type.split(",").includes(event.type) : event.type === type) && event.date.isAfter(aujourdHui)
-                  );
-                  if (!filteredEvents.length) return null;
-                  return (
-                    <div key={type} className="mb-4">
-                      <h5 className="text-white font-medium">
-                        {type === "album" ? "Albums" : type === "single" ? "Singles" : "Compilations/Feats"}
-                      </h5>
-                      <ul className="space-y-2 text-sm">
-                        {filteredEvents.map((event, i) => (
-                          <li key={i} className="border-b border-gray-600 pb-1">
-                            <a
-                              href={event.lienSpotify}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-green-400 hover:underline"
-                              onClick={() => handleSpotifyLinkClick(event.titre)}
-                            >
-                              {event.titre}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            {evenementsSelectionnes.some(event => !event.date.isAfter(aujourdHui)) && (
-              <div>
-                <h4 className="text-orange-400 font-semibold mb-2">Sorties passées</h4>
-                {["album", "single", "compilation,appears_on"].map(type => {
-                  const filteredEvents = evenementsSelectionnes.filter(event => 
-                    (type.includes(",") ? type.split(",").includes(event.type) : event.type === type) && !event.date.isAfter(aujourdHui)
-                  );
-                  if (!filteredEvents.length) return null;
-                  return (
-                    <div key={type} className="mb-4">
-                      <h5 className="text-white font-medium">
-                        {type === "album" ? "Albums" : type === "single" ? "Singles" : "Compilations/Feats"}
-                      </h5>
-                      <ul className="space-y-2 text-sm">
-                        {filteredEvents.map((event, i) => (
-                          <li key={i} className="border-b border-gray-600 pb-1">
-                            <a
-                              href={event.lienSpotify}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-green-400 hover:underline"
-                              onClick={() => handleSpotifyLinkClick(event.titre)}
-                            >
-                              {event.titre}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            <button
-              onClick={() => setAfficherPopup(false)}
-              className="mt-4 bg-green-500 text-black px-6 py-2 rounded-lg hover:bg-green-600"
-              aria-label="Fermer la popup"
-            >
-              Fermer
-            </button>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#282828] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-[#3E3E3E]">
+              <h3 className="text-white font-bold text-sm capitalize">
+                {evenementsSelectionnes[0].date.format("dddd D MMMM YYYY")}
+              </h3>
+            </div>
+            <div className="p-5 max-h-[55vh] overflow-y-auto space-y-4">
+              {evenementsSelectionnes.some((e) =>
+                e.date.isAfter(aujourdHui)
+              ) && (
+                <div>
+                  <p className="text-[#1DB954] text-[10px] font-bold uppercase tracking-wider mb-2">
+                    À venir
+                  </p>
+                  {["album", "single", "compilation,appears_on"].map((type) => {
+                    const filteredEvents = evenementsSelectionnes.filter(
+                      (event) =>
+                        (type.includes(",")
+                          ? type.split(",").includes(event.type)
+                          : event.type === type) &&
+                        event.date.isAfter(aujourdHui)
+                    );
+                    if (!filteredEvents.length) return null;
+                    return (
+                      <div key={type} className="mb-3">
+                        <p className="text-[#B3B3B3] text-[10px] font-medium uppercase tracking-wide mb-1.5">
+                          {type === "album"
+                            ? "Albums"
+                            : type === "single"
+                            ? "Singles"
+                            : "Compilations / Feats"}
+                        </p>
+                        <ul className="space-y-1">
+                          {filteredEvents.map((event, i) => (
+                            <li key={i}>
+                              <a
+                                href={event.lienSpotify}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-white text-sm hover:text-[#1DB954] transition-colors"
+                                onClick={() =>
+                                  handleSpotifyLinkClick(event.titre)
+                                }
+                              >
+                                {event.titre}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {evenementsSelectionnes.some(
+                (e) => !e.date.isAfter(aujourdHui)
+              ) && (
+                <div>
+                  <p className="text-[#727272] text-[10px] font-bold uppercase tracking-wider mb-2">
+                    Passées
+                  </p>
+                  {["album", "single", "compilation,appears_on"].map((type) => {
+                    const filteredEvents = evenementsSelectionnes.filter(
+                      (event) =>
+                        (type.includes(",")
+                          ? type.split(",").includes(event.type)
+                          : event.type === type) &&
+                        !event.date.isAfter(aujourdHui)
+                    );
+                    if (!filteredEvents.length) return null;
+                    return (
+                      <div key={type} className="mb-3">
+                        <p className="text-[#727272] text-[10px] font-medium uppercase tracking-wide mb-1.5">
+                          {type === "album"
+                            ? "Albums"
+                            : type === "single"
+                            ? "Singles"
+                            : "Compilations / Feats"}
+                        </p>
+                        <ul className="space-y-1">
+                          {filteredEvents.map((event, i) => (
+                            <li key={i}>
+                              <a
+                                href={event.lienSpotify}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#B3B3B3] text-sm hover:text-white transition-colors"
+                                onClick={() =>
+                                  handleSpotifyLinkClick(event.titre)
+                                }
+                              >
+                                {event.titre}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <div className="px-5 py-4 border-t border-[#3E3E3E]">
+              <button
+                onClick={() => setAfficherPopup(false)}
+                className="w-full bg-white text-black text-sm font-bold py-2.5 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-transform"
+                aria-label="Fermer"
+              >
+                Fermer
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -853,8 +1154,8 @@ const Calendar = () => {
         position="bottom-right"
         autoClose={3000}
         theme="dark"
-        toastClassName="bg-gray-800 text-white border border-gray-600 rounded-lg shadow-lg"
-        progressClassName="bg-green-500"
+        toastClassName="!bg-[#282828] !text-white !border !border-[#3E3E3E] !rounded-xl !shadow-xl"
+        progressClassName="!bg-[#1DB954]"
       />
     </div>
   );

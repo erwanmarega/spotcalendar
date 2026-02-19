@@ -10,7 +10,7 @@ const app = express();
 
 const allowedOrigins = process.env.NODE_ENV === "production"
   ? [process.env.VERCEL_URL, "https://spotcalendar.vercel.app"].filter(Boolean)
-  : ["http://localhost:5173"];
+  : ["http://localhost:5173", "http://127.0.0.1:5173", "http://127.0.0.1:3000"];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -63,25 +63,25 @@ app.post("/api/token", async (req, res) => {
     res.cookie("access_token", response.data.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       maxAge: response.data.expires_in * 1000
     });
     res.cookie("refresh_token", response.data.refresh_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       maxAge: 30 * 24 * 60 * 60 * 1000
     });
     res.cookie("expires_at", (Date.now() + response.data.expires_in * 1000).toString(), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       maxAge: response.data.expires_in * 1000
     });
     res.cookie("token_type", response.data.token_type || "Bearer", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       maxAge: response.data.expires_in * 1000
     });
 
@@ -119,19 +119,19 @@ app.post("/api/refresh-token", async (req, res) => {
     res.cookie("access_token", response.data.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       maxAge: response.data.expires_in * 1000
     });
     res.cookie("expires_at", (Date.now() + response.data.expires_in * 1000).toString(), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       maxAge: response.data.expires_in * 1000
     });
     res.cookie("token_type", response.data.token_type || "Bearer", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       maxAge: response.data.expires_in * 1000
     });
     if (response.data.refresh_token) {
