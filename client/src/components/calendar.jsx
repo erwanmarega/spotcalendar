@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,6 +12,7 @@ import {
   FaUserFriends,
   FaBars,
   FaTimes,
+  FaBell,
 } from "react-icons/fa";
 import { Pie, Bar } from "react-chartjs-2";
 import {
@@ -23,7 +24,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { checkTokens, refreshToken, logout, fetchSpotifyData } from "../api";
+import { checkTokens, refreshToken, logout, fetchSpotifyData, getEmailPreferences, setEmailPreferences } from "../api";
+import MissedReleases from "./MissedReleases";
 
 ChartJS.register(
   ArcElement,
@@ -59,6 +61,7 @@ const Calendar = () => {
   const [genresDisponibles, setGenresDisponibles] = useState([]);
   const [triHistorique, setTriHistorique] = useState("date-desc");
   const [sidebarOuverte, setSidebarOuverte] = useState(false);
+  const [emailEnabled, setEmailEnabled] = useState(false);
 
   const aujourdHui = dayjs();
   const navigate = useNavigate();
@@ -91,12 +94,7 @@ const Calendar = () => {
   }, [jourDebut, joursDansMois]);
 
   const getAuthTokens = async () => {
-    try {
-      const tokens = await checkTokens();
-      return tokens;
-    } catch (e) {
-      throw e;
-    }
+    return await checkTokens();
   };
 
   const rafraichirToken = async () => {
@@ -104,12 +102,8 @@ const Calendar = () => {
     if (!tokens?.refresh_token_exists) {
       throw new Error("Aucun refresh_token disponible");
     }
-    try {
-      await refreshToken();
-      return true;
-    } catch (e) {
-      throw e;
-    }
+    await refreshToken();
+    return true;
   };
 
   const fetchAvecAuth = async (path, options = {}) => {
@@ -143,11 +137,13 @@ const Calendar = () => {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const recupererProfilUtilisateur = useCallback(async () => {
     const data = await fetchAvecAuth("me");
     if (data) setUtilisateur(data);
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const recupererArtistes = useCallback(async () => {
     const data = await fetchAvecAuth("me/following?type=artist&limit=50");
     if (data) {
@@ -341,6 +337,7 @@ const Calendar = () => {
       date: dayjs(item.release_date),
       titre: item.name,
       type: item.album_type,
+      groupe: item.album_group,
       lienSpotify: item.external_urls.spotify,
       image: item.images[0]?.url || iconeProfil,
     }));
@@ -355,6 +352,7 @@ const Calendar = () => {
     recupererProfilUtilisateur();
     recupererArtistes();
     recupererPlaylistEnBoucle();
+    getEmailPreferences().then((prefs) => setEmailEnabled(prefs.enabled)).catch(() => {});
   }, [
     recupererProfilUtilisateur,
     recupererArtistes,
@@ -370,7 +368,8 @@ const Calendar = () => {
     setTimeout(async () => {
       try {
         await logout();
-      } catch (e) {
+      } catch {
+        // logout peut échouer, on redirige quand même
       } finally {
         navigate("/login", { replace: true, state: { fromLogout: true } });
       }
@@ -459,6 +458,7 @@ const Calendar = () => {
                 { id: "artists", label: "Artistes", icon: FaUserFriends },
                 { id: "history", label: "Historique", icon: FaHistory },
                 { id: "genres", label: "Genres", icon: FaChartPie },
+                { id: "ratés", label: "Ratés", icon: FaBell },
               ].map(({ id, label, icon: Icon }) => (
                 <li key={id}>
                   <button
@@ -904,29 +904,56 @@ const Calendar = () => {
             )}
           </div>
 
-          <div className="flex-shrink-0 px-4 py-3 border-t border-[#282828] flex items-center gap-3 bg-[#121212]">
-            <img
-              src={utilisateur?.images?.[0]?.url || iconeProfil}
-              alt="Profil"
-              className="w-9 h-9 rounded-full object-cover flex-shrink-0"
-              loading="lazy"
-            />
-            <span className="text-sm font-bold text-white flex-1 truncate">
-              {utilisateur?.display_name || "Chargement..."}
-            </span>
-            <button
-              onClick={deconnexion}
-              className="text-[#B3B3B3] hover:text-white transition-colors text-xs font-medium flex-shrink-0"
-              aria-label="Se déconnecter"
-            >
-              Déconnexion
-            </button>
+          <div className="flex-shrink-0 px-4 pt-3 pb-1 border-t border-[#282828] bg-[#121212]">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] text-[#B3B3B3] font-medium">Emails hebdomadaires</span>
+              <button
+                onClick={() => {
+                  const next = !emailEnabled;
+                  setEmailEnabled(next);
+                  setEmailPreferences(next).catch(() => setEmailEnabled(!next));
+                }}
+                className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full transition-colors duration-200 focus:outline-none ${
+                  emailEnabled ? "bg-[#1DB954]" : "bg-[#282828]"
+                }`}
+                aria-label="Activer les emails hebdomadaires"
+                role="switch"
+                aria-checked={emailEnabled}
+              >
+                <span
+                  className={`inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 mt-0.5 ${
+                    emailEnabled ? "translate-x-4" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              <img
+                src={utilisateur?.images?.[0]?.url || iconeProfil}
+                alt="Profil"
+                className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                loading="lazy"
+              />
+              <span className="text-sm font-bold text-white flex-1 truncate">
+                {utilisateur?.display_name || "Chargement..."}
+              </span>
+              <button
+                onClick={deconnexion}
+                className="text-[#B3B3B3] hover:text-white transition-colors text-xs font-medium flex-shrink-0"
+                aria-label="Se déconnecter"
+              >
+                Déconnexion
+              </button>
+            </div>
           </div>
         </div>
       </aside>
 
       <main className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1a1a1a] via-[#161616] to-[#121212]">
-        <div className="px-6 py-8">
+        {ongletActif === "ratés" ? (
+          <MissedReleases />
+        ) : null}
+        <div className={`px-6 py-8 ${ongletActif === "ratés" ? "hidden" : ""}`}>
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={moisPrecedent}
@@ -953,7 +980,7 @@ const Calendar = () => {
               className="bg-white text-black text-xs font-bold px-5 py-2 rounded-full hover:scale-105 active:scale-95 transition-transform"
               aria-label="Aller à aujourd'hui"
             >
-              Aujourd'hui
+              Aujourd&apos;hui
             </button>
           </div>
 
@@ -985,13 +1012,13 @@ const Calendar = () => {
                 <div
                   key={index}
                   className={`
-                    relative min-h-[80px] md:min-h-[100px] p-3 rounded-lg flex flex-col
-                    transition-all duration-150
+                    relative min-h-[80px] md:min-h-[100px] rounded-lg flex flex-col overflow-hidden
+                    transition-all duration-200
                     ${
                       !jour
                         ? "bg-transparent pointer-events-none"
                         : evenementsJour.length
-                        ? "bg-[#1DB954] text-black cursor-pointer hover:bg-[#1ed760] font-bold shadow-lg shadow-[#1DB954]/20"
+                        ? "bg-[#181818] border border-[#1DB954]/25 hover:border-[#1DB954]/60 cursor-pointer hover:shadow-[0_0_20px_rgba(29,185,84,0.15)]"
                         : `bg-[#181818] cursor-default ${
                             estAujourdHui
                               ? "ring-2 ring-[#1DB954]"
@@ -1018,43 +1045,75 @@ const Calendar = () => {
                   }}
                   aria-label={jour ? `Jour ${jour}` : "Jour vide"}
                 >
-                  <span
-                    className={`text-sm font-semibold leading-none ${
-                      estAujourdHui && !evenementsJour.length
-                        ? "text-[#1DB954]"
-                        : ""
-                    }`}
-                  >
-                    {jour}
-                  </span>
+                  {evenementsJour.length > 0 && evenementsJour[0].image && (
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        backgroundImage: `url(${evenementsJour[0].image})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        opacity: 0.07,
+                      }}
+                    />
+                  )}
                   {evenementsJour.length > 0 && (
-                    <div className="mt-1.5 space-y-0.5 overflow-hidden">
-                      {evenementsJour.slice(0, 2).map((event, i) => (
-                        <div
-                          key={i}
-                          className="text-[9px] font-bold truncate leading-tight"
-                        >
-                          <a
-                            href={event.lienSpotify}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:underline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSpotifyLinkClick(event.titre);
-                            }}
-                          >
-                            {event.titre}
-                          </a>
-                        </div>
-                      ))}
-                      {evenementsJour.length > 2 && (
-                        <div className="text-[9px] opacity-70">
-                          +{evenementsJour.length - 2} autres
-                        </div>
+                    <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#1DB954] rounded-l-lg" />
+                  )}
+
+                  <div className="relative z-10 p-3 flex flex-col h-full">
+                    <div className="flex items-start justify-between">
+                      <span
+                        className={`text-sm font-semibold leading-none ${
+                          estAujourdHui && !evenementsJour.length
+                            ? "text-[#1DB954]"
+                            : "text-white"
+                        }`}
+                      >
+                        {jour}
+                      </span>
+                      {evenementsJour.length > 0 && evenementsJour[0].image && (
+                        <img
+                          src={evenementsJour[0].image}
+                          alt=""
+                          className="w-6 h-6 rounded object-cover opacity-90 flex-shrink-0"
+                          loading="lazy"
+                        />
                       )}
                     </div>
-                  )}
+
+                    {evenementsJour.length > 0 && (
+                      <div className="mt-1.5 space-y-0.5 overflow-hidden flex-1">
+                        {evenementsJour.slice(0, 2).map((event, i) => (
+                          <div
+                            key={i}
+                            className="text-[9px] truncate leading-tight"
+                          >
+                            <a
+                              href={event.lienSpotify}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`hover:underline ${
+                                i === 0
+                                  ? "text-[#1DB954] font-semibold"
+                                  : "text-[#B3B3B3]"
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSpotifyLinkClick(event.titre);
+                              }}
+                            >
+                              {event.titre}
+                            </a>
+                          </div>
+                        ))}
+                        {evenementsJour.length > 2 && (
+                          <div className="text-[9px] text-[#727272] mt-0.5">
+                            +{evenementsJour.length - 2} autres
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -1064,51 +1123,77 @@ const Calendar = () => {
 
       {afficherPopup && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#282828] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#3E3E3E]">
-              <h3 className="text-white font-bold text-sm capitalize">
-                {evenementsSelectionnes[0].date.format("dddd D MMMM YYYY")}
-              </h3>
+          <div className="bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+
+            <div className="relative h-40 overflow-hidden">
+              {evenementsSelectionnes[0].image && (
+                <img
+                  src={evenementsSelectionnes[0].image}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/50 to-transparent" />
+              <button
+                onClick={() => setAfficherPopup(false)}
+                className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center bg-black/40 hover:bg-black/60 rounded-full text-white transition-colors text-xs"
+                aria-label="Fermer"
+              >
+                ✕
+              </button>
+              <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
+                <h3 className="text-white font-bold text-sm capitalize">
+                  {evenementsSelectionnes[0].date.format("dddd D MMMM YYYY")}
+                </h3>
+                <p className="text-[#B3B3B3] text-[11px] mt-0.5">
+                  {evenementsSelectionnes.length} sortie{evenementsSelectionnes.length > 1 ? "s" : ""}
+                </p>
+              </div>
             </div>
-            <div className="p-5 max-h-[55vh] overflow-y-auto space-y-4">
-              {evenementsSelectionnes.some((e) =>
-                e.date.isAfter(aujourdHui)
-              ) && (
+
+            <div className="max-h-[45vh] overflow-y-auto px-3 py-3 space-y-4">
+              {evenementsSelectionnes.some((e) => e.date.isAfter(aujourdHui)) && (
                 <div>
-                  <p className="text-[#1DB954] text-[10px] font-bold uppercase tracking-wider mb-2">
+                  <p className="text-[#1DB954] text-[10px] font-bold uppercase tracking-wider mb-2 px-2">
                     À venir
                   </p>
-                  {["album", "single", "compilation,appears_on"].map((type) => {
+                  {["album", "single", "compilation", "appears_on"].map((groupe) => {
                     const filteredEvents = evenementsSelectionnes.filter(
-                      (event) =>
-                        (type.includes(",")
-                          ? type.split(",").includes(event.type)
-                          : event.type === type) &&
-                        event.date.isAfter(aujourdHui)
+                      (event) => event.groupe === groupe && event.date.isAfter(aujourdHui)
                     );
                     if (!filteredEvents.length) return null;
                     return (
-                      <div key={type} className="mb-3">
-                        <p className="text-[#B3B3B3] text-[10px] font-medium uppercase tracking-wide mb-1.5">
-                          {type === "album"
-                            ? "Albums"
-                            : type === "single"
-                            ? "Singles"
-                            : "Compilations / Feats"}
+                      <div key={groupe} className="mb-2">
+                        <p className="text-[#727272] text-[10px] font-medium uppercase tracking-wide mb-1 px-2">
+                          {groupe === "album" ? "Albums" : groupe === "single" ? "Singles" : groupe === "compilation" ? "Compilations" : "Featurings"}
                         </p>
-                        <ul className="space-y-1">
+                        <ul className="space-y-0.5">
                           {filteredEvents.map((event, i) => (
                             <li key={i}>
                               <a
                                 href={event.lienSpotify}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-white text-sm hover:text-[#1DB954] transition-colors"
-                                onClick={() =>
-                                  handleSpotifyLinkClick(event.titre)
-                                }
+                                className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group"
+                                onClick={() => handleSpotifyLinkClick(event.titre)}
                               >
-                                {event.titre}
+                                {event.image && (
+                                  <img
+                                    src={event.image}
+                                    alt=""
+                                    className="w-9 h-9 rounded object-cover flex-shrink-0"
+                                    loading="lazy"
+                                  />
+                                )}
+                                <span className="text-white text-sm group-hover:text-[#1DB954] transition-colors truncate flex-1">
+                                  {event.titre}
+                                </span>
+                                {event.groupe === "appears_on" && (
+                                  <span className="flex-shrink-0 text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
+                                    Feat.
+                                  </span>
+                                )}
                               </a>
                             </li>
                           ))}
@@ -1118,44 +1203,47 @@ const Calendar = () => {
                   })}
                 </div>
               )}
-              {evenementsSelectionnes.some(
-                (e) => !e.date.isAfter(aujourdHui)
-              ) && (
+              {evenementsSelectionnes.some((e) => !e.date.isAfter(aujourdHui)) && (
                 <div>
-                  <p className="text-[#727272] text-[10px] font-bold uppercase tracking-wider mb-2">
+                  <p className="text-[#727272] text-[10px] font-bold uppercase tracking-wider mb-2 px-2">
                     Passées
                   </p>
-                  {["album", "single", "compilation,appears_on"].map((type) => {
+                  {["album", "single", "compilation", "appears_on"].map((groupe) => {
                     const filteredEvents = evenementsSelectionnes.filter(
-                      (event) =>
-                        (type.includes(",")
-                          ? type.split(",").includes(event.type)
-                          : event.type === type) &&
-                        !event.date.isAfter(aujourdHui)
+                      (event) => event.groupe === groupe && !event.date.isAfter(aujourdHui)
                     );
                     if (!filteredEvents.length) return null;
                     return (
-                      <div key={type} className="mb-3">
-                        <p className="text-[#727272] text-[10px] font-medium uppercase tracking-wide mb-1.5">
-                          {type === "album"
-                            ? "Albums"
-                            : type === "single"
-                            ? "Singles"
-                            : "Compilations / Feats"}
+                      <div key={groupe} className="mb-2">
+                        <p className="text-[#727272] text-[10px] font-medium uppercase tracking-wide mb-1 px-2">
+                          {groupe === "album" ? "Albums" : groupe === "single" ? "Singles" : groupe === "compilation" ? "Compilations" : "Featurings"}
                         </p>
-                        <ul className="space-y-1">
+                        <ul className="space-y-0.5">
                           {filteredEvents.map((event, i) => (
                             <li key={i}>
                               <a
                                 href={event.lienSpotify}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[#B3B3B3] text-sm hover:text-white transition-colors"
-                                onClick={() =>
-                                  handleSpotifyLinkClick(event.titre)
-                                }
+                                className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group"
+                                onClick={() => handleSpotifyLinkClick(event.titre)}
                               >
-                                {event.titre}
+                                {event.image && (
+                                  <img
+                                    src={event.image}
+                                    alt=""
+                                    className="w-9 h-9 rounded object-cover flex-shrink-0 opacity-60"
+                                    loading="lazy"
+                                  />
+                                )}
+                                <span className="text-[#B3B3B3] text-sm group-hover:text-white transition-colors truncate flex-1">
+                                  {event.titre}
+                                </span>
+                                {event.groupe === "appears_on" && (
+                                  <span className="flex-shrink-0 text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
+                                    Feat.
+                                  </span>
+                                )}
                               </a>
                             </li>
                           ))}
@@ -1166,7 +1254,8 @@ const Calendar = () => {
                 </div>
               )}
             </div>
-            <div className="px-5 py-4 border-t border-[#3E3E3E]">
+
+            <div className="px-5 py-4 border-t border-white/5">
               <button
                 onClick={() => setAfficherPopup(false)}
                 className="w-full bg-white text-black text-sm font-bold py-2.5 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-transform"

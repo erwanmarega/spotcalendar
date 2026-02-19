@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export const checkTokens = async () => {
   const response = await fetch(`${API_BASE_URL}/api/check-tokens`, {
@@ -61,6 +61,44 @@ export const fetchSpotifyData = async (path, options = {}) => {
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(`Erreur HTTP : ${response.status} - ${errorData.error || 'Erreur inconnue'}${errorData.details ? ` (${errorData.details.error.message})` : ''}`);
+  }
+  return response.json();
+};
+
+export const getMissedReleases = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/missed-releases`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || `Erreur HTTP : ${response.status}`);
+  }
+  return response.json();
+};
+
+export const getEmailPreferences = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/email-preferences`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || `Erreur HTTP : ${response.status}`);
+  }
+  return response.json();
+};
+
+export const setEmailPreferences = async (enabled) => {
+  const response = await fetch(`${API_BASE_URL}/api/email-preferences`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || `Erreur HTTP : ${response.status}`);
   }
   return response.json();
 };

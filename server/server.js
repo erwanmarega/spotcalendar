@@ -6,6 +6,10 @@ require("dotenv").config({
   path: `.env.${process.env.NODE_ENV || "development"}`,
 });
 
+const db = require("./db");
+const { sendMissedReleasesEmail, generateUnsubscribeToken, getUserIdFromToken } = require("./emailService");
+const { computeMissedReleases } = require("./cronJob");
+
 const app = express();
 
 const allowedOrigins = process.env.NODE_ENV === "production"
@@ -84,6 +88,24 @@ app.post("/api/token", async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       maxAge: response.data.expires_in * 1000
     });
+
+    try {
+      const meResponse = await axios.get("https://api.spotify.com/v1/me", {
+        headers: { Authorization: `Bearer ${response.data.access_token}` },
+      });
+      const { id, email } = meResponse.data;
+      if (id && email) {
+        db.prepare(`
+          INSERT INTO users (user_id, email, refresh_token)
+          VALUES (?, ?, ?)
+          ON CONFLICT(user_id) DO UPDATE SET
+            email = excluded.email,
+            refresh_token = excluded.refresh_token
+        `).run(id, email, response.data.refresh_token);
+      }
+    } catch (dbErr) {
+      console.error("Erreur lors de la persistance de l'utilisateur :", dbErr.message);
+    }
 
     res.json({ message: "Tokens stockés dans les cookies" });
   } catch (error) {
@@ -194,6 +216,124 @@ app.get("/api/spotify/:path(*)", async (req, res) => {
     console.error("Statut HTTP :", error.response?.status);
     res.status(error.response?.status || 500).json({ error: "Échec de la requête Spotify", details: error.response?.data });
   }
+});
+
+app.get("/api/missed-releases", async (req, res) => {
+  const accessToken = req.cookies.access_token;
+  if (!accessToken) {
+    return res.status(401).json({ error: "Aucun token d'accès" });
+  }
+
+  try {
+    const releases = await computeMissedReleases(accessToken);
+    res.json(releases);
+  } catch (error) {
+    console.error("Erreur missed-releases :", error.message);
+    res.status(error.response?.status || 500).json({ error: "Erreur lors du calcul des sorties manquées" });
+  }
+});
+
+app.get("/api/email-preferences", async (req, res) => {
+  const accessToken = req.cookies.access_token;
+  if (!accessToken) {
+    return res.status(401).json({ error: "Aucun token d'accès" });
+  }
+
+  try {
+    const meResponse = await axios.get("https://api.spotify.com/v1/me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const user = db.prepare("SELECT email_notifications FROM users WHERE user_id = ?").get(meResponse.data.id);
+    res.json({ enabled: user ? Boolean(user.email_notifications) : false });
+  } catch (error) {
+    console.error("Erreur email-preferences GET :", error.message);
+    res.status(500).json({ error: "Erreur lors de la récupération des préférences" });
+  }
+});
+
+app.post("/api/email-preferences", async (req, res) => {
+  const accessToken = req.cookies.access_token;
+  if (!accessToken) {
+    return res.status(401).json({ error: "Aucun token d'accès" });
+  }
+
+  const { enabled } = req.body;
+  if (typeof enabled !== "boolean") {
+    return res.status(400).json({ error: "Le champ 'enabled' doit être un booléen" });
+  }
+
+  try {
+    const meResponse = await axios.get("https://api.spotify.com/v1/me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    db.prepare("UPDATE users SET email_notifications = ? WHERE user_id = ?")
+      .run(enabled ? 1 : 0, meResponse.data.id);
+    res.json({ enabled });
+  } catch (error) {
+    console.error("Erreur email-preferences POST :", error.message);
+    res.status(500).json({ error: "Erreur lors de la mise à jour des préférences" });
+  }
+});
+
+app.get("/api/test-email", async (req, res) => {
+  const accessToken = req.cookies.access_token;
+  if (!accessToken) {
+    return res.status(401).json({ error: "Aucun token d'accès" });
+  }
+
+  try {
+    const meResponse = await axios.get("https://api.spotify.com/v1/me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const user = db.prepare("SELECT * FROM users WHERE user_id = ?").get(meResponse.data.id);
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur non trouvé en base" });
+    }
+
+    const releases = await computeMissedReleases(accessToken);
+    if (releases.length === 0) {
+      return res.json({ message: "Aucune sortie manquée, email non envoyé" });
+    }
+
+    const token = generateUnsubscribeToken(user.user_id);
+    const unsubscribeUrl = `${process.env.SERVER_URL}/api/unsubscribe/${token}`;
+    await sendMissedReleasesEmail(user.email, releases, unsubscribeUrl);
+    res.json({ message: `Email de test envoyé à ${user.email} avec ${releases.length} sorties` });
+  } catch (error) {
+    console.error("Erreur test-email :", error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/unsubscribe/:token", (req, res) => {
+  const userId = getUserIdFromToken(req.params.token);
+
+  if (!userId) {
+    return res.status(400).send(`
+      <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Lien invalide</title></head>
+      <body style="margin:0;background:#121212;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
+        <div style="text-align:center;color:#fff;">
+          <p style="font-size:48px;margin:0">❌</p>
+          <h1 style="font-size:22px;margin:16px 0 8px">Lien invalide</h1>
+          <p style="color:#B3B3B3;font-size:14px">Ce lien de désinscription est incorrect ou a expiré.</p>
+        </div>
+      </body></html>
+    `);
+  }
+
+  db.prepare("UPDATE users SET email_notifications = 0 WHERE user_id = ?").run(userId);
+
+  res.send(`
+    <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Désinscription confirmée</title></head>
+    <body style="margin:0;background:#121212;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
+      <div style="text-align:center;color:#fff;">
+        <p style="font-size:48px;margin:0">✅</p>
+        <h1 style="font-size:22px;margin:16px 0 8px">Tu es désinscrit</h1>
+        <p style="color:#B3B3B3;font-size:14px">Tu ne recevras plus les emails hebdomadaires de SpotCalendar.</p>
+        <p style="color:#535353;font-size:12px;margin-top:24px">Tu peux te réabonner à tout moment depuis l'application.</p>
+      </div>
+    </body></html>
+  `);
 });
 
 const port = process.env.PORT || 3000;
