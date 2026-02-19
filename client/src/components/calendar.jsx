@@ -437,114 +437,140 @@ const Calendar = () => {
 
       <aside
         className={`
-          fixed md:relative top-0 left-0 h-full w-[272px] flex-shrink-0
-          bg-[#000000] flex flex-col z-40
+          fixed md:relative top-0 left-0 h-full w-[280px] flex-shrink-0
+          flex flex-col z-40
           transform transition-transform duration-300 ease-in-out
           ${
             sidebarOuverte ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0
         `}
       >
-        <div className="flex items-center gap-3 px-6 pt-6 pb-4">
-          <img src={logo} alt="Logo" className="w-7 h-7" />
-          <span className="font-bold text-sm tracking-tight text-white">
-            Mon Calendrier
-          </span>
-        </div>
+        <div className="bg-[#121212] rounded-lg mx-2 mt-2 mb-2 flex-shrink-0">
+          <div className="flex items-center gap-2.5 px-4 pt-5 pb-4">
+            <img src={logo} alt="Logo" className="w-7 h-7 flex-shrink-0" />
+            <span className="font-bold text-sm tracking-tight text-white">
+              Mon Calendrier
+            </span>
+          </div>
 
-        <div className="px-3 mb-1">
-          <input
-            type="text"
-            placeholder="Rechercher un artiste..."
-            value={rechercheArtiste}
-            onChange={(e) => setRechercheArtiste(e.target.value)}
-            className="w-full px-3 py-2 bg-[#242424] rounded-md text-sm text-white placeholder-[#727272] outline-none focus:ring-1 focus:ring-white/30 transition-all"
-            aria-label="Rechercher un artiste"
-          />
-        </div>
-
-        <div className="px-3 mb-3">
-          <select
-            value={filtreGenre}
-            onChange={(e) => setFiltreGenre(e.target.value)}
-            className="w-full px-3 py-2 bg-[#242424] rounded-md text-sm text-white outline-none focus:ring-1 focus:ring-white/30 transition-all cursor-pointer"
-            aria-label="Filtrer par genre"
-          >
-            <option value="tous">Tous les genres</option>
-            {genresDisponibles.map((genre) => (
-              <option key={genre} value={genre}>
-                {genre}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <nav className="px-3 mb-2">
-          <ul className="space-y-0.5">
-            {[
-              { id: "artists", label: "Artistes", icon: FaUserFriends },
-              { id: "history", label: "Historique", icon: FaHistory },
-              { id: "genres", label: "Genres", icon: FaChartPie },
-            ].map(({ id, label, icon: Icon }) => (
-              <li key={id}>
-                <button
-                  className={`
-                    w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-150
-                    ${
-                      ongletActif === id
-                        ? "bg-[#282828] text-white"
-                        : "text-[#B3B3B3] hover:text-white hover:bg-[#181818]"
-                    }
-                  `}
-                  onClick={() => setOngletActif(id)}
-                  aria-label={`Voir ${label.toLowerCase()}`}
-                >
-                  <Icon
-                    className={`text-base flex-shrink-0 ${
-                      ongletActif === id ? "text-[#1DB954]" : ""
-                    }`}
-                  />
-                  {label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="mx-6 border-t border-[#282828] mb-2" />
-
-        <div className="flex-1 overflow-y-auto px-3 pb-4">
-          {ongletActif === "artists" && (
-            <div>
-              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#727272]">
-                Artistes suivis
-              </p>
-              {chargement ? (
-                <div className="space-y-1">
-                  {[...Array(5)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="animate-pulse flex items-center gap-3 px-3 py-2"
+          <nav className="px-2 pb-3">
+            <ul className="space-y-0.5">
+              {[
+                { id: "artists", label: "Artistes", icon: FaUserFriends },
+                { id: "history", label: "Historique", icon: FaHistory },
+                { id: "genres", label: "Genres", icon: FaChartPie },
+              ].map(({ id, label, icon: Icon }) => (
+                <li key={id}>
+                  <button
+                    className={`
+                      w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors duration-100
+                      ${
+                        ongletActif === id
+                          ? "text-white"
+                          : "text-[#B3B3B3] hover:text-white"
+                      }
+                    `}
+                    onClick={() => setOngletActif(id)}
+                    aria-label={`Voir ${label.toLowerCase()}`}
+                  >
+                    <Icon
+                      className={`text-[22px] flex-shrink-0 ${
+                        ongletActif === id ? "text-white" : "text-[#B3B3B3]"
+                      }`}
+                    />
+                    <span
+                      className={`text-sm leading-none ${
+                        ongletActif === id ? "font-bold" : "font-medium"
+                      }`}
                     >
-                      <div className="w-9 h-9 bg-[#282828] rounded-full flex-shrink-0" />
-                      <div className="flex-1 space-y-1.5">
-                        <div className="h-3 bg-[#282828] rounded w-2/3" />
-                        <div className="h-2.5 bg-[#282828] rounded w-1/2" />
+                      {label}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+
+        <div className="bg-[#121212] rounded-lg mx-2 flex-1 flex flex-col overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 flex-shrink-0">
+            <div className="flex items-center gap-3 text-[#B3B3B3] hover:text-white cursor-default transition-colors">
+              <FaUserFriends className="text-xl" />
+              <span className="text-sm font-bold">Votre bibliothèque</span>
+            </div>
+          </div>
+
+          <div className="px-3 pb-3 space-y-2 flex-shrink-0">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Rechercher un artiste..."
+                value={rechercheArtiste}
+                onChange={(e) => setRechercheArtiste(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-[#242424] rounded-full text-xs text-white placeholder-[#727272] outline-none focus:ring-1 focus:ring-white/20 transition-all"
+                aria-label="Rechercher un artiste"
+              />
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#727272]"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <select
+              value={filtreGenre}
+              onChange={(e) => setFiltreGenre(e.target.value)}
+              className="w-full px-3 py-2 bg-[#242424] rounded-full text-xs text-white outline-none cursor-pointer"
+              aria-label="Filtrer par genre"
+            >
+              <option value="tous">Tous les genres</option>
+              {genresDisponibles.map((genre) => (
+                <option key={genre} value={genre}>
+                  {genre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mx-4 border-t border-[#282828] mb-1 flex-shrink-0" />
+
+          <div className="flex-1 overflow-y-auto px-3 pb-4">
+            {ongletActif === "artists" && (
+              <div>
+                <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#727272]">
+                  Artistes suivis
+                </p>
+                {chargement ? (
+                  <div className="space-y-1">
+                    {[...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="animate-pulse flex items-center gap-3 px-3 py-2"
+                      >
+                        <div className="w-9 h-9 bg-[#282828] rounded-full flex-shrink-0" />
+                        <div className="flex-1 space-y-1.5">
+                          <div className="h-3 bg-[#282828] rounded w-2/3" />
+                          <div className="h-2.5 bg-[#282828] rounded w-1/2" />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : msgErreur ? (
-                <div className="mx-1 p-3 bg-[#2a1010] border border-red-900/50 rounded-lg">
-                  <p className="text-red-400 text-xs">{msgErreur}</p>
-                </div>
-              ) : (
-                <ul className="space-y-0.5">
-                  {artistesFiltres.length ? (
-                    artistesFiltres.map((artiste) => (
-                      <li
-                        key={artiste.id}
-                        className={`
+                    ))}
+                  </div>
+                ) : msgErreur ? (
+                  <div className="mx-1 p-3 bg-[#2a1010] border border-red-900/50 rounded-lg">
+                    <p className="text-red-400 text-xs">{msgErreur}</p>
+                  </div>
+                ) : (
+                  <ul className="space-y-0.5">
+                    {artistesFiltres.length ? (
+                      artistesFiltres.map((artiste) => (
+                        <li
+                          key={artiste.id}
+                          className={`
                           flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors duration-150 group
                           ${
                             artisteChoisi?.id === artiste.id
@@ -552,347 +578,350 @@ const Calendar = () => {
                               : "hover:bg-[#181818]"
                           }
                         `}
-                        onClick={() => {
-                          setArtisteChoisi(artiste);
-                          recupererSortiesArtiste(artiste.id);
-                        }}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
+                          onClick={() => {
                             setArtisteChoisi(artiste);
                             recupererSortiesArtiste(artiste.id);
-                          }
-                        }}
-                        aria-label={`Voir les sorties de ${artiste.name}`}
-                      >
-                        <img
-                          src={artiste.images?.[0]?.url || iconeProfil}
-                          alt={artiste.name}
-                          className="w-9 h-9 rounded-full object-cover flex-shrink-0"
-                          loading="lazy"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={`text-sm font-medium truncate transition-colors ${
-                              artisteChoisi?.id === artiste.id
-                                ? "text-[#1DB954]"
-                                : "text-white"
-                            }`}
-                          >
-                            {artiste.name}
-                          </p>
-                          <p className="text-xs text-[#727272] truncate">
-                            {artiste.genres?.length
-                              ? artiste.genres[0]
-                              : "Artiste"}
-                          </p>
-                        </div>
-                      </li>
-                    ))
-                  ) : (
-                    <p className="px-3 py-4 text-[#727272] text-sm">
-                      Aucun artiste trouvé.
-                    </p>
-                  )}
-                </ul>
-              )}
-
-              {artisteChoisi && !chargement && (
-                <div className="mt-4 px-1">
-                  <div className="flex items-center gap-2 mb-2 px-2">
-                    <div className="w-0.5 h-4 bg-[#1DB954] rounded-full" />
-                    <p className="text-xs font-bold text-white">
-                      Prochaines sorties
-                    </p>
-                  </div>
-                  <p className="px-3 text-[11px] text-[#727272] mb-2">
-                    {artisteChoisi.name}
-                  </p>
-                  {sortiesArtiste.length ? (
-                    <ul className="space-y-0.5">
-                      {sortiesArtiste.map((sortie, i) => (
-                        <li
-                          key={i}
-                          className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-[#181818] transition-colors"
-                        >
-                          <img
-                            src={sortie.image}
-                            alt=""
-                            className="w-8 h-8 rounded object-cover flex-shrink-0"
-                            loading="lazy"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <a
-                              href={sortie.lienSpotify}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[#1DB954] text-xs font-medium hover:underline block truncate"
-                              onClick={() =>
-                                handleSpotifyLinkClick(sortie.titre)
-                              }
-                            >
-                              {sortie.titre}
-                            </a>
-                            <p className="text-[#727272] text-[10px]">
-                              {sortie.date.format("DD/MM/YYYY")} · {sortie.type}
-                            </p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="px-3 text-[#727272] text-xs">
-                      Aucune sortie à venir.
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {ongletActif === "history" && (
-            <div>
-              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#727272]">
-                Historique
-              </p>
-              {artisteChoisi ? (
-                <div>
-                  <p className="px-3 text-sm font-medium text-white mb-3">
-                    {artisteChoisi.name}
-                  </p>
-                  <div className="space-y-1.5 mb-4">
-                    {[
-                      {
-                        value: filtreType,
-                        onChange: (v) => setFiltreType(v),
-                        options: [
-                          ["tous", "Tous"],
-                          ["album", "Albums"],
-                          ["single", "Singles"],
-                          ["compilation", "Compilations"],
-                          ["appears_on", "Feats"],
-                        ],
-                      },
-                      {
-                        value: filtrePeriode,
-                        onChange: (v) => setFiltrePeriode(Number(v)),
-                        options: [
-                          [1, "1 mois"],
-                          [3, "3 mois"],
-                          [6, "6 mois"],
-                          [12, "12 mois"],
-                        ],
-                      },
-                      {
-                        value: triHistorique,
-                        onChange: (v) => setTriHistorique(v),
-                        options: [
-                          ["date-desc", "Récent d'abord"],
-                          ["date-asc", "Ancien d'abord"],
-                          ["title-asc", "Titre A→Z"],
-                          ["title-desc", "Titre Z→A"],
-                        ],
-                      },
-                    ].map((sel, idx) => (
-                      <select
-                        key={idx}
-                        value={sel.value}
-                        onChange={(e) => sel.onChange(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#242424] rounded-md text-xs text-white outline-none cursor-pointer"
-                      >
-                        {sel.options.map(([val, label]) => (
-                          <option key={val} value={val}>
-                            {label}
-                          </option>
-                        ))}
-                      </select>
-                    ))}
-                  </div>
-                  {chargement ? (
-                    <div className="space-y-1">
-                      {[...Array(4)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="animate-pulse flex items-center gap-3 px-2 py-2"
-                        >
-                          <div className="w-9 h-9 bg-[#282828] rounded flex-shrink-0" />
-                          <div className="flex-1 space-y-1.5">
-                            <div className="h-3 bg-[#282828] rounded w-3/4" />
-                            <div className="h-2.5 bg-[#282828] rounded w-1/2" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : sortiesFiltreesEtTriees.length ? (
-                    <ul className="space-y-0.5">
-                      {sortiesFiltreesEtTriees.map((sortie, i) => (
-                        <li
-                          key={i}
-                          className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-[#181818] transition-colors cursor-pointer"
+                          }}
                           role="button"
                           tabIndex={0}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
-                              handleSpotifyLinkClick(sortie.titre);
-                              window.open(
-                                sortie.lienSpotify,
-                                "_blank",
-                                "noopener,noreferrer"
-                              );
+                              setArtisteChoisi(artiste);
+                              recupererSortiesArtiste(artiste.id);
                             }
                           }}
+                          aria-label={`Voir les sorties de ${artiste.name}`}
                         >
                           <img
-                            src={sortie.image}
-                            alt=""
-                            className="w-9 h-9 rounded object-cover flex-shrink-0"
+                            src={artiste.images?.[0]?.url || iconeProfil}
+                            alt={artiste.name}
+                            className="w-9 h-9 rounded-full object-cover flex-shrink-0"
                             loading="lazy"
                           />
                           <div className="flex-1 min-w-0">
-                            <a
-                              href={sortie.lienSpotify}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-white text-xs font-medium hover:text-[#1DB954] transition-colors block truncate"
-                              onClick={() =>
-                                handleSpotifyLinkClick(sortie.titre)
-                              }
+                            <p
+                              className={`text-sm font-medium truncate transition-colors ${
+                                artisteChoisi?.id === artiste.id
+                                  ? "text-[#1DB954]"
+                                  : "text-white"
+                              }`}
                             >
-                              {sortie.titre}
-                            </a>
-                            <p className="text-[#727272] text-[10px]">
-                              {sortie.date.format("DD/MM/YYYY")} · {sortie.type}
+                              {artiste.name}
+                            </p>
+                            <p className="text-xs text-[#727272] truncate">
+                              {artiste.genres?.length
+                                ? artiste.genres[0]
+                                : "Artiste"}
                             </p>
                           </div>
                         </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="px-3 text-[#727272] text-sm">
-                      Aucune sortie pour ces filtres.
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <p className="px-3 py-4 text-[#727272] text-sm">
-                  Sélectionnez un artiste pour voir son historique.
-                </p>
-              )}
-            </div>
-          )}
+                      ))
+                    ) : (
+                      <p className="px-3 py-4 text-[#727272] text-sm">
+                        Aucun artiste trouvé.
+                      </p>
+                    )}
+                  </ul>
+                )}
 
-          {ongletActif === "genres" && (
-            <div>
-              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#727272]">
-                Genres les plus écoutés
-              </p>
-              {donneesGenres.labels.length >= 3 && (
-                <div className="mx-1 p-3 bg-[#181818] rounded-lg mb-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#727272] mb-2">
-                    Top 3
-                  </p>
-                  <ol className="space-y-1.5">
-                    {donneesGenres.labels.slice(0, 3).map((genre, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <span className="text-[#1DB954] text-xs font-bold w-4">
-                          {i + 1}
-                        </span>
-                        <span className="text-white text-sm truncate">
-                          {genre}
-                        </span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              )}
-              <div className="flex gap-1.5 px-1 mb-4">
-                {[
-                  { id: "pie", label: "Secteurs" },
-                  { id: "bar", label: "Barres" },
-                ].map(({ id, label }) => (
-                  <button
-                    key={id}
-                    onClick={() => setTypeGraphique(id)}
-                    className={`flex-1 py-1.5 rounded-full text-xs font-bold transition-all ${
-                      typeGraphique === id
-                        ? "bg-white text-black"
-                        : "bg-[#242424] text-[#B3B3B3] hover:text-white"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
+                {artisteChoisi && !chargement && (
+                  <div className="mt-4 px-1">
+                    <div className="flex items-center gap-2 mb-2 px-2">
+                      <div className="w-0.5 h-4 bg-[#1DB954] rounded-full" />
+                      <p className="text-xs font-bold text-white">
+                        Prochaines sorties
+                      </p>
+                    </div>
+                    <p className="px-3 text-[11px] text-[#727272] mb-2">
+                      {artisteChoisi.name}
+                    </p>
+                    {sortiesArtiste.length ? (
+                      <ul className="space-y-0.5">
+                        {sortiesArtiste.map((sortie, i) => (
+                          <li
+                            key={i}
+                            className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-[#181818] transition-colors"
+                          >
+                            <img
+                              src={sortie.image}
+                              alt=""
+                              className="w-8 h-8 rounded object-cover flex-shrink-0"
+                              loading="lazy"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <a
+                                href={sortie.lienSpotify}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#1DB954] text-xs font-medium hover:underline block truncate"
+                                onClick={() =>
+                                  handleSpotifyLinkClick(sortie.titre)
+                                }
+                              >
+                                {sortie.titre}
+                              </a>
+                              <p className="text-[#727272] text-[10px]">
+                                {sortie.date.format("DD/MM/YYYY")} ·{" "}
+                                {sortie.type}
+                              </p>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="px-3 text-[#727272] text-xs">
+                        Aucune sortie à venir.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
-              {chargement ? (
-                <p className="px-3 text-[#727272] text-sm">Chargement...</p>
-              ) : donneesGenres.labels.length ? (
-                <div className="px-1">
-                  {typeGraphique === "pie" ? (
-                    <Pie
-                      data={donneesGenres}
-                      options={{
-                        responsive: true,
-                        plugins: {
-                          legend: {
-                            position: "bottom",
-                            labels: {
-                              color: "#B3B3B3",
-                              font: { size: 10 },
-                              boxWidth: 12,
-                              padding: 8,
+            )}
+
+            {ongletActif === "history" && (
+              <div>
+                <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#727272]">
+                  Historique
+                </p>
+                {artisteChoisi ? (
+                  <div>
+                    <p className="px-3 text-sm font-medium text-white mb-3">
+                      {artisteChoisi.name}
+                    </p>
+                    <div className="space-y-1.5 mb-4">
+                      {[
+                        {
+                          value: filtreType,
+                          onChange: (v) => setFiltreType(v),
+                          options: [
+                            ["tous", "Tous"],
+                            ["album", "Albums"],
+                            ["single", "Singles"],
+                            ["compilation", "Compilations"],
+                            ["appears_on", "Feats"],
+                          ],
+                        },
+                        {
+                          value: filtrePeriode,
+                          onChange: (v) => setFiltrePeriode(Number(v)),
+                          options: [
+                            [1, "1 mois"],
+                            [3, "3 mois"],
+                            [6, "6 mois"],
+                            [12, "12 mois"],
+                          ],
+                        },
+                        {
+                          value: triHistorique,
+                          onChange: (v) => setTriHistorique(v),
+                          options: [
+                            ["date-desc", "Récent d'abord"],
+                            ["date-asc", "Ancien d'abord"],
+                            ["title-asc", "Titre A→Z"],
+                            ["title-desc", "Titre Z→A"],
+                          ],
+                        },
+                      ].map((sel, idx) => (
+                        <select
+                          key={idx}
+                          value={sel.value}
+                          onChange={(e) => sel.onChange(e.target.value)}
+                          className="w-full px-3 py-2 bg-[#242424] rounded-md text-xs text-white outline-none cursor-pointer"
+                        >
+                          {sel.options.map(([val, label]) => (
+                            <option key={val} value={val}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                      ))}
+                    </div>
+                    {chargement ? (
+                      <div className="space-y-1">
+                        {[...Array(4)].map((_, i) => (
+                          <div
+                            key={i}
+                            className="animate-pulse flex items-center gap-3 px-2 py-2"
+                          >
+                            <div className="w-9 h-9 bg-[#282828] rounded flex-shrink-0" />
+                            <div className="flex-1 space-y-1.5">
+                              <div className="h-3 bg-[#282828] rounded w-3/4" />
+                              <div className="h-2.5 bg-[#282828] rounded w-1/2" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : sortiesFiltreesEtTriees.length ? (
+                      <ul className="space-y-0.5">
+                        {sortiesFiltreesEtTriees.map((sortie, i) => (
+                          <li
+                            key={i}
+                            className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-[#181818] transition-colors cursor-pointer"
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                handleSpotifyLinkClick(sortie.titre);
+                                window.open(
+                                  sortie.lienSpotify,
+                                  "_blank",
+                                  "noopener,noreferrer"
+                                );
+                              }
+                            }}
+                          >
+                            <img
+                              src={sortie.image}
+                              alt=""
+                              className="w-9 h-9 rounded object-cover flex-shrink-0"
+                              loading="lazy"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <a
+                                href={sortie.lienSpotify}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-white text-xs font-medium hover:text-[#1DB954] transition-colors block truncate"
+                                onClick={() =>
+                                  handleSpotifyLinkClick(sortie.titre)
+                                }
+                              >
+                                {sortie.titre}
+                              </a>
+                              <p className="text-[#727272] text-[10px]">
+                                {sortie.date.format("DD/MM/YYYY")} ·{" "}
+                                {sortie.type}
+                              </p>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="px-3 text-[#727272] text-sm">
+                        Aucune sortie pour ces filtres.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="px-3 py-4 text-[#727272] text-sm">
+                    Sélectionnez un artiste pour voir son historique.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {ongletActif === "genres" && (
+              <div>
+                <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#727272]">
+                  Genres les plus écoutés
+                </p>
+                {donneesGenres.labels.length >= 3 && (
+                  <div className="mx-1 p-3 bg-[#181818] rounded-lg mb-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#727272] mb-2">
+                      Top 3
+                    </p>
+                    <ol className="space-y-1.5">
+                      {donneesGenres.labels.slice(0, 3).map((genre, i) => (
+                        <li key={i} className="flex items-center gap-2">
+                          <span className="text-[#1DB954] text-xs font-bold w-4">
+                            {i + 1}
+                          </span>
+                          <span className="text-white text-sm truncate">
+                            {genre}
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+                <div className="flex gap-1.5 px-1 mb-4">
+                  {[
+                    { id: "pie", label: "Secteurs" },
+                    { id: "bar", label: "Barres" },
+                  ].map(({ id, label }) => (
+                    <button
+                      key={id}
+                      onClick={() => setTypeGraphique(id)}
+                      className={`flex-1 py-1.5 rounded-full text-xs font-bold transition-all ${
+                        typeGraphique === id
+                          ? "bg-white text-black"
+                          : "bg-[#242424] text-[#B3B3B3] hover:text-white"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {chargement ? (
+                  <p className="px-3 text-[#727272] text-sm">Chargement...</p>
+                ) : donneesGenres.labels.length ? (
+                  <div className="px-1">
+                    {typeGraphique === "pie" ? (
+                      <Pie
+                        data={donneesGenres}
+                        options={{
+                          responsive: true,
+                          plugins: {
+                            legend: {
+                              position: "bottom",
+                              labels: {
+                                color: "#B3B3B3",
+                                font: { size: 10 },
+                                boxWidth: 12,
+                                padding: 8,
+                              },
                             },
                           },
-                        },
-                      }}
-                    />
-                  ) : (
-                    <Bar
-                      data={donneesGenres}
-                      options={{
-                        responsive: true,
-                        scales: {
-                          x: {
-                            ticks: { color: "#B3B3B3", font: { size: 9 } },
-                            grid: { color: "#282828" },
+                        }}
+                      />
+                    ) : (
+                      <Bar
+                        data={donneesGenres}
+                        options={{
+                          responsive: true,
+                          scales: {
+                            x: {
+                              ticks: { color: "#B3B3B3", font: { size: 9 } },
+                              grid: { color: "#282828" },
+                            },
+                            y: {
+                              beginAtZero: true,
+                              ticks: { color: "#B3B3B3", stepSize: 1 },
+                              grid: { color: "#282828" },
+                            },
                           },
-                          y: {
-                            beginAtZero: true,
-                            ticks: { color: "#B3B3B3", stepSize: 1 },
-                            grid: { color: "#282828" },
-                          },
-                        },
-                        plugins: { legend: { display: false } },
-                      }}
-                    />
-                  )}
-                </div>
-              ) : (
-                <p className="px-3 text-[#727272] text-sm">
-                  Aucun genre disponible.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+                          plugins: { legend: { display: false } },
+                        }}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <p className="px-3 text-[#727272] text-sm">
+                    Aucun genre disponible.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
 
-        <div className="flex-shrink-0 px-4 py-3 border-t border-[#282828] flex items-center gap-3">
-          <img
-            src={utilisateur?.images?.[0]?.url || iconeProfil}
-            alt="Profil"
-            className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-2 ring-[#282828]"
-            loading="lazy"
-          />
-          <span className="text-sm font-medium text-white flex-1 truncate">
-            {utilisateur?.display_name || "Chargement..."}
-          </span>
-          <button
-            onClick={deconnexion}
-            className="text-[#B3B3B3] hover:text-white transition-colors text-xs font-medium flex-shrink-0"
-            aria-label="Se déconnecter"
-          >
-            Déconnexion
-          </button>
+          <div className="flex-shrink-0 px-4 py-3 border-t border-[#282828] flex items-center gap-3 bg-[#121212]">
+            <img
+              src={utilisateur?.images?.[0]?.url || iconeProfil}
+              alt="Profil"
+              className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+              loading="lazy"
+            />
+            <span className="text-sm font-bold text-white flex-1 truncate">
+              {utilisateur?.display_name || "Chargement..."}
+            </span>
+            <button
+              onClick={deconnexion}
+              className="text-[#B3B3B3] hover:text-white transition-colors text-xs font-medium flex-shrink-0"
+              aria-label="Se déconnecter"
+            >
+              Déconnexion
+            </button>
+          </div>
         </div>
       </aside>
 
