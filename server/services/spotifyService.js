@@ -1,7 +1,4 @@
-const cron = require('node-cron');
 const axios = require('axios');
-const db = require('./db');
-const { sendMissedReleasesEmail, generateUnsubscribeToken } = require('./emailService');
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
@@ -39,10 +36,9 @@ async function fetchRecentArtistIds(accessToken) {
     'https://api.spotify.com/v1/me/player/recently-played?limit=50',
     { headers: { Authorization: `Bearer ${accessToken}` } }
   );
-  const ids = new Set(
+  return new Set(
     data.items.flatMap((item) => item.track.artists.map((a) => a.id))
   );
-  return ids;
 }
 
 async function fetchRecentReleasesForArtist(accessToken, artistId, since) {
@@ -79,42 +75,17 @@ async function computeMissedReleases(accessToken) {
           lienSpotify: release.external_urls.spotify,
         });
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   releases.sort((a, b) => b.date.localeCompare(a.date));
   return releases;
 }
 
-cron.schedule('0 9 * * 1', async () => {
-  console.log('[CRON] Démarrage envoi emails hebdomadaires...');
-
-  const users = db.prepare('SELECT * FROM users WHERE email_notifications = 1').all();
-  console.log(`[CRON] ${users.length} utilisateur(s) avec notifications activées`);
-
-  for (const user of users) {
-    try {
-      const accessToken = await refreshSpotifyToken(user.refresh_token);
-      const releases = await computeMissedReleases(accessToken);
-
-      if (releases.length > 0) {
-        const token = generateUnsubscribeToken(user.user_id);
-        const unsubscribeUrl = `${process.env.SERVER_URL}/api/unsubscribe/${token}`;
-        await sendMissedReleasesEmail(user.email, releases, unsubscribeUrl);
-        console.log(`[CRON] Email envoyé à ${user.email} (${releases.length} sorties)`);
-      } else {
-        console.log(`[CRON] Aucune sortie pour ${user.email}`);
-      }
-
-      db.prepare('UPDATE users SET last_email_sent = ? WHERE user_id = ?')
-        .run(new Date().toISOString(), user.user_id);
-    } catch (e) {
-      console.error(`[CRON] Erreur pour ${user.email}:`, e.message);
-    }
-  }
-
-  console.log('[CRON] Emails hebdomadaires terminés');
-});
-
-module.exports = { computeMissedReleases };
+module.exports = {
+  refreshSpotifyToken,
+  fetchAllFollowedArtists,
+  fetchRecentArtistIds,
+  fetchRecentReleasesForArtist,
+  computeMissedReleases,
+};

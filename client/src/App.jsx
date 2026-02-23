@@ -5,6 +5,7 @@ import Callback from "./components/callback";
 import Calendar from "./components/calendar";
 import IntroVideo from "./components/introvideo";
 import Home from "./Home";
+import PrivacyPolicy from "./components/PrivacyPolicy";
 
 function App() {
   const [showIntro, setShowIntro] = useState(true);
@@ -32,6 +33,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/callback" element={<Callback />} />
             <Route path="/calendar" element={<Calendar />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
           </Routes>
         </Router>
       )}

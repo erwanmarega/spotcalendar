@@ -2,5 +2,10 @@
   "name": "spotcalendar",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["client", "server"]
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "build": "npm run build -w client",
+    "preview": "rm -rf server/public && mkdir -p server/public && cp -r client/dist/. server/public/ && cd server && node server.js",
+    "package": "rm -rf _release server/front spotcalendar.zip && mkdir -p _release/front && cp -r client/build/. _release/front/ && cp server/server.js server/db.js server/package.json _release/ && cp -r server/routes server/services server/jobs _release/ && cd _release && zip -r ../spotcalendar.zip . -x '*.DS_Store' && cd .. && rm -rf _release && echo 'Done: spotcalendar.zip'"
+  }
 }
