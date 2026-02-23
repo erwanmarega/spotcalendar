@@ -1,4 +1,5 @@
 node_modules/
+*.db
 front-end/build/
 front-end/node_modules/
 back-end/node_modules/

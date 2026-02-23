@@ -44,6 +44,8 @@ const Calendar = () => {
   const [triHistorique, setTriHistorique] = useState("date-desc");
   const [sidebarOuverte, setSidebarOuverte] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(false);
+  const [sortiesGlobales, setSortiesGlobales] = useState([]);
+  const [chargementCalendrier, setChargementCalendrier] = useState(false);
   const tokenExpiresAtRef = useRef(null);
   const cacheAlbumsRef = useRef({});
 
@@ -134,6 +136,55 @@ const Calendar = () => {
           ...new Set(data.artists.items.flatMap((artist) => artist.genres)),
         ].sort()
       );
+      return data.artists.items;
+    }
+    return [];
+  }, []);
+
+  const recupererToutesSortiesGlobales = useCallback(async (artistesList) => {
+    if (!artistesList?.length) return;
+    setChargementCalendrier(true);
+    const since = dayjs().subtract(3, "month");
+    const sinceStr = since.format("YYYY-MM-DD");
+    const results = [];
+    const batchSize = 5;
+    try {
+      if (
+        !tokenExpiresAtRef.current ||
+        Date.now() >= tokenExpiresAtRef.current
+      ) {
+        await refreshToken();
+        tokenExpiresAtRef.current = Date.now() + 3600 * 1000;
+      }
+      for (let i = 0; i < artistesList.length; i += batchSize) {
+        const batch = artistesList.slice(i, i + batchSize);
+        const batchResults = await Promise.all(
+          batch.map(async (artiste) => {
+            try {
+              const data = await fetchSpotifyData(
+                `artists/${artiste.id}/albums?include_groups=album,single&limit=10&market=FR`
+              );
+              return data.items
+                .filter((item) => item.release_date >= sinceStr)
+                .map((item) => ({
+                  date: dayjs(item.release_date),
+                  titre: item.name,
+                  artiste: artiste.name,
+                  type: item.album_type,
+                  groupe: item.album_group,
+                  lienSpotify: item.external_urls.spotify,
+                  image: item.images[0]?.url || iconeProfil,
+                }));
+            } catch {
+              return [];
+            }
+          })
+        );
+        results.push(...batchResults.flat());
+      }
+      setSortiesGlobales(results);
+    } finally {
+      setChargementCalendrier(false);
     }
   }, []);
 
@@ -348,23 +399,25 @@ const Calendar = () => {
         const tokens = await checkTokens();
         if (tokens?.expires_at)
           tokenExpiresAtRef.current = parseInt(tokens.expires_at);
-      } catch {
-        // logout peut échouer, on redirige quand même
-      }
-      await Promise.all([
-        recupererProfilUtilisateur(),
+      } catch {}
+      const [artistesList] = await Promise.all([
         recupererArtistes(),
+        recupererProfilUtilisateur(),
         recupererPlaylistEnBoucle(),
         getEmailPreferences()
           .then((prefs) => setEmailEnabled(prefs.enabled))
           .catch(() => {}),
       ]);
+      if (artistesList?.length) {
+        await recupererToutesSortiesGlobales(artistesList);
+      }
     };
     init();
   }, [
     recupererProfilUtilisateur,
     recupererArtistes,
     recupererPlaylistEnBoucle,
+    recupererToutesSortiesGlobales,
   ]);
 
   const deconnexion = useCallback(() => {
@@ -649,15 +702,18 @@ const Calendar = () => {
 
           <div className="flex-shrink-0 border-t border-[#282828]">
             <div className="flex items-center justify-between px-4 py-2.5">
-              <div className="flex items-center gap-2 text-[#B3B3B3]">
+              <div className="flex items-center gap-2">
                 <svg
-                  className="w-3.5 h-3.5 flex-shrink-0"
+                  className="w-3.5 h-3.5 flex-shrink-0 text-[#B3B3B3]"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
                   <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zm0 16a3 3 0 01-2.83-2h5.66A3 3 0 0110 18z" />
                 </svg>
-                <span className="text-[11px] font-medium">Emails hebdo.</span>
+                <div>
+                  <p className="text-[11px] font-medium text-[#B3B3B3]">Emails hebdo.</p>
+                  <p className="text-[10px] text-[#535353]">Récap. chaque lundi matin</p>
+                </div>
               </div>
               <button
                 onClick={() => {
@@ -691,7 +747,7 @@ const Calendar = () => {
               </span>
               <button
                 onClick={deconnexion}
-                className="opacity-0 group-hover:opacity-100 text-[#B3B3B3] hover:text-white transition-all flex-shrink-0"
+                className="opacity-100 text-[#B3B3B3] hover:text-white transition-all flex-shrink-0"
                 aria-label="Se déconnecter"
               >
                 <svg
@@ -935,7 +991,7 @@ const Calendar = () => {
             </button>
           </div>
 
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center items-center gap-4 mb-8">
             <button
               onClick={allerAujourdHui}
               className="bg-white text-black text-xs font-bold px-5 py-2 rounded-full hover:scale-105 active:scale-95 transition-transform"
@@ -943,6 +999,11 @@ const Calendar = () => {
             >
               Aujourd&apos;hui
             </button>
+            {chargementCalendrier && (
+              <span className="text-[#727272] text-xs animate-pulse">
+                Chargement des sorties...
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-7 mb-2 hidden md:grid">
@@ -956,13 +1017,30 @@ const Calendar = () => {
             ))}
           </div>
 
+          {!chargementCalendrier &&
+            artistes.length > 0 &&
+            (artisteChoisi ? toutesSorties : sortiesGlobales).filter((s) =>
+              s.date.isSame(moisActuel, "month")
+            ).length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <p className="text-[#727272] text-sm">
+                  {artisteChoisi
+                    ? `Aucune sortie de ${artisteChoisi.name} ce mois-ci`
+                    : "Aucune sortie de tes artistes ce mois-ci"}
+                </p>
+              </div>
+            )}
+
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-1.5">
             {genererJours.map((jour, index) => {
               const estAujourdHui =
                 jour === aujourdHui.date() &&
                 moisActuel.isSame(aujourdHui, "month");
-              const evenementsJour = artisteChoisi
-                ? toutesSorties.filter(
+              const sourceSorties = artisteChoisi
+                ? toutesSorties
+                : sortiesGlobales;
+              const evenementsJour = jour
+                ? sourceSorties.filter(
                     (sortie) =>
                       sortie.date.date() === jour &&
                       sortie.date.isSame(moisActuel, "month")
@@ -1063,7 +1141,9 @@ const Calendar = () => {
                                 handleSpotifyLinkClick(event.titre);
                               }}
                             >
-                              {event.titre}
+                              {!artisteChoisi && event.artiste
+                                ? event.artiste
+                                : event.titre}
                             </a>
                           </div>
                         ))}
@@ -1160,9 +1240,16 @@ const Calendar = () => {
                                       loading="lazy"
                                     />
                                   )}
-                                  <span className="text-white text-sm group-hover:text-[#1DB954] transition-colors truncate flex-1">
-                                    {event.titre}
-                                  </span>
+                                  <div className="flex-1 min-w-0 truncate">
+                                    <span className="text-white text-sm group-hover:text-[#1DB954] transition-colors block truncate">
+                                      {event.titre}
+                                    </span>
+                                    {!artisteChoisi && event.artiste && (
+                                      <span className="text-[#727272] text-xs">
+                                        {event.artiste}
+                                      </span>
+                                    )}
+                                  </div>
                                   {event.groupe === "appears_on" && (
                                     <span className="flex-shrink-0 text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
                                       Feat.
@@ -1224,9 +1311,16 @@ const Calendar = () => {
                                       loading="lazy"
                                     />
                                   )}
-                                  <span className="text-[#B3B3B3] text-sm group-hover:text-white transition-colors truncate flex-1">
-                                    {event.titre}
-                                  </span>
+                                  <div className="flex-1 min-w-0 truncate">
+                                    <span className="text-[#B3B3B3] text-sm group-hover:text-white transition-colors block truncate">
+                                      {event.titre}
+                                    </span>
+                                    {!artisteChoisi && event.artiste && (
+                                      <span className="text-[#727272] text-xs">
+                                        {event.artiste}
+                                      </span>
+                                    )}
+                                  </div>
                                   {event.groupe === "appears_on" && (
                                     <span className="flex-shrink-0 text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
                                       Feat.
