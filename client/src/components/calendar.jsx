@@ -120,13 +120,11 @@ const Calendar = () => {
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const recupererProfilUtilisateur = useCallback(async () => {
     const data = await fetchAvecAuth("me");
     if (data) setUtilisateur(data);
   }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const recupererArtistes = useCallback(async () => {
     const data = await fetchAvecAuth("me/following?type=artist&limit=50");
     if (data) {
@@ -399,7 +397,9 @@ const Calendar = () => {
         const tokens = await checkTokens();
         if (tokens?.expires_at)
           tokenExpiresAtRef.current = parseInt(tokens.expires_at);
-      } catch {}
+      } catch {
+        //
+      }
       const [artistesList] = await Promise.all([
         recupererArtistes(),
         recupererProfilUtilisateur(),
@@ -711,8 +711,12 @@ const Calendar = () => {
                   <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zm0 16a3 3 0 01-2.83-2h5.66A3 3 0 0110 18z" />
                 </svg>
                 <div>
-                  <p className="text-[11px] font-medium text-[#B3B3B3]">Emails hebdo.</p>
-                  <p className="text-[10px] text-[#535353]">Récap. chaque lundi matin</p>
+                  <p className="text-[11px] font-medium text-[#B3B3B3]">
+                    Emails hebdo.
+                  </p>
+                  <p className="text-[10px] text-[#535353]">
+                    Récap. chaque lundi matin
+                  </p>
                 </div>
               </div>
               <button
