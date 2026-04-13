@@ -1,6 +1,6 @@
 const express = require('express');
 const axios = require('axios');
-const { computeMissedReleases } = require('../services/spotifyService');
+const { computeMissedReleases, computeSmartReleases } = require('../services/spotifyService');
 
 const router = express.Router();
 
@@ -35,6 +35,21 @@ router.get('/missed-releases', async (req, res) => {
   } catch (error) {
     console.error('Erreur missed-releases :', error.message);
     res.status(error.response?.status || 500).json({ error: 'Erreur lors du calcul des sorties manquées' });
+  }
+});
+
+router.get('/smart-releases', async (req, res) => {
+  const accessToken = req.cookies.access_token;
+  if (!accessToken) {
+    return res.status(401).json({ error: "Aucun token d'accès" });
+  }
+
+  try {
+    const releases = await computeSmartReleases(accessToken);
+    res.json(releases);
+  } catch (error) {
+    console.error('Erreur smart-releases :', error.message);
+    res.status(error.response?.status || 500).json({ error: 'Erreur lors du calcul des smart releases' });
   }
 });
 

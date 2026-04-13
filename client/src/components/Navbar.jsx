@@ -2,9 +2,9 @@ import PropTypes from "prop-types";
 
 const TABS = [
   { id: "artists", label: "Calendrier" },
+  { id: "découvertes", label: "Découvertes" },
   { id: "history", label: "Historique" },
   { id: "genres", label: "Genres" },
-  { id: "ratés", label: "Ratés" },
 ];
 
 const Navbar = ({ ongletActif, setOngletActif }) => (

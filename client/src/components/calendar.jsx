@@ -15,7 +15,7 @@ import {
   getEmailPreferences,
   setEmailPreferences,
 } from "../api";
-import MissedReleases from "./MissedReleases";
+import SmartReleases from "./SmartReleases";
 import Navbar from "./Navbar";
 
 dayjs.locale("fr");
@@ -398,7 +398,6 @@ const Calendar = () => {
         if (tokens?.expires_at)
           tokenExpiresAtRef.current = parseInt(tokens.expires_at);
       } catch {
-        //
       }
       const [artistesList] = await Promise.all([
         recupererArtistes(),
@@ -430,7 +429,6 @@ const Calendar = () => {
       try {
         await logout();
       } catch {
-        // logout peut échouer, on redirige quand même
       } finally {
         navigate("/login", { replace: true, state: { fromLogout: true } });
       }
@@ -775,7 +773,7 @@ const Calendar = () => {
 
       <main className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1a1a1a] via-[#161616] to-[#121212]">
         <Navbar ongletActif={ongletActif} setOngletActif={setOngletActif} />
-        {ongletActif === "ratés" ? <MissedReleases /> : null}
+        {ongletActif === "découvertes" ? <SmartReleases /> : null}
 
         {ongletActif === "history" && (
           <div className="px-6 py-4">

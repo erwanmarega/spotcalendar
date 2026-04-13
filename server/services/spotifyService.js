@@ -49,6 +49,63 @@ async function fetchRecentReleasesForArtist(accessToken, artistId, since) {
   return data.items.filter((item) => item.release_date >= since);
 }
 
+async function fetchTopArtists(accessToken, timeRange) {
+  const { data } = await axios.get(
+    `https://api.spotify.com/v1/me/top/artists?limit=50&time_range=${timeRange}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+  return data.items;
+}
+
+async function fetchNewReleases(accessToken) {
+  let releases = [];
+  const pages = [0, 50];
+  for (const offset of pages) {
+    const { data } = await axios.get(
+      `https://api.spotify.com/v1/browse/new-releases?limit=50&offset=${offset}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    releases = [...releases, ...data.albums.items];
+  }
+  return releases;
+}
+
+async function computeSmartReleases(accessToken) {
+  const [followedArtists, topShort, topMedium, newReleases] = await Promise.all([
+    fetchAllFollowedArtists(accessToken),
+    fetchTopArtists(accessToken, 'short_term'),
+    fetchTopArtists(accessToken, 'medium_term'),
+    fetchNewReleases(accessToken),
+  ]);
+
+  const followedIds = new Set(followedArtists.map((a) => a.id));
+  const topIds = new Set([...topShort, ...topMedium].map((a) => a.id));
+
+  const allRelevantIds = new Set([...followedIds, ...topIds]);
+
+  const results = [];
+  for (const release of newReleases) {
+    const matchedArtist = release.artists.find((a) => allRelevantIds.has(a.id));
+    if (!matchedArtist) continue;
+
+    const isFollowed = followedIds.has(matchedArtist.id);
+    const isTop = topIds.has(matchedArtist.id);
+
+    results.push({
+      artiste: matchedArtist.name,
+      titre: release.name,
+      type: release.album_type,
+      date: release.release_date,
+      image: release.images?.[0]?.url || '',
+      lienSpotify: release.external_urls.spotify,
+      source: isFollowed && isTop ? 'both' : isFollowed ? 'followed' : 'top',
+    });
+  }
+
+  results.sort((a, b) => b.date.localeCompare(a.date));
+  return results;
+}
+
 async function computeMissedReleases(accessToken) {
   const since = new Date();
   since.setDate(since.getDate() - 30);
@@ -88,4 +145,5 @@ module.exports = {
   fetchRecentArtistIds,
   fetchRecentReleasesForArtist,
   computeMissedReleases,
+  computeSmartReleases,
 };

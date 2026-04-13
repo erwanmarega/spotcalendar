@@ -359,12 +359,12 @@ const LandingPage = () => {
           background: linear-gradient(to right, #ffffff, #10b981);
           -webkit-background-clip: text;
           background-clip: text;
-          color: white; /* Couleur de secours */
+          color: white;
           -webkit-text-fill-color: transparent;
         }
 
         h2 {
-          line-height: 1.1; /* Réduit l'espacement entre les lignes pour un look plus compact */
+          line-height: 1.1;
         }
 
         @media (max-width: 1024px) {

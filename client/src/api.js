@@ -77,6 +77,18 @@ export const getMissedReleases = async () => {
   return response.json();
 };
 
+export const getSmartReleases = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/smart-releases`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || `Erreur HTTP : ${response.status}`);
+  }
+  return response.json();
+};
+
 export const getEmailPreferences = async () => {
   const response = await fetch(`${API_BASE_URL}/api/email-preferences`, {
     method: 'GET',
