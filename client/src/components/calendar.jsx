@@ -17,7 +17,6 @@ import {
   getDemoData,
 } from "../api";
 import SmartReleases from "./SmartReleases";
-import PlayButton from "./PlayButton";
 import Navbar from "./Navbar";
 
 dayjs.locale("fr");
@@ -866,15 +865,27 @@ const Calendar = () => {
                         }
                       `}
                         onClick={() => {
-                          setArtisteChoisi(artiste);
-                          recupererSortiesArtiste(artiste.id);
+                          if (artisteChoisi?.id === artiste.id) {
+                            setArtisteChoisi(null);
+                            setToutesSorties([]);
+                            setSortiesArtiste([]);
+                          } else {
+                            setArtisteChoisi(artiste);
+                            recupererSortiesArtiste(artiste.id);
+                          }
                         }}
                         role="button"
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ") {
-                            setArtisteChoisi(artiste);
-                            recupererSortiesArtiste(artiste.id);
+                            if (artisteChoisi?.id === artiste.id) {
+                              setArtisteChoisi(null);
+                              setToutesSorties([]);
+                              setSortiesArtiste([]);
+                            } else {
+                              setArtisteChoisi(artiste);
+                              recupererSortiesArtiste(artiste.id);
+                            }
                           }
                         }}
                         aria-label={`Voir les sorties de ${artiste.name}`}
@@ -948,7 +959,10 @@ const Calendar = () => {
                               {sortie.titre}
                             </a>
                             <p className="text-[#727272] text-[10px]">
-                              {sortie.date.format("DD/MM/YYYY")} · {sortie.type}
+                              {sortie.date.format("DD/MM/YYYY")} ·{" "}
+                              <span className={sortie.groupe === "compilation" || sortie.groupe === "appears_on" ? "text-[#535353]" : ""}>
+                                {sortie.groupe === "compilation" || sortie.groupe === "appears_on" ? "Compilation" : sortie.type === "album" ? "Album" : "Single"}
+                              </span>
                             </p>
                           </div>
                         </li>
@@ -1158,7 +1172,10 @@ const Calendar = () => {
                           {sortie.titre}
                         </p>
                         <p className="text-[#727272] text-xs mt-0.5">
-                          {sortie.date.format("DD/MM/YYYY")} · {sortie.type}
+                          {sortie.date.format("DD/MM/YYYY")} ·{" "}
+                          <span className={sortie.groupe === "compilation" || sortie.groupe === "appears_on" ? "text-[#535353]" : ""}>
+                            {sortie.groupe === "compilation" || sortie.groupe === "appears_on" ? "Compilation" : sortie.type === "album" ? "Album" : "Single"}
+                          </span>
                         </p>
                       </a>
                     ))}
@@ -1422,18 +1439,21 @@ const Calendar = () => {
 
                     {evenementsJour.length > 0 && (
                       <div className="mt-1.5 space-y-0.5 overflow-hidden flex-1">
-                        {evenementsJour.slice(0, 2).map((event, i) => (
+                        {evenementsJour.slice(0, 2).map((event, i) => {
+                          const isCompil = event.groupe === "compilation";
+                          const isFeat = event.groupe === "appears_on";
+                          return (
                           <div
                             key={i}
-                            className="text-[9px] truncate leading-tight"
+                            className="text-[9px] leading-tight flex items-center gap-1"
                           >
                             <a
                               href={event.lienSpotify}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={`hover:underline ${
+                              className={`truncate hover:underline ${
                                 i === 0
-                                  ? "text-[#1DB954] font-semibold"
+                                  ? isCompil || isFeat ? "text-[#727272] font-semibold" : "text-[#1DB954] font-semibold"
                                   : "text-[#B3B3B3]"
                               }`}
                               onClick={(e) => {
@@ -1445,8 +1465,14 @@ const Calendar = () => {
                                 ? event.artiste
                                 : event.titre}
                             </a>
+                            {(isCompil || isFeat) && (
+                              <span className="flex-shrink-0 text-[7px] font-bold px-1 py-px rounded bg-[#2a2a2a] text-[#535353] uppercase tracking-wide">
+                                Compil.
+                              </span>
+                            )}
                           </div>
-                        ))}
+                          );
+                        })}
                         {evenementsJour.length > 2 && (
                           <div className="text-[9px] text-[#727272] mt-0.5">
                             +{evenementsJour.length - 2} autres
@@ -1491,22 +1517,41 @@ const Calendar = () => {
             <div className="max-h-[60vh] overflow-y-auto p-4">
               {genreChoisi.artists.length ? (
                 <div className="grid grid-cols-2 gap-3">
-                  {genreChoisi.artists.map((artiste, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 bg-[#242424] hover:bg-[#2a2a2a] rounded-xl p-3 transition-colors"
-                    >
-                      <img
-                        src={artiste.images?.[0]?.url || iconeProfil}
-                        alt={artiste.name}
-                        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                        loading="lazy"
-                      />
-                      <span className="text-white text-sm font-medium truncate">
-                        {artiste.name}
-                      </span>
-                    </div>
-                  ))}
+                  {genreChoisi.artists.map((artiste, i) => {
+                    const estSelectionne = artisteChoisi?.id === artiste.id;
+                    return (
+                      <div
+                        key={i}
+                        onClick={() => {
+                          if (estSelectionne) {
+                            setArtisteChoisi(null);
+                            setToutesSorties([]);
+                            setSortiesArtiste([]);
+                          } else {
+                            setArtisteChoisi(artiste);
+                            recupererSortiesArtiste(artiste.id);
+                            setOngletActif("artists");
+                          }
+                          setGenreChoisi(null);
+                        }}
+                        className={`flex items-center gap-3 rounded-xl p-3 transition-colors cursor-pointer ${
+                          estSelectionne
+                            ? "bg-[#1DB954]/20 ring-1 ring-[#1DB954]/50"
+                            : "bg-[#242424] hover:bg-[#2a2a2a]"
+                        }`}
+                      >
+                        <img
+                          src={artiste.images?.[0]?.url || iconeProfil}
+                          alt={artiste.name}
+                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                          loading="lazy"
+                        />
+                        <span className={`text-sm font-medium truncate ${estSelectionne ? "text-[#1DB954]" : "text-white"}`}>
+                          {artiste.name}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-[#727272] text-sm text-center py-8">
@@ -1574,7 +1619,7 @@ const Calendar = () => {
                               ? "Singles"
                               : groupe === "compilation"
                               ? "Compilations"
-                              : "Featurings"}
+                              : "Compilations"}
                           </p>
                           <ul className="space-y-0.5">
                             {filteredEvents.map((event, i) => (
@@ -1607,9 +1652,6 @@ const Calendar = () => {
                                     )}
                                   </div>
                                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                                    {event.albumId && (
-                                      <PlayButton albumId={event.albumId} />
-                                    )}
                                     {event.groupe === "appears_on" && (
                                       <span className="text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
                                         Feat.
@@ -1650,7 +1692,7 @@ const Calendar = () => {
                               ? "Singles"
                               : groupe === "compilation"
                               ? "Compilations"
-                              : "Featurings"}
+                              : "Compilations"}
                           </p>
                           <ul className="space-y-0.5">
                             {filteredEvents.map((event, i) => (
@@ -1683,9 +1725,6 @@ const Calendar = () => {
                                     )}
                                   </div>
                                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                                    {event.albumId && (
-                                      <PlayButton albumId={event.albumId} />
-                                    )}
                                     {event.groupe === "appears_on" && (
                                       <span className="text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
                                         Feat.

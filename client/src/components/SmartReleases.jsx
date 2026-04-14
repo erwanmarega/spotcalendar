@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { getSmartReleases } from "../api";
-import PlayButton from "./PlayButton";
 
 function formatType(type) {
   const types = {
@@ -200,7 +199,6 @@ const SmartReleases = ({ isDemo = false }) => {
                     {formatType(release.type)} · {formatDate(release.date)}
                   </p>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <PlayButton albumId={release.albumId} />
                     <a
                       href={release.lienSpotify}
                       target="_blank"
