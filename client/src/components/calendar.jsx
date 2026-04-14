@@ -23,47 +23,183 @@ import Navbar from "./Navbar";
 dayjs.locale("fr");
 
 const DEMO_IMAGES = {
-  "Drake":          "https://placehold.co/300x300/8B5CF6/ffffff?text=DR",
-  "Taylor Swift":   "https://placehold.co/300x300/EC4899/ffffff?text=TS",
-  "The Weeknd":     "https://placehold.co/300x300/EF4444/ffffff?text=TW",
-  "Daft Punk":      "https://placehold.co/300x300/F59E0B/ffffff?text=DP",
-  "Rosalía":        "https://placehold.co/300x300/10B981/ffffff?text=RO",
-  "Stromae":        "https://placehold.co/300x300/3B82F6/ffffff?text=ST",
-  "Billie Eilish":  "https://placehold.co/300x300/84CC16/ffffff?text=BE",
+  Drake: "https://placehold.co/300x300/8B5CF6/ffffff?text=DR",
+  "Taylor Swift": "https://placehold.co/300x300/EC4899/ffffff?text=TS",
+  "The Weeknd": "https://placehold.co/300x300/EF4444/ffffff?text=TW",
+  "Daft Punk": "https://placehold.co/300x300/F59E0B/ffffff?text=DP",
+  Rosalía: "https://placehold.co/300x300/10B981/ffffff?text=RO",
+  Stromae: "https://placehold.co/300x300/3B82F6/ffffff?text=ST",
+  "Billie Eilish": "https://placehold.co/300x300/84CC16/ffffff?text=BE",
   "Kendrick Lamar": "https://placehold.co/300x300/F97316/ffffff?text=KL",
 };
 
 const DEMO_ARTISTES = [
-  { id: "demo-1", name: "Drake", genres: ["hip hop", "rap"], images: [{ url: DEMO_IMAGES["Drake"] }] },
-  { id: "demo-2", name: "Taylor Swift", genres: ["pop", "indie pop"], images: [{ url: DEMO_IMAGES["Taylor Swift"] }] },
-  { id: "demo-3", name: "The Weeknd", genres: ["r&b", "pop"], images: [{ url: DEMO_IMAGES["The Weeknd"] }] },
-  { id: "demo-4", name: "Daft Punk", genres: ["electronic", "house"], images: [{ url: DEMO_IMAGES["Daft Punk"] }] },
-  { id: "demo-5", name: "Rosalía", genres: ["latin", "flamenco pop"], images: [{ url: DEMO_IMAGES["Rosalía"] }] },
-  { id: "demo-6", name: "Stromae", genres: ["chanson française", "electronic"], images: [{ url: DEMO_IMAGES["Stromae"] }] },
-  { id: "demo-7", name: "Billie Eilish", genres: ["pop", "alternative"], images: [{ url: DEMO_IMAGES["Billie Eilish"] }] },
-  { id: "demo-8", name: "Kendrick Lamar", genres: ["hip hop", "conscious rap"], images: [{ url: DEMO_IMAGES["Kendrick Lamar"] }] },
+  {
+    id: "demo-1",
+    name: "Drake",
+    genres: ["hip hop", "rap"],
+    images: [{ url: DEMO_IMAGES["Drake"] }],
+  },
+  {
+    id: "demo-2",
+    name: "Taylor Swift",
+    genres: ["pop", "indie pop"],
+    images: [{ url: DEMO_IMAGES["Taylor Swift"] }],
+  },
+  {
+    id: "demo-3",
+    name: "The Weeknd",
+    genres: ["r&b", "pop"],
+    images: [{ url: DEMO_IMAGES["The Weeknd"] }],
+  },
+  {
+    id: "demo-4",
+    name: "Daft Punk",
+    genres: ["electronic", "house"],
+    images: [{ url: DEMO_IMAGES["Daft Punk"] }],
+  },
+  {
+    id: "demo-5",
+    name: "Rosalía",
+    genres: ["latin", "flamenco pop"],
+    images: [{ url: DEMO_IMAGES["Rosalía"] }],
+  },
+  {
+    id: "demo-6",
+    name: "Stromae",
+    genres: ["chanson française", "electronic"],
+    images: [{ url: DEMO_IMAGES["Stromae"] }],
+  },
+  {
+    id: "demo-7",
+    name: "Billie Eilish",
+    genres: ["pop", "alternative"],
+    images: [{ url: DEMO_IMAGES["Billie Eilish"] }],
+  },
+  {
+    id: "demo-8",
+    name: "Kendrick Lamar",
+    genres: ["hip hop", "conscious rap"],
+    images: [{ url: DEMO_IMAGES["Kendrick Lamar"] }],
+  },
 ];
 
 const DEMO_SORTIES_GLOBALES = [
-  { albumId: "d1", date: dayjs("2026-04-02"), titre: "Certified Lover Boy II", artiste: "Drake", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Drake"] },
-  { albumId: "d2", date: dayjs("2026-04-05"), titre: "The Tortured Poets Vol. 2", artiste: "Taylor Swift", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Taylor Swift"] },
-  { albumId: "d3", date: dayjs("2026-04-10"), titre: "Midnight Sun", artiste: "The Weeknd", type: "single", groupe: "single", lienSpotify: "#", image: DEMO_IMAGES["The Weeknd"] },
-  { albumId: "d4", date: dayjs("2026-04-14"), titre: "Random Access Memories II", artiste: "Daft Punk", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Daft Punk"] },
-  { albumId: "d5", date: dayjs("2026-04-18"), titre: "MOTOMAMI 2", artiste: "Rosalía", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Rosalía"] },
-  { albumId: "d6", date: dayjs("2026-04-21"), titre: "Multitude II", artiste: "Stromae", type: "single", groupe: "single", lienSpotify: "#", image: DEMO_IMAGES["Stromae"] },
-  { albumId: "d7", date: dayjs("2026-04-25"), titre: "HIT ME HARD AND SOFT 2", artiste: "Billie Eilish", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Billie Eilish"] },
-  { albumId: "d8", date: dayjs("2026-04-28"), titre: "GNX Deluxe", artiste: "Kendrick Lamar", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Kendrick Lamar"] },
+  {
+    albumId: "d1",
+    date: dayjs("2026-04-02"),
+    titre: "Certified Lover Boy II",
+    artiste: "Drake",
+    type: "album",
+    groupe: "album",
+    lienSpotify: "#",
+    image: DEMO_IMAGES["Drake"],
+  },
+  {
+    albumId: "d2",
+    date: dayjs("2026-04-05"),
+    titre: "The Tortured Poets Vol. 2",
+    artiste: "Taylor Swift",
+    type: "album",
+    groupe: "album",
+    lienSpotify: "#",
+    image: DEMO_IMAGES["Taylor Swift"],
+  },
+  {
+    albumId: "d3",
+    date: dayjs("2026-04-10"),
+    titre: "Midnight Sun",
+    artiste: "The Weeknd",
+    type: "single",
+    groupe: "single",
+    lienSpotify: "#",
+    image: DEMO_IMAGES["The Weeknd"],
+  },
+  {
+    albumId: "d4",
+    date: dayjs("2026-04-14"),
+    titre: "Random Access Memories II",
+    artiste: "Daft Punk",
+    type: "album",
+    groupe: "album",
+    lienSpotify: "#",
+    image: DEMO_IMAGES["Daft Punk"],
+  },
+  {
+    albumId: "d5",
+    date: dayjs("2026-04-18"),
+    titre: "MOTOMAMI 2",
+    artiste: "Rosalía",
+    type: "album",
+    groupe: "album",
+    lienSpotify: "#",
+    image: DEMO_IMAGES["Rosalía"],
+  },
+  {
+    albumId: "d6",
+    date: dayjs("2026-04-21"),
+    titre: "Multitude II",
+    artiste: "Stromae",
+    type: "single",
+    groupe: "single",
+    lienSpotify: "#",
+    image: DEMO_IMAGES["Stromae"],
+  },
+  {
+    albumId: "d7",
+    date: dayjs("2026-04-25"),
+    titre: "HIT ME HARD AND SOFT 2",
+    artiste: "Billie Eilish",
+    type: "album",
+    groupe: "album",
+    lienSpotify: "#",
+    image: DEMO_IMAGES["Billie Eilish"],
+  },
+  {
+    albumId: "d8",
+    date: dayjs("2026-04-28"),
+    titre: "GNX Deluxe",
+    artiste: "Kendrick Lamar",
+    type: "album",
+    groupe: "album",
+    lienSpotify: "#",
+    image: DEMO_IMAGES["Kendrick Lamar"],
+  },
 ];
 
 const DEMO_GENRES = {
-  labels: ["hip hop", "pop", "r&b", "electronic", "rap", "latin", "alternative", "chanson française", "house", "indie pop"],
-  datasets: [{
-    label: "Artistes",
-    data: [8, 7, 5, 4, 6, 3, 3, 2, 2, 2],
-    backgroundColor: ["#1DB954", "#1ed760", "#17a844", "#148a38", "#FFCE56", "#FF6384", "#36A2EB", "#4BC0C0", "#9966FF", "#FF9F40"],
-    borderColor: "#121212",
-    borderWidth: 2,
-  }],
+  labels: [
+    "hip hop",
+    "pop",
+    "r&b",
+    "electronic",
+    "rap",
+    "latin",
+    "alternative",
+    "chanson française",
+    "house",
+    "indie pop",
+  ],
+  datasets: [
+    {
+      label: "Artistes",
+      data: [8, 7, 5, 4, 6, 3, 3, 2, 2, 2],
+      backgroundColor: [
+        "#1DB954",
+        "#1ed760",
+        "#17a844",
+        "#148a38",
+        "#FFCE56",
+        "#FF6384",
+        "#36A2EB",
+        "#4BC0C0",
+        "#9966FF",
+        "#FF9F40",
+      ],
+      borderColor: "#121212",
+      borderWidth: 2,
+    },
+  ],
 };
 
 const Calendar = () => {
@@ -93,6 +229,8 @@ const Calendar = () => {
   const [sortiesGlobales, setSortiesGlobales] = useState([]);
   const [chargementCalendrier, setChargementCalendrier] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
+  const [artistesParGenre, setArtistesParGenre] = useState({});
+  const [genreChoisi, setGenreChoisi] = useState(null);
   const tokenExpiresAtRef = useRef(null);
   const cacheAlbumsRef = useRef({});
   const isDemoRef = useRef(false);
@@ -275,6 +413,18 @@ const Calendar = () => {
       setMsgErreur("Aucun genre trouvé pour les artistes récents.");
       return;
     }
+    const genreToArtists = {};
+    artisteData.forEach((artiste) => {
+      if (artiste?.genres?.length) {
+        artiste.genres.forEach((genre) => {
+          if (!genreToArtists[genre]) genreToArtists[genre] = [];
+          if (!genreToArtists[genre].find((a) => a.id === artiste.id)) {
+            genreToArtists[genre].push({ id: artiste.id, name: artiste.name, images: artiste.images });
+          }
+        });
+      }
+    });
+    setArtistesParGenre(genreToArtists);
     const genresTries = Object.entries(compteGenres)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10);
@@ -401,7 +551,9 @@ const Calendar = () => {
   const recupererSortiesArtiste = useCallback(async (idArtiste) => {
     if (isDemoRef.current) {
       const nomArtiste = DEMO_ARTISTES.find((a) => a.id === idArtiste)?.name;
-      const sorties = DEMO_SORTIES_GLOBALES.filter((s) => s.artiste === nomArtiste);
+      const sorties = DEMO_SORTIES_GLOBALES.filter(
+        (s) => s.artiste === nomArtiste
+      );
       setToutesSorties(sorties);
       setSortiesArtiste(sorties.filter((s) => s.date.isAfter(dayjs())));
       return;
@@ -458,9 +610,28 @@ const Calendar = () => {
         isDemoRef.current = true;
         setIsDemo(true);
         setArtistes(DEMO_ARTISTES);
-        setGenresDisponibles(["hip hop", "pop", "r&b", "electronic", "rap", "latin", "alternative", "chanson française", "house", "indie pop"]);
+        setGenresDisponibles([
+          "hip hop",
+          "pop",
+          "r&b",
+          "electronic",
+          "rap",
+          "latin",
+          "alternative",
+          "chanson française",
+          "house",
+          "indie pop",
+        ]);
         setSortiesGlobales(DEMO_SORTIES_GLOBALES);
         setDonneesGenres(DEMO_GENRES);
+        const demoGenreMap = {};
+        DEMO_ARTISTES.forEach((artiste) => {
+          artiste.genres.forEach((genre) => {
+            if (!demoGenreMap[genre]) demoGenreMap[genre] = [];
+            demoGenreMap[genre].push(artiste);
+          });
+        });
+        setArtistesParGenre(demoGenreMap);
         getDemoData()
           .then((data) => {
             if (!data.artists) return;
@@ -470,7 +641,9 @@ const Calendar = () => {
             setArtistes((prev) =>
               prev.map((a) => ({
                 ...a,
-                images: imageMap[a.name] ? [{ url: imageMap[a.name] }] : a.images,
+                images: imageMap[a.name]
+                  ? [{ url: imageMap[a.name] }]
+                  : a.images,
               }))
             );
             setSortiesGlobales((prev) =>
@@ -479,6 +652,15 @@ const Calendar = () => {
                 image: imageMap[s.artiste] || s.image,
               }))
             );
+            setArtistesParGenre((prev) => {
+              const updated = {};
+              Object.entries(prev).forEach(([genre, artistes]) => {
+                updated[genre] = artistes.map((a) =>
+                  imageMap[a.name] ? { ...a, images: [{ url: imageMap[a.name] }] } : a
+                );
+              });
+              return updated;
+            });
           })
           .catch(() => {});
         return;
@@ -793,76 +975,78 @@ const Calendar = () => {
                 </button>
               </div>
             ) : (
-            <>
-            <div className="flex items-center justify-between px-4 py-2.5">
-              <div className="flex items-center gap-2">
-                <svg
-                  className="w-3.5 h-3.5 flex-shrink-0 text-[#B3B3B3]"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zm0 16a3 3 0 01-2.83-2h5.66A3 3 0 0110 18z" />
-                </svg>
-                <div>
-                  <p className="text-[11px] font-medium text-[#B3B3B3]">
-                    Emails hebdo.
-                  </p>
-                  <p className="text-[10px] text-[#535353]">
-                    Récap. chaque lundi matin
-                  </p>
+              <>
+                <div className="flex items-center justify-between px-4 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-3.5 h-3.5 flex-shrink-0 text-[#B3B3B3]"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zm0 16a3 3 0 01-2.83-2h5.66A3 3 0 0110 18z" />
+                    </svg>
+                    <div>
+                      <p className="text-[11px] font-medium text-[#B3B3B3]">
+                        Emails hebdo.
+                      </p>
+                      <p className="text-[10px] text-[#535353]">
+                        Récap. chaque lundi matin
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const next = !emailEnabled;
+                      setEmailEnabled(next);
+                      setEmailPreferences(next).catch(() =>
+                        setEmailEnabled(!next)
+                      );
+                    }}
+                    className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full transition-colors duration-200 focus:outline-none ${
+                      emailEnabled ? "bg-[#1DB954]" : "bg-[#3E3E3E]"
+                    }`}
+                    aria-label="Activer les emails hebdomadaires"
+                    role="switch"
+                    aria-checked={emailEnabled}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 mt-0.5 ${
+                        emailEnabled ? "translate-x-4" : "translate-x-0.5"
+                      }`}
+                    />
+                  </button>
                 </div>
-              </div>
-              <button
-                onClick={() => {
-                  const next = !emailEnabled;
-                  setEmailEnabled(next);
-                  setEmailPreferences(next).catch(() => setEmailEnabled(!next));
-                }}
-                className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full transition-colors duration-200 focus:outline-none ${
-                  emailEnabled ? "bg-[#1DB954]" : "bg-[#3E3E3E]"
-                }`}
-                aria-label="Activer les emails hebdomadaires"
-                role="switch"
-                aria-checked={emailEnabled}
-              >
-                <span
-                  className={`inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 mt-0.5 ${
-                    emailEnabled ? "translate-x-4" : "translate-x-0.5"
-                  }`}
-                />
-              </button>
-            </div>
-            <div className="flex items-center gap-3 px-3 pb-3 pt-1 mx-1 mb-1 rounded-lg hover:bg-[#1a1a1a] transition-colors group cursor-default">
-              <img
-                src={utilisateur?.images?.[0]?.url || iconeProfil}
-                alt="Profil"
-                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                loading="lazy"
-              />
-              <span className="text-sm font-bold text-white flex-1 truncate">
-                {utilisateur?.display_name || "Chargement..."}
-              </span>
-              <button
-                onClick={deconnexion}
-                className="opacity-100 text-[#B3B3B3] hover:text-white transition-all flex-shrink-0"
-                aria-label="Se déconnecter"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                <div className="flex items-center gap-3 px-3 pb-3 pt-1 mx-1 mb-1 rounded-lg hover:bg-[#1a1a1a] transition-colors group cursor-default">
+                  <img
+                    src={utilisateur?.images?.[0]?.url || iconeProfil}
+                    alt="Profil"
+                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    loading="lazy"
                   />
-                </svg>
-              </button>
-            </div>
-            </>
+                  <span className="text-sm font-bold text-white flex-1 truncate">
+                    {utilisateur?.display_name || "Chargement..."}
+                  </span>
+                  <button
+                    onClick={deconnexion}
+                    className="opacity-100 text-[#B3B3B3] hover:text-white transition-all flex-shrink-0"
+                    aria-label="Se déconnecter"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -872,8 +1056,8 @@ const Calendar = () => {
         {isDemo && (
           <div className="flex items-center justify-between px-6 py-2.5 bg-[#1DB954]/10 border-b border-[#1DB954]/20">
             <p className="text-sm text-[#B3B3B3]">
-              <span className="text-[#1DB954] font-bold">Mode démo</span>{" "}
-              — Connecte-toi pour voir tes vraies données Spotify
+              <span className="text-[#1DB954] font-bold">Mode démo</span> —
+              Connecte-toi pour voir tes vraies données Spotify
             </p>
             <button
               onClick={() => navigate("/login")}
@@ -884,7 +1068,9 @@ const Calendar = () => {
           </div>
         )}
         <Navbar ongletActif={ongletActif} setOngletActif={setOngletActif} />
-        {ongletActif === "découvertes" ? <SmartReleases isDemo={isDemo} /> : null}
+        {ongletActif === "découvertes" ? (
+          <SmartReleases isDemo={isDemo} />
+        ) : null}
 
         {ongletActif === "history" && (
           <div className="px-6 py-4">
@@ -1031,8 +1217,9 @@ const Calendar = () => {
                   return (
                     <div
                       key={i}
-                      className={`group flex items-center gap-4 px-3 py-3 rounded-lg transition-colors ${
-                        isFirst ? "bg-[#1a2a1a]" : "hover:bg-[#181818]"
+                      onClick={() => setGenreChoisi({ genre, artists: artistesParGenre[genre] || [] })}
+                      className={`group flex items-center gap-4 px-3 py-3 rounded-lg transition-colors cursor-pointer ${
+                        isFirst ? "bg-[#1a2a1a] hover:bg-[#1f3320]" : "hover:bg-[#181818]"
                       }`}
                     >
                       <span
@@ -1275,6 +1462,62 @@ const Calendar = () => {
         </div>
       </main>
 
+      {genreChoisi && (
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setGenreChoisi(null)}
+        >
+          <div
+            className="bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#282828]">
+              <div>
+                <h3 className="text-white font-bold text-base capitalize">
+                  {genreChoisi.genre}
+                </h3>
+                <p className="text-[#B3B3B3] text-xs mt-0.5">
+                  {genreChoisi.artists.length} artiste{genreChoisi.artists.length > 1 ? "s" : ""}
+                </p>
+              </div>
+              <button
+                onClick={() => setGenreChoisi(null)}
+                className="w-7 h-7 flex items-center justify-center bg-[#282828] hover:bg-[#3a3a3a] rounded-full text-white transition-colors text-xs"
+                aria-label="Fermer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto p-4">
+              {genreChoisi.artists.length ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {genreChoisi.artists.map((artiste, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 bg-[#242424] hover:bg-[#2a2a2a] rounded-xl p-3 transition-colors"
+                    >
+                      <img
+                        src={artiste.images?.[0]?.url || iconeProfil}
+                        alt={artiste.name}
+                        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                        loading="lazy"
+                      />
+                      <span className="text-white text-sm font-medium truncate">
+                        {artiste.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[#727272] text-sm text-center py-8">
+                  Aucun artiste trouvé pour ce genre.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {afficherPopup && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
@@ -1351,7 +1594,9 @@ const Calendar = () => {
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="text-white text-sm group-hover:text-[#1DB954] transition-colors block truncate"
-                                      onClick={() => handleSpotifyLinkClick(event.titre)}
+                                      onClick={() =>
+                                        handleSpotifyLinkClick(event.titre)
+                                      }
                                     >
                                       {event.titre}
                                     </a>
@@ -1362,7 +1607,9 @@ const Calendar = () => {
                                     )}
                                   </div>
                                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                                    {event.albumId && <PlayButton albumId={event.albumId} />}
+                                    {event.albumId && (
+                                      <PlayButton albumId={event.albumId} />
+                                    )}
                                     {event.groupe === "appears_on" && (
                                       <span className="text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
                                         Feat.
@@ -1423,7 +1670,9 @@ const Calendar = () => {
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="text-[#B3B3B3] text-sm group-hover:text-white transition-colors block truncate"
-                                      onClick={() => handleSpotifyLinkClick(event.titre)}
+                                      onClick={() =>
+                                        handleSpotifyLinkClick(event.titre)
+                                      }
                                     >
                                       {event.titre}
                                     </a>
@@ -1434,7 +1683,9 @@ const Calendar = () => {
                                     )}
                                   </div>
                                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                                    {event.albumId && <PlayButton albumId={event.albumId} />}
+                                    {event.albumId && (
+                                      <PlayButton albumId={event.albumId} />
+                                    )}
                                     {event.groupe === "appears_on" && (
                                       <span className="text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
                                         Feat.
