@@ -1066,7 +1066,7 @@ const Calendar = () => {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1a1a1a] via-[#161616] to-[#121212]">
+      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1a1a1a] via-[#161616] to-[#121212] pb-16 md:pb-0">
         {isDemo && (
           <div className="flex items-center justify-between px-6 py-2.5 bg-[#1DB954]/10 border-b border-[#1DB954]/20">
             <p className="text-sm text-[#B3B3B3]">
