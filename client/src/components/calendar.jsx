@@ -233,6 +233,8 @@ const Calendar = () => {
   const tokenExpiresAtRef = useRef(null);
   const cacheAlbumsRef = useRef({});
   const isDemoRef = useRef(false);
+  const genreModalRef = useRef(null);
+  const eventPopupRef = useRef(null);
 
   const aujourdHui = dayjs();
   const navigate = useNavigate();
@@ -251,6 +253,14 @@ const Calendar = () => {
     [moisActuel]
   );
   const allerAujourdHui = useCallback(() => setMoisActuel(aujourdHui), []);
+
+  useEffect(() => {
+    if (genreChoisi) genreModalRef.current?.focus();
+  }, [genreChoisi]);
+
+  useEffect(() => {
+    if (afficherPopup) eventPopupRef.current?.focus();
+  }, [afficherPopup]);
 
   const genererJours = useMemo(() => {
     const jours = [];
@@ -795,7 +805,7 @@ const Calendar = () => {
                 aria-label="Rechercher un artiste"
               />
               <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#727272]"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9a9a9a]"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -828,7 +838,7 @@ const Calendar = () => {
 
           <div className="flex-1 overflow-y-auto px-3 pb-4">
             <div>
-              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#727272]">
+              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#9a9a9a]">
                 Artistes suivis
               </p>
               {chargement ? (
@@ -893,7 +903,7 @@ const Calendar = () => {
                         <img
                           src={artiste.images?.[0]?.url || iconeProfil}
                           alt={artiste.name}
-                          className="w-11 h-11 rounded-md object-cover flex-shrink-0"
+                          className="w-11 h-11 rounded-md object-contain flex-shrink-0"
                           loading="lazy"
                         />
                         <div className="flex-1 min-w-0">
@@ -906,7 +916,7 @@ const Calendar = () => {
                           >
                             {artiste.name}
                           </p>
-                          <p className="text-sm text-[#727272] truncate">
+                          <p className="text-sm text-[#9a9a9a] truncate">
                             {artiste.genres?.length
                               ? artiste.genres[0]
                               : "Artiste"}
@@ -915,7 +925,7 @@ const Calendar = () => {
                       </li>
                     ))
                   ) : (
-                    <p className="px-3 py-4 text-[#727272] text-sm">
+                    <p className="px-3 py-4 text-[#9a9a9a] text-sm">
                       Aucun artiste trouvé.
                     </p>
                   )}
@@ -930,7 +940,7 @@ const Calendar = () => {
                       Prochaines sorties
                     </p>
                   </div>
-                  <p className="px-3 text-[11px] text-[#727272] mb-2">
+                  <p className="px-3 text-[11px] text-[#9a9a9a] mb-2">
                     {artisteChoisi.name}
                   </p>
                   {sortiesArtiste.length ? (
@@ -943,7 +953,7 @@ const Calendar = () => {
                           <img
                             src={sortie.image}
                             alt=""
-                            className="w-8 h-8 rounded object-cover flex-shrink-0"
+                            className="w-8 h-8 rounded object-contain flex-shrink-0"
                             loading="lazy"
                           />
                           <div className="flex-1 min-w-0">
@@ -958,9 +968,9 @@ const Calendar = () => {
                             >
                               {sortie.titre}
                             </a>
-                            <p className="text-[#727272] text-[10px]">
+                            <p className="text-[#9a9a9a] text-[10px]">
                               {sortie.date.format("DD/MM/YYYY")} ·{" "}
-                              <span className={sortie.groupe === "compilation" || sortie.groupe === "appears_on" ? "text-[#535353]" : ""}>
+                              <span className={sortie.groupe === "compilation" || sortie.groupe === "appears_on" ? "text-[#9a9a9a]" : ""}>
                                 {sortie.groupe === "compilation" || sortie.groupe === "appears_on" ? "Compilation" : sortie.type === "album" ? "Album" : "Single"}
                               </span>
                             </p>
@@ -969,7 +979,7 @@ const Calendar = () => {
                       ))}
                     </ul>
                   ) : (
-                    <p className="px-3 text-[#727272] text-xs">
+                    <p className="px-3 text-[#9a9a9a] text-xs">
                       Aucune sortie à venir.
                     </p>
                   )}
@@ -1003,7 +1013,7 @@ const Calendar = () => {
                       <p className="text-[11px] font-medium text-[#B3B3B3]">
                         Emails hebdo.
                       </p>
-                      <p className="text-[10px] text-[#535353]">
+                      <p className="text-[10px] text-[#9a9a9a]">
                         Récap. chaque lundi matin
                       </p>
                     </div>
@@ -1034,7 +1044,7 @@ const Calendar = () => {
                   <img
                     src={utilisateur?.images?.[0]?.url || iconeProfil}
                     alt="Profil"
-                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    className="w-8 h-8 rounded-full object-contain flex-shrink-0"
                     loading="lazy"
                   />
                   <span className="text-sm font-bold text-white flex-1 truncate">
@@ -1063,6 +1073,13 @@ const Calendar = () => {
               </>
             )}
           </div>
+        </div>
+
+        <div className="flex-shrink-0 flex items-center justify-center gap-1.5 py-2">
+          <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="#1DB954">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+          </svg>
+          <span className="text-[10px] text-[#9a9a9a]">Contenu fourni par Spotify</span>
         </div>
       </aside>
 
@@ -1165,15 +1182,15 @@ const Calendar = () => {
                         <img
                           src={sortie.image}
                           alt=""
-                          className="w-full aspect-square rounded-md object-cover mb-3"
+                          className="w-full aspect-square rounded-md object-contain mb-3"
                           loading="lazy"
                         />
                         <p className="text-white text-sm font-medium truncate group-hover:text-[#1DB954] transition-colors">
                           {sortie.titre}
                         </p>
-                        <p className="text-[#727272] text-xs mt-0.5">
+                        <p className="text-[#9a9a9a] text-xs mt-0.5">
                           {sortie.date.format("DD/MM/YYYY")} ·{" "}
-                          <span className={sortie.groupe === "compilation" || sortie.groupe === "appears_on" ? "text-[#535353]" : ""}>
+                          <span className={sortie.groupe === "compilation" || sortie.groupe === "appears_on" ? "text-[#9a9a9a]" : ""}>
                             {sortie.groupe === "compilation" || sortie.groupe === "appears_on" ? "Compilation" : sortie.type === "album" ? "Album" : "Single"}
                           </span>
                         </p>
@@ -1181,13 +1198,13 @@ const Calendar = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[#727272] text-sm">
+                  <p className="text-[#9a9a9a] text-sm">
                     Aucune sortie pour ces filtres.
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-[#727272] text-sm">
+              <p className="text-[#9a9a9a] text-sm">
                 Sélectionnez un artiste dans la bibliothèque.
               </p>
             )}
@@ -1245,7 +1262,7 @@ const Calendar = () => {
                             ? "text-[#1DB954]"
                             : isTop3
                             ? "text-[#B3B3B3]"
-                            : "text-[#535353]"
+                            : "text-[#9a9a9a]"
                         }`}
                       >
                         {i + 1}
@@ -1261,7 +1278,7 @@ const Calendar = () => {
                           >
                             {genre}
                           </span>
-                          <span className="text-[#535353] text-xs flex-shrink-0 ml-4 tabular-nums">
+                          <span className="text-[#9a9a9a] text-xs flex-shrink-0 ml-4 tabular-nums">
                             {val} artiste{val > 1 ? "s" : ""}
                           </span>
                         </div>
@@ -1280,7 +1297,7 @@ const Calendar = () => {
                 })}
               </div>
             ) : (
-              <p className="text-[#727272] text-sm">Aucun genre disponible.</p>
+              <p className="text-[#9a9a9a] text-sm">Aucun genre disponible.</p>
             )}
           </div>
         )}
@@ -1291,7 +1308,7 @@ const Calendar = () => {
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={moisPrecedent}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-[#282828] hover:bg-[#3E3E3E] transition-colors text-sm"
+              className="w-11 h-11 flex items-center justify-center rounded-full bg-[#282828] hover:bg-[#3E3E3E] transition-colors text-sm"
               aria-label="Mois précédent"
             >
               ◀
@@ -1301,7 +1318,7 @@ const Calendar = () => {
             </h1>
             <button
               onClick={moisSuivant}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-[#282828] hover:bg-[#3E3E3E] transition-colors text-sm"
+              className="w-11 h-11 flex items-center justify-center rounded-full bg-[#282828] hover:bg-[#3E3E3E] transition-colors text-sm"
               aria-label="Mois suivant"
             >
               ▶
@@ -1317,7 +1334,7 @@ const Calendar = () => {
               Aujourd&apos;hui
             </button>
             {chargementCalendrier && (
-              <span className="text-[#727272] text-xs animate-pulse">
+              <span className="text-[#9a9a9a] text-xs animate-pulse">
                 Chargement des sorties...
               </span>
             )}
@@ -1327,7 +1344,7 @@ const Calendar = () => {
             {joursSemaine.map((jour) => (
               <div
                 key={jour}
-                className="text-center text-[10px] font-bold uppercase tracking-widest text-[#727272] py-2"
+                className="text-center text-[10px] font-bold uppercase tracking-widest text-[#9a9a9a] py-2"
               >
                 {jour}
               </div>
@@ -1340,7 +1357,7 @@ const Calendar = () => {
               s.date.isSame(moisActuel, "month")
             ).length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <p className="text-[#727272] text-sm">
+                <p className="text-[#9a9a9a] text-sm">
                   {artisteChoisi
                     ? `Aucune sortie de ${artisteChoisi.name} ce mois-ci`
                     : "Aucune sortie de tes artistes ce mois-ci"}
@@ -1431,7 +1448,7 @@ const Calendar = () => {
                         <img
                           src={evenementsJour[0].image}
                           alt=""
-                          className="w-6 h-6 rounded object-cover opacity-90 flex-shrink-0"
+                          className="w-6 h-6 rounded object-contain opacity-90 flex-shrink-0"
                           loading="lazy"
                         />
                       )}
@@ -1453,7 +1470,7 @@ const Calendar = () => {
                               rel="noopener noreferrer"
                               className={`truncate hover:underline ${
                                 i === 0
-                                  ? isCompil || isFeat ? "text-[#727272] font-semibold" : "text-[#1DB954] font-semibold"
+                                  ? isCompil || isFeat ? "text-[#9a9a9a] font-semibold" : "text-[#1DB954] font-semibold"
                                   : "text-[#B3B3B3]"
                               }`}
                               onClick={(e) => {
@@ -1466,7 +1483,7 @@ const Calendar = () => {
                                 : event.titre}
                             </a>
                             {(isCompil || isFeat) && (
-                              <span className="flex-shrink-0 text-[7px] font-bold px-1 py-px rounded bg-[#2a2a2a] text-[#535353] uppercase tracking-wide">
+                              <span className="flex-shrink-0 text-[7px] font-bold px-1 py-px rounded bg-[#2a2a2a] text-[#9a9a9a] uppercase tracking-wide">
                                 Compil.
                               </span>
                             )}
@@ -1474,7 +1491,7 @@ const Calendar = () => {
                           );
                         })}
                         {evenementsJour.length > 2 && (
-                          <div className="text-[9px] text-[#727272] mt-0.5">
+                          <div className="text-[9px] text-[#9a9a9a] mt-0.5">
                             +{evenementsJour.length - 2} autres
                           </div>
                         )}
@@ -1494,7 +1511,9 @@ const Calendar = () => {
           onClick={() => setGenreChoisi(null)}
         >
           <div
-            className="bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            ref={genreModalRef}
+            tabIndex={-1}
+            className="bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden outline-none"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#282828]">
@@ -1508,7 +1527,7 @@ const Calendar = () => {
               </div>
               <button
                 onClick={() => setGenreChoisi(null)}
-                className="w-7 h-7 flex items-center justify-center bg-[#282828] hover:bg-[#3a3a3a] rounded-full text-white transition-colors text-xs"
+                className="w-11 h-11 flex items-center justify-center bg-[#282828] hover:bg-[#3a3a3a] rounded-full text-white transition-colors text-xs"
                 aria-label="Fermer"
               >
                 ✕
@@ -1543,7 +1562,7 @@ const Calendar = () => {
                         <img
                           src={artiste.images?.[0]?.url || iconeProfil}
                           alt={artiste.name}
-                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                          className="w-10 h-10 rounded-full object-contain flex-shrink-0"
                           loading="lazy"
                         />
                         <span className={`text-sm font-medium truncate ${estSelectionne ? "text-[#1DB954]" : "text-white"}`}>
@@ -1554,7 +1573,7 @@ const Calendar = () => {
                   })}
                 </div>
               ) : (
-                <p className="text-[#727272] text-sm text-center py-8">
+                <p className="text-[#9a9a9a] text-sm text-center py-8">
                   Aucun artiste trouvé pour ce genre.
                 </p>
               )}
@@ -1565,13 +1584,13 @@ const Calendar = () => {
 
       {afficherPopup && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+          <div ref={eventPopupRef} tabIndex={-1} className="bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden outline-none">
             <div className="relative h-40 overflow-hidden">
               {evenementsSelectionnes[0].image && (
                 <img
                   src={evenementsSelectionnes[0].image}
                   alt=""
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   loading="lazy"
                 />
               )}
@@ -1612,7 +1631,7 @@ const Calendar = () => {
                       if (!filteredEvents.length) return null;
                       return (
                         <div key={groupe} className="mb-2">
-                          <p className="text-[#727272] text-[10px] font-medium uppercase tracking-wide mb-1 px-2">
+                          <p className="text-[#9a9a9a] text-[10px] font-medium uppercase tracking-wide mb-1 px-2">
                             {groupe === "album"
                               ? "Albums"
                               : groupe === "single"
@@ -1629,7 +1648,7 @@ const Calendar = () => {
                                     <img
                                       src={event.image}
                                       alt=""
-                                      className="w-9 h-9 rounded object-cover flex-shrink-0"
+                                      className="w-9 h-9 rounded object-contain flex-shrink-0"
                                       loading="lazy"
                                     />
                                   )}
@@ -1646,14 +1665,14 @@ const Calendar = () => {
                                       {event.titre}
                                     </a>
                                     {!artisteChoisi && event.artiste && (
-                                      <span className="text-[#727272] text-xs">
+                                      <span className="text-[#9a9a9a] text-xs">
                                         {event.artiste}
                                       </span>
                                     )}
                                   </div>
                                   <div className="flex items-center gap-1.5 flex-shrink-0">
                                     {event.groupe === "appears_on" && (
-                                      <span className="text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
+                                      <span className="text-[9px] font-bold bg-[#727272]/20 text-[#9a9a9a] px-1.5 py-0.5 rounded-full">
                                         Feat.
                                       </span>
                                     )}
@@ -1672,7 +1691,7 @@ const Calendar = () => {
                 (e) => !e.date.isAfter(aujourdHui)
               ) && (
                 <div>
-                  <p className="text-[#727272] text-[10px] font-bold uppercase tracking-wider mb-2 px-2">
+                  <p className="text-[#9a9a9a] text-[10px] font-bold uppercase tracking-wider mb-2 px-2">
                     Passées
                   </p>
                   {["album", "single", "compilation", "appears_on"].map(
@@ -1685,7 +1704,7 @@ const Calendar = () => {
                       if (!filteredEvents.length) return null;
                       return (
                         <div key={groupe} className="mb-2">
-                          <p className="text-[#727272] text-[10px] font-medium uppercase tracking-wide mb-1 px-2">
+                          <p className="text-[#9a9a9a] text-[10px] font-medium uppercase tracking-wide mb-1 px-2">
                             {groupe === "album"
                               ? "Albums"
                               : groupe === "single"
@@ -1702,7 +1721,7 @@ const Calendar = () => {
                                     <img
                                       src={event.image}
                                       alt=""
-                                      className="w-9 h-9 rounded object-cover flex-shrink-0 opacity-60"
+                                      className="w-9 h-9 rounded object-contain flex-shrink-0 opacity-60"
                                       loading="lazy"
                                     />
                                   )}
@@ -1719,14 +1738,14 @@ const Calendar = () => {
                                       {event.titre}
                                     </a>
                                     {!artisteChoisi && event.artiste && (
-                                      <span className="text-[#727272] text-xs">
+                                      <span className="text-[#9a9a9a] text-xs">
                                         {event.artiste}
                                       </span>
                                     )}
                                   </div>
                                   <div className="flex items-center gap-1.5 flex-shrink-0">
                                     {event.groupe === "appears_on" && (
-                                      <span className="text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
+                                      <span className="text-[9px] font-bold bg-[#727272]/20 text-[#9a9a9a] px-1.5 py-0.5 rounded-full">
                                         Feat.
                                       </span>
                                     )}

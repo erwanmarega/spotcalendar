@@ -101,7 +101,7 @@ const MissedReleases = () => {
                   <img
                     src={release.image}
                     alt={release.titre}
-                    className="w-16 h-16 rounded-lg object-cover"
+                    className="w-16 h-16 rounded-lg object-contain"
                     loading="lazy"
                   />
                 ) : (

@@ -75,6 +75,7 @@ const Navbar = ({ ongletActif, setOngletActif }) => (
         <button
           key={id}
           onClick={() => setOngletActif(id)}
+          aria-current={ongletActif === id ? "page" : undefined}
           className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-colors ${
             ongletActif === id
               ? "bg-white text-black"
@@ -91,8 +92,9 @@ const Navbar = ({ ongletActif, setOngletActif }) => (
         <button
           key={id}
           onClick={() => setOngletActif(id)}
+          aria-current={ongletActif === id ? "page" : undefined}
           className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-colors ${
-            ongletActif === id ? "text-white" : "text-[#535353]"
+            ongletActif === id ? "text-white" : "text-[#9a9a9a]"
           }`}
         >
           <span
@@ -104,7 +106,7 @@ const Navbar = ({ ongletActif, setOngletActif }) => (
           </span>
           <span
             className={`text-[10px] font-bold ${
-              ongletActif === id ? "text-white" : "text-[#535353]"
+              ongletActif === id ? "text-white" : "text-[#9a9a9a]"
             }`}
           >
             {label}

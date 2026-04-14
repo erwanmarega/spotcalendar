@@ -20,7 +20,7 @@ const PrivacyPolicy = () => {
         <h2 className="text-4xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-green-400">
           Politique de confidentialité
         </h2>
-        <p className="text-gray-400 text-sm mb-10">Dernière mise à jour : février 2026</p>
+        <p className="text-gray-400 text-sm mb-10">Dernière mise à jour : avril 2026</p>
 
         <div className="space-y-8 text-gray-300 text-base leading-relaxed">
 
@@ -113,7 +113,7 @@ const PrivacyPolicy = () => {
       </main>
 
       <footer className="bg-black/50 py-8 text-center text-gray-400">
-        <p className="text-sm">© 2025 Spotcalendar. Tous droits réservés.</p>
+        <p className="text-sm">© 2026 Erwan Marega — Spotcalendar. Tous droits réservés.</p>
       </footer>
     </div>
   );
