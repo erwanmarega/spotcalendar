@@ -101,6 +101,16 @@ export const getEmailPreferences = async () => {
   return response.json();
 };
 
+export const getDemoData = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/demo-data`, {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    throw new Error(`Erreur HTTP : ${response.status}`);
+  }
+  return response.json();
+};
+
 export const setEmailPreferences = async (enabled) => {
   const response = await fetch(`${API_BASE_URL}/api/email-preferences`, {
     method: 'POST',

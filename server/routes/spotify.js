@@ -1,8 +1,28 @@
 const express = require('express');
 const axios = require('axios');
-const { computeMissedReleases, computeSmartReleases } = require('../services/spotifyService');
+const { computeMissedReleases, computeSmartReleases, fetchDemoArtistImages } = require('../services/spotifyService');
 
 const router = express.Router();
+
+const DEMO_ARTIST_NAMES = ['Drake', 'Taylor Swift', 'The Weeknd', 'Daft Punk', 'Rosalía', 'Stromae', 'Billie Eilish', 'Kendrick Lamar'];
+let demoCache = null;
+let demoCacheTime = 0;
+const DEMO_CACHE_TTL = 6 * 60 * 60 * 1000;
+
+router.get('/demo-data', async (req, res) => {
+  try {
+    if (demoCache && Date.now() - demoCacheTime < DEMO_CACHE_TTL) {
+      return res.json(demoCache);
+    }
+    const artists = await fetchDemoArtistImages(DEMO_ARTIST_NAMES);
+    demoCache = { artists };
+    demoCacheTime = Date.now();
+    res.json(demoCache);
+  } catch (error) {
+    console.error('Erreur demo-data :', error.message);
+    res.status(500).json({ error: 'Impossible de récupérer les données démo' });
+  }
+});
 
 router.get('/spotify/:path(*)', async (req, res) => {
   const accessToken = req.cookies.access_token;

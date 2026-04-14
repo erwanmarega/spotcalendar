@@ -92,6 +92,7 @@ async function computeSmartReleases(accessToken) {
     const isTop = topIds.has(matchedArtist.id);
 
     results.push({
+      albumId: release.id,
       artiste: matchedArtist.name,
       titre: release.name,
       type: release.album_type,
@@ -139,6 +140,39 @@ async function computeMissedReleases(accessToken) {
   return releases;
 }
 
+async function getClientCredentialsToken() {
+  const response = await axios({
+    method: 'post',
+    url: 'https://accounts.spotify.com/api/token',
+    data: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: clientId,
+      client_secret: clientSecret,
+    }),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  });
+  return response.data.access_token;
+}
+
+async function fetchDemoArtistImages(names) {
+  const token = await getClientCredentialsToken();
+  const results = await Promise.all(
+    names.map(async (name) => {
+      const { data } = await axios.get(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(name)}&type=artist&limit=1`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const artist = data.artists.items[0];
+      return {
+        name,
+        image: artist?.images?.[0]?.url || null,
+        genres: artist?.genres || [],
+      };
+    })
+  );
+  return results;
+}
+
 module.exports = {
   refreshSpotifyToken,
   fetchAllFollowedArtists,
@@ -146,4 +180,5 @@ module.exports = {
   fetchRecentReleasesForArtist,
   computeMissedReleases,
   computeSmartReleases,
+  fetchDemoArtistImages,
 };

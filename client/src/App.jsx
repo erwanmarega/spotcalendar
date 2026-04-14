@@ -4,7 +4,6 @@ import Login from "./components/login";
 import Callback from "./components/callback";
 import Calendar from "./components/calendar";
 import IntroVideo from "./components/introvideo";
-import Home from "./Home";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 
 function App() {
@@ -29,7 +28,7 @@ function App() {
       ) : (
         <Router>
           <Routes>
-            <Route path="/" element={<Home/>  } />
+            <Route path="/" element={<Calendar />} />
             <Route path="/login" element={<Login />} />
             <Route path="/callback" element={<Callback />} />
             <Route path="/calendar" element={<Calendar />} />

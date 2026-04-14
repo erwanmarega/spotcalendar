@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getSmartReleases } from "../api";
+import PlayButton from "./PlayButton";
 
 function formatType(type) {
   const types = {
@@ -34,6 +35,16 @@ const SOURCE_BADGE = {
   },
 };
 
+const DEMO_RELEASES = [
+  { albumId: "sd1", artiste: "Drake", titre: "Certified Lover Boy II", type: "album", date: "2026-04-02", source: "followed", image: "https://placehold.co/300x300/8B5CF6/ffffff?text=DR", lienSpotify: "#" },
+  { albumId: "sd2", artiste: "Taylor Swift", titre: "The Tortured Poets Vol. 2", type: "album", date: "2026-04-05", source: "both", image: "https://placehold.co/300x300/EC4899/ffffff?text=TS", lienSpotify: "#" },
+  { albumId: "sd3", artiste: "The Weeknd", titre: "Midnight Sun", type: "single", date: "2026-04-10", source: "top", image: "https://placehold.co/300x300/EF4444/ffffff?text=TW", lienSpotify: "#" },
+  { albumId: "sd4", artiste: "Daft Punk", titre: "Random Access Memories II", type: "album", date: "2026-04-14", source: "both", image: "https://placehold.co/300x300/F59E0B/ffffff?text=DP", lienSpotify: "#" },
+  { albumId: "sd5", artiste: "Rosalía", titre: "MOTOMAMI 2", type: "album", date: "2026-04-18", source: "followed", image: "https://placehold.co/300x300/10B981/ffffff?text=RO", lienSpotify: "#" },
+  { albumId: "sd6", artiste: "Billie Eilish", titre: "HIT ME HARD AND SOFT 2", type: "album", date: "2026-04-25", source: "top", image: "https://placehold.co/300x300/84CC16/ffffff?text=BE", lienSpotify: "#" },
+  { albumId: "sd7", artiste: "Kendrick Lamar", titre: "GNX Deluxe", type: "album", date: "2026-04-28", source: "followed", image: "https://placehold.co/300x300/F97316/ffffff?text=KL", lienSpotify: "#" },
+];
+
 const SkeletonCard = () => (
   <div className="animate-pulse bg-[#181818] rounded-xl p-4 flex gap-4">
     <div className="w-16 h-16 bg-[#282828] rounded-lg flex-shrink-0" />
@@ -46,13 +57,30 @@ const SkeletonCard = () => (
   </div>
 );
 
-const SmartReleases = () => {
-  const [releases, setReleases] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+const SmartReleases = ({ isDemo = false }) => {
+  const [releases, setReleases] = useState(isDemo ? DEMO_RELEASES : []);
+  const [loading, setLoading] = useState(!isDemo);
   const [error, setError] = useState(null);
   const [filtre, setFiltre] = useState("tous");
 
   useEffect(() => {
+    if (isDemo) {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+      fetch(`${API_BASE_URL}/api/demo-data`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (!data.artists) return;
+          const imageMap = Object.fromEntries(
+            data.artists.filter((a) => a.image).map((a) => [a.name, a.image])
+          );
+          setReleases((prev) =>
+            prev.map((r) => ({ ...r, image: imageMap[r.artiste] || r.image }))
+          );
+        })
+        .catch(() => {});
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -71,7 +99,7 @@ const SmartReleases = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isDemo]);
 
   const releasesFiltrees =
     filtre === "tous" ? releases : releases.filter((r) => r.source === filtre);
@@ -171,14 +199,17 @@ const SmartReleases = () => {
                   <p className="text-[#727272] text-[11px] mb-2">
                     {formatType(release.type)} · {formatDate(release.date)}
                   </p>
-                  <a
-                    href={release.lienSpotify}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block bg-[#1DB954] hover:bg-[#1ed760] text-black text-[11px] font-bold px-3 py-1 rounded-full transition-colors"
-                  >
-                    Ouvrir dans Spotify
-                  </a>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <PlayButton albumId={release.albumId} />
+                    <a
+                      href={release.lienSpotify}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block bg-[#1DB954] hover:bg-[#1ed760] text-black text-[11px] font-bold px-3 py-1 rounded-full transition-colors"
+                    >
+                      Ouvrir dans Spotify
+                    </a>
+                  </div>
                 </div>
               </div>
             );

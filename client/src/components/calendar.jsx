@@ -14,11 +14,57 @@ import {
   fetchSpotifyData,
   getEmailPreferences,
   setEmailPreferences,
+  getDemoData,
 } from "../api";
 import SmartReleases from "./SmartReleases";
+import PlayButton from "./PlayButton";
 import Navbar from "./Navbar";
 
 dayjs.locale("fr");
+
+const DEMO_IMAGES = {
+  "Drake":          "https://placehold.co/300x300/8B5CF6/ffffff?text=DR",
+  "Taylor Swift":   "https://placehold.co/300x300/EC4899/ffffff?text=TS",
+  "The Weeknd":     "https://placehold.co/300x300/EF4444/ffffff?text=TW",
+  "Daft Punk":      "https://placehold.co/300x300/F59E0B/ffffff?text=DP",
+  "Rosalía":        "https://placehold.co/300x300/10B981/ffffff?text=RO",
+  "Stromae":        "https://placehold.co/300x300/3B82F6/ffffff?text=ST",
+  "Billie Eilish":  "https://placehold.co/300x300/84CC16/ffffff?text=BE",
+  "Kendrick Lamar": "https://placehold.co/300x300/F97316/ffffff?text=KL",
+};
+
+const DEMO_ARTISTES = [
+  { id: "demo-1", name: "Drake", genres: ["hip hop", "rap"], images: [{ url: DEMO_IMAGES["Drake"] }] },
+  { id: "demo-2", name: "Taylor Swift", genres: ["pop", "indie pop"], images: [{ url: DEMO_IMAGES["Taylor Swift"] }] },
+  { id: "demo-3", name: "The Weeknd", genres: ["r&b", "pop"], images: [{ url: DEMO_IMAGES["The Weeknd"] }] },
+  { id: "demo-4", name: "Daft Punk", genres: ["electronic", "house"], images: [{ url: DEMO_IMAGES["Daft Punk"] }] },
+  { id: "demo-5", name: "Rosalía", genres: ["latin", "flamenco pop"], images: [{ url: DEMO_IMAGES["Rosalía"] }] },
+  { id: "demo-6", name: "Stromae", genres: ["chanson française", "electronic"], images: [{ url: DEMO_IMAGES["Stromae"] }] },
+  { id: "demo-7", name: "Billie Eilish", genres: ["pop", "alternative"], images: [{ url: DEMO_IMAGES["Billie Eilish"] }] },
+  { id: "demo-8", name: "Kendrick Lamar", genres: ["hip hop", "conscious rap"], images: [{ url: DEMO_IMAGES["Kendrick Lamar"] }] },
+];
+
+const DEMO_SORTIES_GLOBALES = [
+  { albumId: "d1", date: dayjs("2026-04-02"), titre: "Certified Lover Boy II", artiste: "Drake", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Drake"] },
+  { albumId: "d2", date: dayjs("2026-04-05"), titre: "The Tortured Poets Vol. 2", artiste: "Taylor Swift", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Taylor Swift"] },
+  { albumId: "d3", date: dayjs("2026-04-10"), titre: "Midnight Sun", artiste: "The Weeknd", type: "single", groupe: "single", lienSpotify: "#", image: DEMO_IMAGES["The Weeknd"] },
+  { albumId: "d4", date: dayjs("2026-04-14"), titre: "Random Access Memories II", artiste: "Daft Punk", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Daft Punk"] },
+  { albumId: "d5", date: dayjs("2026-04-18"), titre: "MOTOMAMI 2", artiste: "Rosalía", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Rosalía"] },
+  { albumId: "d6", date: dayjs("2026-04-21"), titre: "Multitude II", artiste: "Stromae", type: "single", groupe: "single", lienSpotify: "#", image: DEMO_IMAGES["Stromae"] },
+  { albumId: "d7", date: dayjs("2026-04-25"), titre: "HIT ME HARD AND SOFT 2", artiste: "Billie Eilish", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Billie Eilish"] },
+  { albumId: "d8", date: dayjs("2026-04-28"), titre: "GNX Deluxe", artiste: "Kendrick Lamar", type: "album", groupe: "album", lienSpotify: "#", image: DEMO_IMAGES["Kendrick Lamar"] },
+];
+
+const DEMO_GENRES = {
+  labels: ["hip hop", "pop", "r&b", "electronic", "rap", "latin", "alternative", "chanson française", "house", "indie pop"],
+  datasets: [{
+    label: "Artistes",
+    data: [8, 7, 5, 4, 6, 3, 3, 2, 2, 2],
+    backgroundColor: ["#1DB954", "#1ed760", "#17a844", "#148a38", "#FFCE56", "#FF6384", "#36A2EB", "#4BC0C0", "#9966FF", "#FF9F40"],
+    borderColor: "#121212",
+    borderWidth: 2,
+  }],
+};
 
 const Calendar = () => {
   const [moisActuel, setMoisActuel] = useState(dayjs());
@@ -46,8 +92,10 @@ const Calendar = () => {
   const [emailEnabled, setEmailEnabled] = useState(false);
   const [sortiesGlobales, setSortiesGlobales] = useState([]);
   const [chargementCalendrier, setChargementCalendrier] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
   const tokenExpiresAtRef = useRef(null);
   const cacheAlbumsRef = useRef({});
+  const isDemoRef = useRef(false);
 
   const aujourdHui = dayjs();
   const navigate = useNavigate();
@@ -165,6 +213,7 @@ const Calendar = () => {
               return data.items
                 .filter((item) => item.release_date >= sinceStr)
                 .map((item) => ({
+                  albumId: item.id,
                   date: dayjs(item.release_date),
                   titre: item.name,
                   artiste: artiste.name,
@@ -350,6 +399,13 @@ const Calendar = () => {
   }, [recupererChansonsRecentes]);
 
   const recupererSortiesArtiste = useCallback(async (idArtiste) => {
+    if (isDemoRef.current) {
+      const nomArtiste = DEMO_ARTISTES.find((a) => a.id === idArtiste)?.name;
+      const sorties = DEMO_SORTIES_GLOBALES.filter((s) => s.artiste === nomArtiste);
+      setToutesSorties(sorties);
+      setSortiesArtiste(sorties.filter((s) => s.date.isAfter(dayjs())));
+      return;
+    }
     if (cacheAlbumsRef.current[idArtiste]) {
       const cached = cacheAlbumsRef.current[idArtiste];
       setToutesSorties(cached);
@@ -395,9 +451,37 @@ const Calendar = () => {
     const init = async () => {
       try {
         const tokens = await checkTokens();
+        if (!tokens?.access_token_exists) throw new Error("not authenticated");
         if (tokens?.expires_at)
           tokenExpiresAtRef.current = parseInt(tokens.expires_at);
       } catch {
+        isDemoRef.current = true;
+        setIsDemo(true);
+        setArtistes(DEMO_ARTISTES);
+        setGenresDisponibles(["hip hop", "pop", "r&b", "electronic", "rap", "latin", "alternative", "chanson française", "house", "indie pop"]);
+        setSortiesGlobales(DEMO_SORTIES_GLOBALES);
+        setDonneesGenres(DEMO_GENRES);
+        getDemoData()
+          .then((data) => {
+            if (!data.artists) return;
+            const imageMap = Object.fromEntries(
+              data.artists.filter((a) => a.image).map((a) => [a.name, a.image])
+            );
+            setArtistes((prev) =>
+              prev.map((a) => ({
+                ...a,
+                images: imageMap[a.name] ? [{ url: imageMap[a.name] }] : a.images,
+              }))
+            );
+            setSortiesGlobales((prev) =>
+              prev.map((s) => ({
+                ...s,
+                image: imageMap[s.artiste] || s.image,
+              }))
+            );
+          })
+          .catch(() => {});
+        return;
       }
       const [artistesList] = await Promise.all([
         recupererArtistes(),
@@ -699,6 +783,17 @@ const Calendar = () => {
           </div>
 
           <div className="flex-shrink-0 border-t border-[#282828]">
+            {isDemo ? (
+              <div className="px-3 py-3">
+                <button
+                  onClick={() => navigate("/login")}
+                  className="w-full bg-[#1DB954] text-black font-bold text-sm py-2.5 rounded-full hover:bg-[#1ed760] transition-colors"
+                >
+                  Se connecter avec Spotify
+                </button>
+              </div>
+            ) : (
+            <>
             <div className="flex items-center justify-between px-4 py-2.5">
               <div className="flex items-center gap-2">
                 <svg
@@ -767,13 +862,29 @@ const Calendar = () => {
                 </svg>
               </button>
             </div>
+            </>
+            )}
           </div>
         </div>
       </aside>
 
       <main className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1a1a1a] via-[#161616] to-[#121212]">
+        {isDemo && (
+          <div className="flex items-center justify-between px-6 py-2.5 bg-[#1DB954]/10 border-b border-[#1DB954]/20">
+            <p className="text-sm text-[#B3B3B3]">
+              <span className="text-[#1DB954] font-bold">Mode démo</span>{" "}
+              — Connecte-toi pour voir tes vraies données Spotify
+            </p>
+            <button
+              onClick={() => navigate("/login")}
+              className="flex-shrink-0 ml-4 bg-[#1DB954] text-black font-bold text-xs px-4 py-1.5 rounded-full hover:bg-[#1ed760] transition-colors"
+            >
+              Se connecter
+            </button>
+          </div>
+        )}
         <Navbar ongletActif={ongletActif} setOngletActif={setOngletActif} />
-        {ongletActif === "découvertes" ? <SmartReleases /> : null}
+        {ongletActif === "découvertes" ? <SmartReleases isDemo={isDemo} /> : null}
 
         {ongletActif === "history" && (
           <div className="px-6 py-4">
@@ -1225,15 +1336,7 @@ const Calendar = () => {
                           <ul className="space-y-0.5">
                             {filteredEvents.map((event, i) => (
                               <li key={i}>
-                                <a
-                                  href={event.lienSpotify}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group"
-                                  onClick={() =>
-                                    handleSpotifyLinkClick(event.titre)
-                                  }
-                                >
+                                <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group">
                                   {event.image && (
                                     <img
                                       src={event.image}
@@ -1242,22 +1345,31 @@ const Calendar = () => {
                                       loading="lazy"
                                     />
                                   )}
-                                  <div className="flex-1 min-w-0 truncate">
-                                    <span className="text-white text-sm group-hover:text-[#1DB954] transition-colors block truncate">
+                                  <div className="flex-1 min-w-0">
+                                    <a
+                                      href={event.lienSpotify}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-white text-sm group-hover:text-[#1DB954] transition-colors block truncate"
+                                      onClick={() => handleSpotifyLinkClick(event.titre)}
+                                    >
                                       {event.titre}
-                                    </span>
+                                    </a>
                                     {!artisteChoisi && event.artiste && (
                                       <span className="text-[#727272] text-xs">
                                         {event.artiste}
                                       </span>
                                     )}
                                   </div>
-                                  {event.groupe === "appears_on" && (
-                                    <span className="flex-shrink-0 text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
-                                      Feat.
-                                    </span>
-                                  )}
-                                </a>
+                                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                                    {event.albumId && <PlayButton albumId={event.albumId} />}
+                                    {event.groupe === "appears_on" && (
+                                      <span className="text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
+                                        Feat.
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
                               </li>
                             ))}
                           </ul>
@@ -1296,15 +1408,7 @@ const Calendar = () => {
                           <ul className="space-y-0.5">
                             {filteredEvents.map((event, i) => (
                               <li key={i}>
-                                <a
-                                  href={event.lienSpotify}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group"
-                                  onClick={() =>
-                                    handleSpotifyLinkClick(event.titre)
-                                  }
-                                >
+                                <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group">
                                   {event.image && (
                                     <img
                                       src={event.image}
@@ -1313,22 +1417,31 @@ const Calendar = () => {
                                       loading="lazy"
                                     />
                                   )}
-                                  <div className="flex-1 min-w-0 truncate">
-                                    <span className="text-[#B3B3B3] text-sm group-hover:text-white transition-colors block truncate">
+                                  <div className="flex-1 min-w-0">
+                                    <a
+                                      href={event.lienSpotify}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[#B3B3B3] text-sm group-hover:text-white transition-colors block truncate"
+                                      onClick={() => handleSpotifyLinkClick(event.titre)}
+                                    >
                                       {event.titre}
-                                    </span>
+                                    </a>
                                     {!artisteChoisi && event.artiste && (
                                       <span className="text-[#727272] text-xs">
                                         {event.artiste}
                                       </span>
                                     )}
                                   </div>
-                                  {event.groupe === "appears_on" && (
-                                    <span className="flex-shrink-0 text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
-                                      Feat.
-                                    </span>
-                                  )}
-                                </a>
+                                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                                    {event.albumId && <PlayButton albumId={event.albumId} />}
+                                    {event.groupe === "appears_on" && (
+                                      <span className="text-[9px] font-bold bg-[#727272]/20 text-[#727272] px-1.5 py-0.5 rounded-full">
+                                        Feat.
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
                               </li>
                             ))}
                           </ul>

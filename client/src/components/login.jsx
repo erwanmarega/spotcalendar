@@ -40,7 +40,7 @@ const Login = () => {
       try {
         const data = await checkTokens();
         if (data.access_token_exists && data.expires_at && Date.now() < parseInt(data.expires_at)) {
-          navigate("/calendar");
+          navigate("/");
         }
       } catch (e) {
         console.error("Échec de la vérification des tokens :", e);
