@@ -1105,9 +1105,39 @@ const Calendar = () => {
 
         {ongletActif === "history" && (
           <div className="px-6 py-4">
-            <h2 className="text-xl font-bold text-white mb-4">
-              Historique{artisteChoisi ? ` — ${artisteChoisi.name}` : ""}
-            </h2>
+            <div className="flex items-center gap-3 mb-4">
+              {artisteChoisi && (
+                <button
+                  onClick={() => {
+                    setArtisteChoisi(null);
+                    setToutesSorties([]);
+                    setSortiesArtiste([]);
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[#282828] hover:bg-[#3E3E3E] transition-colors text-white flex-shrink-0"
+                  aria-label="Retour"
+                >
+                  ←
+                </button>
+              )}
+              <div>
+                <h2 className="text-xl font-bold text-white leading-tight">
+                  {artisteChoisi ? artisteChoisi.name : "Historique"}
+                </h2>
+                {!artisteChoisi && (
+                  <p className="text-[#9a9a9a] text-sm mt-0.5">
+                    Choisissez un artiste pour explorer ses sorties
+                  </p>
+                )}
+              </div>
+              {artisteChoisi && (
+                <img
+                  src={artisteChoisi.images?.[0]?.url || iconeProfil}
+                  alt={artisteChoisi.name}
+                  className="w-9 h-9 rounded-full object-contain ml-auto flex-shrink-0"
+                />
+              )}
+            </div>
+
             {artisteChoisi ? (
               <div>
                 <div className="flex gap-3 mb-6 flex-wrap">
@@ -1204,9 +1234,35 @@ const Calendar = () => {
                 )}
               </div>
             ) : (
-              <p className="text-[#9a9a9a] text-sm">
-                Sélectionnez un artiste dans la bibliothèque.
-              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {artistes.map((artiste) => (
+                  <button
+                    key={artiste.id}
+                    onClick={() => {
+                      setArtisteChoisi(artiste);
+                      recupererSortiesArtiste(artiste.id);
+                    }}
+                    className="group flex flex-col items-center gap-2.5 p-4 bg-[#181818] hover:bg-[#282828] rounded-xl transition-colors cursor-pointer text-left"
+                  >
+                    <img
+                      src={artiste.images?.[0]?.url || iconeProfil}
+                      alt={artiste.name}
+                      className="w-16 h-16 rounded-full object-contain group-hover:scale-105 transition-transform"
+                      loading="lazy"
+                    />
+                    <div className="w-full text-center">
+                      <p className="text-white text-sm font-semibold truncate group-hover:text-[#1DB954] transition-colors">
+                        {artiste.name}
+                      </p>
+                      {artiste.genres?.[0] && (
+                        <p className="text-[#9a9a9a] text-xs truncate mt-0.5">
+                          {artiste.genres[0]}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -1435,15 +1491,20 @@ const Calendar = () => {
 
                   <div className="relative z-10 p-3 flex flex-col h-full">
                     <div className="flex items-start justify-between">
-                      <span
-                        className={`text-sm font-semibold leading-none ${
-                          estAujourdHui && !evenementsJour.length
-                            ? "text-[#1DB954]"
-                            : "text-white"
-                        }`}
-                      >
-                        {jour}
-                      </span>
+                      <div className="flex flex-col items-start">
+                        <span
+                          className={`text-sm font-semibold leading-none ${
+                            estAujourdHui && !evenementsJour.length
+                              ? "text-[#1DB954]"
+                              : "text-white"
+                          }`}
+                        >
+                          {jour}
+                        </span>
+                        <span className="md:hidden text-[9px] text-[#9a9a9a] leading-none mt-0.5 capitalize">
+                          {jour ? moisActuel.date(jour).format("dd") : ""}
+                        </span>
+                      </div>
                       {evenementsJour.length > 0 && evenementsJour[0].image && (
                         <img
                           src={evenementsJour[0].image}
