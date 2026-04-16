@@ -23,6 +23,15 @@ const Callback = () => {
 
     const params = new URLSearchParams(location.search);
     const code = params.get("code");
+    const returnedState = params.get("state");
+    const savedState = sessionStorage.getItem("oauth_state");
+    sessionStorage.removeItem("oauth_state");
+
+    if (!returnedState || !savedState || returnedState !== savedState) {
+      console.error("State OAuth invalide — possible attaque CSRF");
+      navigate("/login", { state: { error: "Erreur de sécurité lors de la connexion. Veuillez réessayer." } });
+      return;
+    }
 
     if (code) {
       echangerCodeContreToken(code);

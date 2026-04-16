@@ -51,7 +51,10 @@ const Login = () => {
   }, [navigate, location]);
 
   const gererConnexion = () => {
-    window.location.href = urlAuth;
+    const state = crypto.randomUUID();
+    sessionStorage.setItem('oauth_state', state);
+    const urlAvecState = `${urlAuth}&${new URLSearchParams({ state })}`;
+    window.location.href = urlAvecState;
   };
 
   return (
