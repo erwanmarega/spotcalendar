@@ -83,7 +83,7 @@ const Landing = () => {
             aria-hidden="true"
             className="absolute top-0 bottom-0 right-0 w-1/2 z-0 max-md:w-full max-md:bg-[center_95%] max-md:[background-size:160%_auto] max-md:bg-no-repeat"
             style={{
-              backgroundImage: "url('/hero-lofi.png')",
+              backgroundImage: "url('/hero-lofi.webp')",
               backgroundSize: "cover",
               backgroundPosition: "72% center",
               WebkitMaskImage: "linear-gradient(90deg, transparent 0%, #000 18%, #000 100%)",
