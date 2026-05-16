@@ -10,7 +10,7 @@ const Callback = () => {
   const echangerCodeContreToken = async (code) => {
     try {
       await getToken(code);
-      navigate("/");
+      navigate("/calendar");
     } catch (e) {
       console.error("Erreur lors de l'échange du code :", e);
       navigate("/login");

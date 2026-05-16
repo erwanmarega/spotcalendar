@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/my-calendar.png";
 
-const PrivacyPolicy = () => {
+const LegalPage = () => {
   const navigate = useNavigate();
 
   return (
@@ -119,4 +119,4 @@ const PrivacyPolicy = () => {
   );
 };
 
-export default PrivacyPolicy;
+export default LegalPage;

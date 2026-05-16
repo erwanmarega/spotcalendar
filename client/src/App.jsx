@@ -4,7 +4,8 @@ import Login from "./components/login";
 import Callback from "./components/callback";
 import Calendar from "./components/calendar";
 import IntroVideo from "./components/introvideo";
-import PrivacyPolicy from "./components/PrivacyPolicy";
+import LegalPage from "./components/LegalPage";
+import Landing from "./components/Landing";
 
 function App() {
   const [showIntro, setShowIntro] = useState(true);
@@ -28,11 +29,11 @@ function App() {
       ) : (
         <Router>
           <Routes>
-            <Route path="/" element={<Calendar />} />
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/callback" element={<Callback />} />
             <Route path="/calendar" element={<Calendar />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/privacy" element={<LegalPage />} />
           </Routes>
         </Router>
       )}

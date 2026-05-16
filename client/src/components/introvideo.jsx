@@ -34,6 +34,7 @@ const IntroVideo = ({ onFinish }) => {
         autoPlay
         muted
         onEnded={gererFinVideo}
+        onError={gererFinVideo}
       >
         <source src="/video/Intro.mp4" type="video/mp4" />
         Votre navigateur ne prend pas en charge la vidéo.
