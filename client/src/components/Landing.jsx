@@ -81,7 +81,6 @@ const Landing = () => {
           </button>
 
           <nav className="flex items-center gap-8 text-[14.5px] text-[#4b4744]">
-            {/* Hide "Fonctionnalités" on mobile, keep pill */}
             <a href="#features" className="hover:text-[#1a1a1a] transition-colors max-[760px]:hidden">
               Fonctionnalités
             </a>
@@ -217,7 +216,18 @@ const Landing = () => {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2.5 max-[760px]:gap-2 mt-6 max-[760px]:mt-[22px] text-[#8a857f] text-[13px] max-[760px]:text-[12.5px]">
+              {!isLoggedIn && (
+                <div className="mt-4 max-[760px]:mt-3">
+                  <button
+                    onClick={() => navigate("/calendar")}
+                    className="text-[13px] text-[#8a857f] hover:text-[#4b4744] transition-colors underline underline-offset-2 decoration-[#ddd5c7]"
+                  >
+                    Voir la démo sans compte →
+                  </button>
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center gap-2.5 max-[760px]:gap-2 mt-5 max-[760px]:mt-4 text-[#8a857f] text-[13px] max-[760px]:text-[12.5px]">
                 <span className="inline-flex">
                   {[{ bg: "#f6d3b8" }, { bg: "#d8d2ef" }, { bg: "#c9dceb" }, { bg: "#b4c9a5" }].map((dot, i) => (
                     <span
