@@ -125,6 +125,9 @@ const Calendar = () => {
   const [genreChoisi, setGenreChoisi] = useState(null);
   const [topArtistes, setTopArtistes] = useState([]);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, mins: 0 });
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [vue, setVue] = useState("mois");
+  const [filtreOuvert, setFiltreOuvert] = useState(false);
   const tokenExpiresAtRef = useRef(null);
   const cacheAlbumsRef = useRef({});
   const isDemoRef = useRef(false);
@@ -145,6 +148,11 @@ const Calendar = () => {
 
   useEffect(() => { if (genreChoisi)    genreModalRef.current?.focus(); }, [genreChoisi]);
   useEffect(() => { if (afficherPopup)  eventPopupRef.current?.focus(); }, [afficherPopup]);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
 
   const genererJours = useMemo(() => {
     const jours = [];
@@ -179,6 +187,20 @@ const Calendar = () => {
       .filter(s => !s.date.isBefore(startOfWeek) && !s.date.isAfter(endOfWeek))
       .sort((a,b) => a.date.valueOf()-b.date.valueOf());
   }, [sortiesGlobales, aujourdHui]);
+
+  const debutSemaineVue = useMemo(() => moisActuel.startOf("week"), [moisActuel]);
+
+  const agendaGroups = useMemo(() => {
+    const releases = [...sortiesGlobales].sort((a,b) => a.date.valueOf()-b.date.valueOf());
+    const groups = [];
+    releases.forEach(r => {
+      const key = r.date.format("YYYY-MM-DD");
+      const last = groups[groups.length-1];
+      if (last && last.key === key) last.items.push(r);
+      else groups.push({ key, date:r.date, items:[r] });
+    });
+    return groups;
+  }, [sortiesGlobales]);
 
   const artistReleaseTagMap = useMemo(() => {
     const map = {};
@@ -633,65 +655,73 @@ const Calendar = () => {
               >{label}</button>
             ))}
           </div>
-          {ongletActif === "artists" && (
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <div style={{ display:"flex", background:SURF2, border:`1px solid ${HAIR}`, borderRadius:8, padding:2 }}>
-                {["Mois","Semaine","Agenda"].map((v,i) => (
-                  <button key={v} style={{ padding:"6px 12px", borderRadius:6, fontSize:12, fontWeight:500, border:"none", cursor:"pointer", background:i===0?INK:"transparent", color:i===0?BG:INK_M }}>
-                    {v}
-                  </button>
-                ))}
-              </div>
-              <button style={{ padding:"7px 14px", background:SURF2, border:`1px solid ${HAIR}`, borderRadius:8, fontSize:12.5, fontWeight:500, color:INK_S, display:"inline-flex", alignItems:"center", gap:8, cursor:"pointer" }}>
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M2 3h9M3.5 6.5h6M5 10h3"/></svg>
-                Filtrer
-              </button>
-            </div>
-          )}
         </div>
 
         <div style={{ padding:"24px 32px 32px", flex:1 }}>
 
           {ongletActif === "artists" && (
             <>
-              <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:22, gap:24, flexWrap:"wrap" }}>
-                <div>
-                  <h1 style={{ fontSize:28, fontWeight:600, margin:"0 0 4px", letterSpacing:"-0.02em" }}>
-                    {getGreeting()}{" "}
-                    <em style={{ fontFamily:'"Fraunces",serif', fontStyle:"italic", fontWeight:400, color:PEACH }}>
-                      {utilisateur?.display_name || (isDemo ? "ami(e)" : "…")}
-                    </em>
-                  </h1>
-                  <p style={{ fontSize:13.5, color:INK_M, margin:0 }}>
-                    {chargementCalendrier
-                      ? "Chargement des sorties…"
-                      : upcomingThisMonth > 0
-                      ? `${upcomingThisMonth} sortie${upcomingThisMonth>1?"s":""} t'attend${upcomingThisMonth>1?"ent":""} ce mois-ci — dont ${cetteSemagineReleases.length} cette semaine.`
-                      : "Aucune sortie à venir ce mois-ci."}
-                  </p>
-                </div>
-                <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                  <button onClick={moisPrecedent} style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${HAIR}`, background:SURF2, display:"grid", placeItems:"center", color:INK_S, cursor:"pointer" }}>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m8.5 3.5-3.5 3.5 3.5 3.5"/></svg>
-                  </button>
-                  <span style={{ fontFamily:'"Fraunces",serif', fontSize:22, fontWeight:400, color:INK, padding:"0 12px", letterSpacing:"-0.01em", textTransform:"capitalize" }}>
-                    {moisActuel.format("MMMM YYYY")}
-                  </span>
-                  <button onClick={moisSuivant} style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${HAIR}`, background:SURF2, display:"grid", placeItems:"center", color:INK_S, cursor:"pointer" }}>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m5.5 3.5 3.5 3.5-3.5 3.5"/></svg>
-                  </button>
-                  <button onClick={allerAujourdHui} style={{ padding:"8px 16px", background:INK, color:BG, borderRadius:999, fontSize:12, fontWeight:600, border:"none", cursor:"pointer" }}>
-                    Aujourd'hui
-                  </button>
-                </div>
+              <div style={{ marginBottom:22 }}>
+                {!isMobile && (
+                  <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:24, marginBottom:0 }}>
+                    <div>
+                      <h1 style={{ fontSize:28, fontWeight:600, margin:"0 0 4px", letterSpacing:"-0.02em" }}>
+                        {getGreeting()}{" "}
+                        <em style={{ fontFamily:'"Fraunces",serif', fontStyle:"italic", fontWeight:400, color:PEACH }}>
+                          {utilisateur?.display_name || (isDemo ? "ami(e)" : "…")}
+                        </em>
+                      </h1>
+                      <p style={{ fontSize:13.5, color:INK_M, margin:0 }}>
+                        {chargementCalendrier
+                          ? "Chargement des sorties…"
+                          : upcomingThisMonth > 0
+                          ? `${upcomingThisMonth} sortie${upcomingThisMonth>1?"s":""} t'attend${upcomingThisMonth>1?"ent":""} ce mois-ci — dont ${cetteSemagineReleases.length} cette semaine.`
+                          : "Aucune sortie à venir ce mois-ci."}
+                      </p>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:12, flexShrink:0 }}>
+                      <button onClick={() => vue==="semaine" ? setMoisActuel(m=>m.subtract(7,"day")) : moisPrecedent()} style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${HAIR}`, background:SURF2, display:"grid", placeItems:"center", color:INK_S, cursor:"pointer" }}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m8.5 3.5-3.5 3.5 3.5 3.5"/></svg>
+                      </button>
+                      <span style={{ fontFamily:'"Fraunces",serif', fontSize:22, fontWeight:400, color:INK, padding:"0 12px", letterSpacing:"-0.01em", textTransform:"capitalize" }}>
+                        {vue==="semaine"
+                          ? `${moisActuel.startOf("week").format("D")} – ${moisActuel.endOf("week").format("D MMM YYYY")}`
+                          : moisActuel.format("MMMM YYYY")}
+                      </span>
+                      <button onClick={() => vue==="semaine" ? setMoisActuel(m=>m.add(7,"day")) : moisSuivant()} style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${HAIR}`, background:SURF2, display:"grid", placeItems:"center", color:INK_S, cursor:"pointer" }}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m5.5 3.5 3.5 3.5-3.5 3.5"/></svg>
+                      </button>
+                      <button onClick={allerAujourdHui} style={{ padding:"8px 16px", background:INK, color:BG, borderRadius:999, fontSize:12, fontWeight:600, border:"none", cursor:"pointer" }}>
+                        Aujourd'hui
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {isMobile && (
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
+                    <button onClick={() => vue==="semaine" ? setMoisActuel(m=>m.subtract(7,"day")) : moisPrecedent()} style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${HAIR}`, background:SURF2, display:"grid", placeItems:"center", color:INK_S, cursor:"pointer", flexShrink:0 }}>
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m8.5 3.5-3.5 3.5 3.5 3.5"/></svg>
+                    </button>
+                    <div style={{ textAlign:"center" }}>
+                      <span style={{ fontFamily:'"Fraunces",serif', fontSize:20, fontWeight:400, color:INK, letterSpacing:"-0.01em", textTransform:"capitalize", display:"block" }}>
+                        {vue==="semaine"
+                          ? `${moisActuel.startOf("week").format("D")} – ${moisActuel.endOf("week").format("D MMM")}`
+                          : moisActuel.format("MMMM YYYY")}
+                      </span>
+                    </div>
+                    <button onClick={() => vue==="semaine" ? setMoisActuel(m=>m.add(7,"day")) : moisSuivant()} style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${HAIR}`, background:SURF2, display:"grid", placeItems:"center", color:INK_S, cursor:"pointer", flexShrink:0 }}>
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m5.5 3.5 3.5 3.5-3.5 3.5"/></svg>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Hero row — always visible */}
-              <div style={{ display:"grid", gridTemplateColumns:"1.1fr 1fr", gap:14, marginBottom:28 }}>
+              <div className="grid grid-cols-1 md:grid-cols-[1.1fr_1fr]" style={{ gap:14, marginBottom:28 }}>
 
                 {/* Featured card */}
-                <div style={{
-                  position:"relative", borderRadius:18, overflow:"hidden", padding:22, minHeight:220,
+                <div className="p-4 sm:p-[22px]" style={{
+                  position:"relative", borderRadius:18, overflow:"hidden", minHeight:200,
                   background: featuredRelease
                     ? `linear-gradient(135deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.15) 60%,rgba(0,0,0,.7) 100%),${getGrad(featuredRelease.artiste)}`
                     : `linear-gradient(135deg,rgba(0,0,0,.4) 0%,rgba(0,0,0,.1) 100%),${SURF3}`,
@@ -700,25 +730,25 @@ const Calendar = () => {
                   <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(rgba(255,240,220,.04) 1px,transparent 1.2px)", backgroundSize:"4px 4px", pointerEvents:"none" }}/>
                   {featuredRelease ? (
                     <>
-                      <span style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:10.5, letterSpacing:"0.08em", textTransform:"uppercase", color:"rgba(244,237,224,.85)", fontWeight:600, position:"relative" }}>
+                      <span style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:10.5, letterSpacing:"0.08em", textTransform:"uppercase", color:"rgba(244,237,224,.85)", fontWeight:600, position:"relative", flexWrap:"wrap" }}>
                         {featuredIsUpcoming
-                          ? <span style={{ width:6, height:6, borderRadius:"50%", background:GREEN, boxShadow:"0 0 0 4px rgba(29,185,84,.2)", animation:"pulse 2.4s ease-in-out infinite" }}/>
-                          : <span style={{ width:6, height:6, borderRadius:"50%", background:PEACH }}/>
+                          ? <span style={{ width:6, height:6, borderRadius:"50%", background:GREEN, boxShadow:"0 0 0 4px rgba(29,185,84,.2)", animation:"pulse 2.4s ease-in-out infinite", flexShrink:0 }}/>
+                          : <span style={{ width:6, height:6, borderRadius:"50%", background:PEACH, flexShrink:0 }}/>
                         }
                         {featuredIsUpcoming ? "Prochaine sortie" : "Sortie ce mois"} · {featuredRelease.date.format("dddd D MMMM")}
                       </span>
                       <div style={{ position:"relative" }}>
-                        <div style={{ display:"flex", gap:18, alignItems:"flex-end", marginTop:16 }}>
-                          <Cover name={featuredRelease.artiste} image={featuredRelease.image} size={96} radius={10} style={{ boxShadow:"0 12px 30px -10px rgba(0,0,0,.6)" }}/>
-                          <div>
-                            <h2 style={{ fontFamily:'"Fraunces",serif', fontWeight:400, fontSize:26, lineHeight:1.1, margin:"0 0 4px", letterSpacing:"-0.015em" }}>{featuredRelease.titre}</h2>
-                            <div style={{ fontSize:13, color:"rgba(244,237,224,.75)" }}>{featuredRelease.artiste} · {featuredRelease.type === "album" ? "Album" : featuredRelease.type === "single" ? "Single" : "EP"}</div>
+                        <div style={{ display:"flex", gap:14, alignItems:"flex-end", marginTop:14, flexWrap:"wrap" }}>
+                          <Cover name={featuredRelease.artiste} image={featuredRelease.image} size={80} radius={10} style={{ boxShadow:"0 12px 30px -10px rgba(0,0,0,.6)" }}/>
+                          <div style={{ minWidth:0, flex:1 }}>
+                            <h2 className="text-[20px] sm:text-[26px]" style={{ fontFamily:'"Fraunces",serif', fontWeight:400, lineHeight:1.1, margin:"0 0 4px", letterSpacing:"-0.015em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{featuredRelease.titre}</h2>
+                            <div style={{ fontSize:13, color:"rgba(244,237,224,.75)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{featuredRelease.artiste} · {featuredRelease.type === "album" ? "Album" : featuredRelease.type === "single" ? "Single" : "EP"}</div>
                           </div>
                         </div>
-                        <div style={{ marginTop:18, display:"flex", alignItems:"center", justifyContent:"space-between", gap:14 }}>
+                        <div style={{ marginTop:16, display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap" }}>
                           {featuredIsUpcoming ? (
-                            <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
-                              <span style={{ fontFamily:'"Fraunces",serif', fontSize:38, fontWeight:400, lineHeight:1, color:INK }}>{countdown.days}</span>
+                            <div style={{ display:"flex", alignItems:"baseline", gap:5 }}>
+                              <span className="text-[30px] sm:text-[38px]" style={{ fontFamily:'"Fraunces",serif', fontWeight:400, lineHeight:1, color:INK }}>{countdown.days}</span>
                               <span style={{ fontSize:11, textTransform:"uppercase", letterSpacing:"0.08em", color:"rgba(244,237,224,.6)" }}>
                                 j · {String(countdown.hours).padStart(2,"0")} h · {String(countdown.mins).padStart(2,"0")} min
                               </span>
@@ -726,7 +756,7 @@ const Calendar = () => {
                           ) : (
                             <span style={{ fontSize:12, color:"rgba(244,237,224,.55)", fontStyle:"italic" }}>Déjà sorti</span>
                           )}
-                          <a href={featuredRelease.lienSpotify} target="_blank" rel="noopener noreferrer" style={{ padding:"10px 18px", background:"rgba(255,255,255,.94)", color:BG, borderRadius:999, fontSize:12.5, fontWeight:600, display:"inline-flex", alignItems:"center", gap:8, textDecoration:"none" }}>
+                          <a href={featuredRelease.lienSpotify} target="_blank" rel="noopener noreferrer" style={{ padding:"9px 16px", background:"rgba(255,255,255,.94)", color:BG, borderRadius:999, fontSize:12.5, fontWeight:600, display:"inline-flex", alignItems:"center", gap:8, textDecoration:"none", flexShrink:0 }}>
                             {featuredIsUpcoming ? (
                               <>
                                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M2 1.5v9M2 1.5c4.5 0 4.5 3.75 0 3.75M2 10.5h2M10 5l-3-2.5v5Z" fill="currentColor"/></svg>
@@ -806,88 +836,220 @@ const Calendar = () => {
                 </div>
               </div>
 
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-                <h3 style={{ fontSize:13, fontWeight:600, margin:0, color:INK_S, letterSpacing:"0.04em", textTransform:"uppercase" }}>
-                  Toutes les sorties · {moisActuel.format("MMMM")}
-                </h3>
-                <div style={{ display:"flex", alignItems:"center", gap:14, fontSize:11.5, color:INK_M }}>
-                  <span><span style={{ width:8, height:8, borderRadius:"50%", background:PEACH, display:"inline-block", marginRight:6, verticalAlign:"middle" }}/>Aujourd'hui</span>
-                  <span><span style={{ width:8, height:8, borderRadius:"50%", background:GREEN, display:"inline-block", marginRight:6, verticalAlign:"middle" }}/>Sortie</span>
+              {/* View switcher + Filtrer */}
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, gap:12 }}>
+                <div style={{ display:"inline-flex", alignItems:"center", background:SURF2, border:`1px solid ${HAIR}`, borderRadius:999, padding:4, gap:2 }}>
+                  {[{id:"mois",label:"Mois"},{id:"semaine",label:"Semaine"},{id:"agenda",label:"Agenda"}].map(({id,label}) => (
+                    <button key={id} onClick={() => setVue(id)} style={{
+                      padding: isMobile ? "5px 12px" : "6px 16px", borderRadius:999, fontSize:13, fontWeight:600, cursor:"pointer", border:"none", outline:"none",
+                      background: vue===id ? INK : "transparent",
+                      color:      vue===id ? BG  : INK_M,
+                      transition:"all .15s",
+                    }}>{label}</button>
+                  ))}
+                </div>
+
+                <div style={{ position:"relative" }}>
+                  <button onClick={() => setFiltreOuvert(f=>!f)} style={{
+                    display:"flex", alignItems:"center", gap:8, padding:"8px 16px",
+                    background: filtreOuvert ? SURF3 : SURF2,
+                    border:`1px solid ${HAIR}`, borderRadius:999, fontSize:13, fontWeight:500,
+                    color: filtreOuvert ? INK : INK_S, cursor:"pointer", outline:"none", transition:"all .15s",
+                  }}>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M1 3h12M3 7h8M5 11h4"/></svg>
+                    {!isMobile && "Filtrer"}
+                  </button>
+                  {filtreOuvert && (
+                    <>
+                      <div style={{ position:"fixed", inset:0, zIndex:19 }} onClick={() => setFiltreOuvert(false)}/>
+                      <div style={{ position:"absolute", right:0, top:"calc(100% + 8px)", background:SURF, border:`1px solid ${HAIR}`, borderRadius:14, padding:16, zIndex:20, minWidth:200, boxShadow:"0 8px 32px rgba(0,0,0,.5)" }}>
+                        <p style={{ fontSize:10.5, fontWeight:700, color:INK_M, margin:"0 0 10px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Type</p>
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                          {[["tous","Tous"],["album","Albums"],["single","Singles"],["compilation","Compilations"]].map(([v,l]) => (
+                            <button key={v} onClick={() => { setFiltreType(v); setFiltreOuvert(false); }} style={{
+                              padding:"5px 12px", borderRadius:999, fontSize:12, fontWeight:500, cursor:"pointer", border:`1px solid ${filtreType===v ? INK : HAIR}`, outline:"none",
+                              background: filtreType===v ? INK : SURF2,
+                              color:      filtreType===v ? BG  : INK_S,
+                            }}>{l}</button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:6 }}>
-                {joursSemaine.map(j => (
-                  <div key={j} style={{ fontSize:10.5, fontWeight:600, textTransform:"uppercase", letterSpacing:"0.1em", color:INK_M, padding:"6px 4px 8px", textAlign:"left" }}>{j}</div>
-                ))}
-
-                {genererJours.map((jour, index) => {
-                  const isOutside  = jour === "";
-                  const isWeekend  = (index % 7) >= 5;
-                  const isToday    = jour === aujourdHui.date() && moisActuel.isSame(aujourdHui, "month");
-                  const sourceSorties = artisteChoisi ? toutesSorties : sortiesGlobales;
-                  const events = jour
-                    ? sourceSorties.filter(s => s.date.date()===jour && s.date.isSame(moisActuel,"month"))
-                    : [];
-                  const isFeatured = events.some(e => e.albumId === nextRelease?.albumId);
-
-                  return (
-                    <div
-                      key={index}
-                      onClick={() => { if (jour && events.length) { setEvenementsSelectionnes(events); setAfficherPopup(true); } }}
-                      role={events.length ? "button" : undefined}
-                      tabIndex={events.length ? 0 : undefined}
-                      onKeyDown={e => { if (events.length && (e.key==="Enter"||e.key===" ")) { setEvenementsSelectionnes(events); setAfficherPopup(true); } }}
-                      style={{
-                        position:"relative", minHeight:110, borderRadius:12, padding:10, display:"flex", flexDirection:"column", gap:6, overflow:"hidden", transition:"all .15s",
-                        background: isOutside ? "transparent"
-                          : isToday ? undefined
-                          : isWeekend ? BG
-                          : isFeatured ? "linear-gradient(135deg,rgba(232,184,100,.1),rgba(240,194,148,.05))"
-                          : SURF2,
-                        border: isOutside ? "1px solid transparent"
-                          : isToday ? `1px solid rgba(240,194,148,.35)`
-                          : isFeatured ? "1px solid rgba(240,194,148,.22)"
-                          : `1px solid ${HAIR2}`,
-                        backgroundImage: isToday ? `radial-gradient(circle at 50% 0%,rgba(240,194,148,.12) 0%,transparent 70%),${SURF2}` : undefined,
-                        cursor: events.length ? "pointer" : "default",
-                      }}
-                    >
-                      <div style={{ fontSize:13, fontWeight:600, color: isOutside ? INK_F : isToday ? PEACH : INK_S, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                        {jour || ""}
-                        {events.length > 1 && (
-                          <span style={{ fontSize:9.5, fontWeight:600, color:GREEN, background:"rgba(29,185,84,.14)", padding:"1px 5px", borderRadius:999, border:"1px solid rgba(29,185,84,.28)" }}>{events.length}</span>
-                        )}
+              {/* Vue Mois */}
+              {vue === "mois" && (
+                <>
+                  {!isMobile && (
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+                      <h3 style={{ fontSize:13, fontWeight:600, margin:0, color:INK_S, letterSpacing:"0.04em", textTransform:"uppercase" }}>
+                        Toutes les sorties · {moisActuel.format("MMMM")}
+                      </h3>
+                      <div style={{ display:"flex", alignItems:"center", gap:14, fontSize:11.5, color:INK_M }}>
+                        <span><span style={{ width:8, height:8, borderRadius:"50%", background:PEACH, display:"inline-block", marginRight:6, verticalAlign:"middle" }}/>Aujourd'hui</span>
+                        <span><span style={{ width:8, height:8, borderRadius:"50%", background:GREEN, display:"inline-block", marginRight:6, verticalAlign:"middle" }}/>Sortie</span>
                       </div>
-
-                      {events.slice(0,2).map((ev, i) => (
-                        <div
-                          key={i}
+                    </div>
+                  )}
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap: isMobile ? 3 : 6 }}>
+                    {joursSemaine.map(j => (
+                      <div key={j} style={{ fontSize:10.5, fontWeight:600, textTransform:"uppercase", letterSpacing:"0.06em", color:INK_M, padding: isMobile ? "4px 2px 6px" : "6px 4px 8px", textAlign:"center" }}>
+                        {isMobile ? j[0] : j}
+                      </div>
+                    ))}
+                    {genererJours.map((jour, index) => {
+                      const isOutside = jour === "";
+                      const isWeekend = (index % 7) >= 5;
+                      const isToday   = jour === aujourdHui.date() && moisActuel.isSame(aujourdHui, "month");
+                      const sourceSorties = artisteChoisi ? toutesSorties : sortiesGlobales;
+                      const events = jour ? sourceSorties.filter(s => s.date.date()===jour && s.date.isSame(moisActuel,"month")) : [];
+                      const isFeatured = events.some(e => e.albumId === nextRelease?.albumId);
+                      return (
+                        <div key={index}
+                          onClick={() => { if (jour && events.length) { setEvenementsSelectionnes(events); setAfficherPopup(true); } }}
+                          role={events.length ? "button" : undefined} tabIndex={events.length ? 0 : undefined}
+                          onKeyDown={e => { if (events.length && (e.key==="Enter"||e.key===" ")) { setEvenementsSelectionnes(events); setAfficherPopup(true); } }}
                           style={{
-                            display:"flex", alignItems:"center", gap:8, padding:5, borderRadius:7,
-                            background: isFeatured && i===0 ? "linear-gradient(90deg,rgba(240,194,148,.18),rgba(240,194,148,.05))" : SURF3,
-                            border: isFeatured && i===0 ? "1px solid rgba(240,194,148,.2)" : "none",
-                            minHeight:32,
+                            position:"relative", minHeight: isMobile ? 48 : 110, borderRadius: isMobile ? 8 : 12,
+                            padding: isMobile ? "6px 4px" : 10, display:"flex", flexDirection:"column", gap: isMobile ? 4 : 6,
+                            overflow:"hidden", transition:"all .15s",
+                            background: isOutside ? "transparent" : isToday ? undefined : isWeekend ? BG : isFeatured ? "linear-gradient(135deg,rgba(232,184,100,.1),rgba(240,194,148,.05))" : SURF2,
+                            border: isOutside ? "1px solid transparent" : isToday ? `1px solid rgba(240,194,148,.35)` : isFeatured ? "1px solid rgba(240,194,148,.22)" : `1px solid ${HAIR2}`,
+                            backgroundImage: isToday ? `radial-gradient(circle at 50% 0%,rgba(240,194,148,.12) 0%,transparent 70%),${SURF2}` : undefined,
+                            cursor: events.length ? "pointer" : "default",
                           }}
                         >
-                          <Cover name={ev.artiste} image={ev.image} size={22} radius={4} />
-                          <div style={{ flex:1, minWidth:0 }}>
-                            <b style={{ display:"block", fontSize:11, fontWeight:500, color:INK, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", lineHeight:1.2 }}>
-                              {artisteChoisi ? ev.titre : ev.artiste}
-                            </b>
-                            <span style={{ display:"block", fontSize:9.5, color:INK_M, lineHeight:1.2, textTransform:"uppercase", letterSpacing:"0.04em" }}>
-                              {ev.type==="album"?"Album":ev.type==="single"?"Single":"EP"}
-                            </span>
+                          <div style={{ fontSize: isMobile ? 11 : 13, fontWeight:600, color: isOutside ? INK_F : isToday ? PEACH : INK_S, display:"flex", alignItems:"center", justifyContent: isMobile ? "center" : "space-between" }}>
+                            {jour || ""}
+                            {!isMobile && events.length > 1 && (
+                              <span style={{ fontSize:9.5, fontWeight:600, color:GREEN, background:"rgba(29,185,84,.14)", padding:"1px 5px", borderRadius:999, border:"1px solid rgba(29,185,84,.28)" }}>{events.length}</span>
+                            )}
+                          </div>
+                          {isMobile ? (
+                            events.length > 0 && (
+                              <div style={{ display:"flex", gap:3, justifyContent:"center", flexWrap:"wrap" }}>
+                                {events.slice(0,3).map((ev,i) => (
+                                  <span key={i} style={{ width:5, height:5, borderRadius:"50%", flexShrink:0, background: isFeatured && i===0 ? PEACH : GREEN }}/>
+                                ))}
+                              </div>
+                            )
+                          ) : (
+                            <>
+                              {events.slice(0,2).map((ev,i) => (
+                                <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:5, borderRadius:7, background: isFeatured && i===0 ? "linear-gradient(90deg,rgba(240,194,148,.18),rgba(240,194,148,.05))" : SURF3, border: isFeatured && i===0 ? "1px solid rgba(240,194,148,.2)" : "none", minHeight:32 }}>
+                                  <Cover name={ev.artiste} image={ev.image} size={22} radius={4} />
+                                  <div style={{ flex:1, minWidth:0 }}>
+                                    <b style={{ display:"block", fontSize:11, fontWeight:500, color:INK, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", lineHeight:1.2 }}>
+                                      {artisteChoisi ? ev.titre : ev.artiste}
+                                    </b>
+                                    <span style={{ display:"block", fontSize:9.5, color:INK_M, lineHeight:1.2, textTransform:"uppercase", letterSpacing:"0.04em" }}>
+                                      {ev.type==="album"?"Album":ev.type==="single"?"Single":"EP"}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                              {events.length > 2 && <div style={{ fontSize:10.5, color:INK_M, padding:"4px 8px" }}>+ {events.length-2} autre{events.length-2>1?"s":""}</div>}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+              {/* Vue Semaine */}
+              {vue === "semaine" && (
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:8 }}>
+                  {Array.from({length:7}, (_,i) => {
+                    const day = debutSemaineVue.add(i,"day");
+                    const isToday   = day.isSame(aujourdHui,"day");
+                    const isWeekend = i >= 5;
+                    const events = sortiesGlobales.filter(s => s.date.isSame(day,"day"));
+                    return (
+                      <div key={i} style={{ borderRadius:12, overflow:"hidden", border:`1px solid ${isToday ? "rgba(240,194,148,.35)" : HAIR2}`, background: isToday ? undefined : isWeekend ? BG : SURF2, backgroundImage: isToday ? `radial-gradient(circle at 50% 0%,rgba(240,194,148,.12),transparent 70%),${SURF2}` : undefined }}>
+                        <div style={{ padding:"10px 8px 8px", borderBottom:`1px solid ${HAIR2}`, textAlign:"center" }}>
+                          <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", color: isToday ? PEACH : INK_M, marginBottom:4 }}>
+                            {joursSemaine[i]}
+                          </div>
+                          <div style={{ fontFamily:'"Fraunces",serif', fontSize:22, fontWeight:400, lineHeight:1, color: isToday ? PEACH : INK_S }}>
+                            {day.format("D")}
                           </div>
                         </div>
-                      ))}
-                      {events.length > 2 && (
-                        <div style={{ fontSize:10.5, color:INK_M, padding:"4px 8px" }}>+ {events.length-2} autre{events.length-2>1?"s":""}</div>
-                      )}
+                        <div style={{ padding:8, display:"flex", flexDirection:"column", gap:5, minHeight:80 }}>
+                          {events.length === 0 ? (
+                            <p style={{ fontSize:11, color:INK_F, textAlign:"center", padding:"16px 0", margin:0 }}>—</p>
+                          ) : events.map((ev, j) => (
+                            <a key={j} href={ev.lienSpotify} target="_blank" rel="noopener noreferrer"
+                              style={{ display:"flex", gap:8, padding:7, borderRadius:8, background:SURF3, textDecoration:"none", color:"inherit", transition:"background .15s" }}
+                              onMouseEnter={e=>e.currentTarget.style.background=HAIR}
+                              onMouseLeave={e=>e.currentTarget.style.background=SURF3}
+                            >
+                              <Cover name={ev.artiste} image={ev.image} size={32} radius={5}/>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <b style={{ display:"block", fontSize:11, fontWeight:500, color:INK, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{ev.artiste}</b>
+                                <span style={{ display:"block", fontSize:9.5, color:INK_M, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{ev.titre}</span>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Vue Agenda */}
+              {vue === "agenda" && (
+                <div style={{ display:"flex", flexDirection:"column" }}>
+                  {agendaGroups.length === 0 ? (
+                    <div style={{ textAlign:"center", padding:"60px 0" }}>
+                      <p style={{ fontFamily:'"Fraunces",serif', fontSize:20, color:INK_S, fontStyle:"italic", margin:"0 0 6px" }}>Rien à venir…</p>
+                      <p style={{ fontSize:13, color:INK_M, margin:0 }}>Aucune sortie annoncée pour vos artistes.</p>
                     </div>
-                  );
-                })}
-              </div>
+                  ) : agendaGroups.map((g, gi) => {
+                    const isToday = g.date.isSame(aujourdHui,"day");
+                    const isPast  = g.date.isBefore(aujourdHui,"day");
+                    return (
+                      <div key={gi}>
+                        <div style={{ display:"flex", alignItems:"center", gap:14, padding:"18px 0 8px" }}>
+                          <div style={{ fontFamily:'"Fraunces",serif', fontSize:isMobile?22:28, fontWeight:400, lineHeight:1, color: isToday ? PEACH : isPast ? INK_F : INK_S, minWidth:30, textAlign:"right", flexShrink:0 }}>
+                            {g.date.format("D")}
+                          </div>
+                          <div>
+                            <div style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.06em", color: isToday ? PEACH : INK_M, lineHeight:1.3 }}>
+                              {g.date.format("dddd")}
+                            </div>
+                            <div style={{ fontSize:10.5, color:INK_F }}>{g.date.format("MMMM YYYY")}</div>
+                          </div>
+                          {isToday && <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:9.5, padding:"2px 8px", borderRadius:999, color:GREEN, background:"rgba(29,185,84,.14)", border:"1px solid rgba(29,185,84,.28)", flexShrink:0 }}>Aujourd'hui</span>}
+                          <div style={{ flex:1, height:1, background:HAIR2 }}/>
+                        </div>
+                        <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
+                          {g.items.map((r, ri) => (
+                            <a key={ri} href={r.lienSpotify} target="_blank" rel="noopener noreferrer"
+                              style={{ display:"flex", alignItems:"center", gap:14, padding:"10px 12px", borderRadius:12, background:SURF2, border:`1px solid ${HAIR2}`, textDecoration:"none", color:"inherit", opacity: isPast ? 0.5 : 1, transition:"background .15s,border-color .15s" }}
+                              onMouseEnter={e=>{ e.currentTarget.style.background=SURF3; e.currentTarget.style.borderColor=HAIR; }}
+                              onMouseLeave={e=>{ e.currentTarget.style.background=SURF2; e.currentTarget.style.borderColor=HAIR2; }}
+                            >
+                              <Cover name={r.artiste} image={r.image} size={44} radius={8}/>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <b style={{ display:"block", fontSize:13.5, fontWeight:500, color:INK, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.titre}</b>
+                                <span style={{ display:"block", fontSize:12, color:INK_M }}>{r.artiste}</span>
+                              </div>
+                              <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:10.5, padding:"3px 8px", borderRadius:999, color:INK_S, background:SURF, border:`1px solid ${HAIR}`, flexShrink:0 }}>
+                                {r.type==="album"?"Album":r.type==="single"?"Single":"EP"}
+                              </span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </>
           )}
 
