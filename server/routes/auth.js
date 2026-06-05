@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const db = require('../db');
+const { encrypt } = require('../utils/tokenCrypto');
 
 const router = express.Router();
 
@@ -64,7 +65,7 @@ router.post('/token', async (req, res) => {
           ON CONFLICT(user_id) DO UPDATE SET
             email = excluded.email,
             refresh_token = excluded.refresh_token
-        `).run(id, email, response.data.refresh_token);
+        `).run(id, email, encrypt(response.data.refresh_token));
       }
     } catch (dbErr) {
       console.error("Erreur lors de la persistance de l'utilisateur :", dbErr.message);

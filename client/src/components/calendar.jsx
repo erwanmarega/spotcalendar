@@ -15,87 +15,17 @@ import {
   getDemoData,
 } from "../api";
 import SmartReleases from "./SmartReleases";
+import { BG, SURF, HAIR, HAIR2, INK, INK_S, GREEN } from "./calendar/theme";
+import { DEMO_ARTISTES, DEMO_SORTIES_GLOBALES, DEMO_GENRES } from "./calendar/demoData";
+import Sidebar from "./calendar/Sidebar";
+import ArtistsTab from "./calendar/ArtistsTab";
+import HistoryTab from "./calendar/HistoryTab";
+import GenresTab from "./calendar/GenresTab";
+import GenreModal from "./calendar/GenreModal";
+import EventPopup from "./calendar/EventPopup";
+import { TopTabs, BottomNav } from "./calendar/Tabs";
 
 dayjs.locale("fr");
-
-const BG      = "#0c0b0a";
-const SURF    = "#161412";
-const SURF2   = "#1d1a17";
-const SURF3   = "#26221d";
-const HAIR    = "#2a2622";
-const HAIR2   = "#1f1c19";
-const INK     = "#f4ede0";
-const INK_S   = "#c9bfa9";
-const INK_M   = "#7c7468";
-const INK_F   = "#4a443c";
-const GREEN   = "#1db954";
-const PEACH   = "#f0c294";
-
-const COVER_GRADS = [
-  "linear-gradient(135deg,#f0c294,#8b4a2f)",
-  "linear-gradient(135deg,#b4a4d6,#4a3a78)",
-  "linear-gradient(135deg,#e89aa3,#8b3a45)",
-  "linear-gradient(135deg,#91b6d1,#2c5478)",
-  "linear-gradient(135deg,#e8b864,#8a6420)",
-  "linear-gradient(135deg,#c98a55,#5c2f15)",
-  "linear-gradient(135deg,#2a2622,#c98a55)",
-  "linear-gradient(135deg,#4a443c,#1a1814)",
-];
-const getGrad = (seed) => {
-  const code = typeof seed === "string" ? (seed.charCodeAt(0) || 0) : (seed || 0);
-  return COVER_GRADS[Math.abs(code) % COVER_GRADS.length];
-};
-
-const DEMO_IMAGES = {
-  Drake: "https://placehold.co/300x300/8B5CF6/ffffff?text=DR",
-  "Taylor Swift": "https://placehold.co/300x300/EC4899/ffffff?text=TS",
-  "The Weeknd": "https://placehold.co/300x300/EF4444/ffffff?text=TW",
-  "Daft Punk": "https://placehold.co/300x300/F59E0B/ffffff?text=DP",
-  Rosalía: "https://placehold.co/300x300/10B981/ffffff?text=RO",
-  Stromae: "https://placehold.co/300x300/3B82F6/ffffff?text=ST",
-  "Billie Eilish": "https://placehold.co/300x300/84CC16/ffffff?text=BE",
-  "Kendrick Lamar": "https://placehold.co/300x300/F97316/ffffff?text=KL",
-};
-const DEMO_ARTISTES = [
-  { id:"demo-1", name:"Drake", genres:["hip hop","rap"], images:[{url:DEMO_IMAGES["Drake"]}] },
-  { id:"demo-2", name:"Taylor Swift", genres:["pop","indie pop"], images:[{url:DEMO_IMAGES["Taylor Swift"]}] },
-  { id:"demo-3", name:"The Weeknd", genres:["r&b","pop"], images:[{url:DEMO_IMAGES["The Weeknd"]}] },
-  { id:"demo-4", name:"Daft Punk", genres:["electronic","house"], images:[{url:DEMO_IMAGES["Daft Punk"]}] },
-  { id:"demo-5", name:"Rosalía", genres:["latin","flamenco pop"], images:[{url:DEMO_IMAGES["Rosalía"]}] },
-  { id:"demo-6", name:"Stromae", genres:["chanson française","electronic"], images:[{url:DEMO_IMAGES["Stromae"]}] },
-  { id:"demo-7", name:"Billie Eilish", genres:["pop","alternative"], images:[{url:DEMO_IMAGES["Billie Eilish"]}] },
-  { id:"demo-8", name:"Kendrick Lamar", genres:["hip hop","conscious rap"], images:[{url:DEMO_IMAGES["Kendrick Lamar"]}] },
-];
-const DEMO_SORTIES_GLOBALES = [
-  { albumId:"d1", date:dayjs("2026-05-20"), titre:"Certified Lover Boy II", artiste:"Drake", type:"album", groupe:"album", lienSpotify:"#", image:DEMO_IMAGES["Drake"] },
-  { albumId:"d2", date:dayjs("2026-05-23"), titre:"The Tortured Poets Vol. 2", artiste:"Taylor Swift", type:"album", groupe:"album", lienSpotify:"#", image:DEMO_IMAGES["Taylor Swift"] },
-  { albumId:"d3", date:dayjs("2026-05-21"), titre:"Midnight Sun", artiste:"The Weeknd", type:"single", groupe:"single", lienSpotify:"#", image:DEMO_IMAGES["The Weeknd"] },
-  { albumId:"d4", date:dayjs("2026-06-14"), titre:"Random Access Memories II", artiste:"Daft Punk", type:"album", groupe:"album", lienSpotify:"#", image:DEMO_IMAGES["Daft Punk"] },
-  { albumId:"d5", date:dayjs("2026-06-18"), titre:"MOTOMAMI 2", artiste:"Rosalía", type:"album", groupe:"album", lienSpotify:"#", image:DEMO_IMAGES["Rosalía"] },
-  { albumId:"d6", date:dayjs("2026-05-30"), titre:"Multitude II", artiste:"Stromae", type:"single", groupe:"single", lienSpotify:"#", image:DEMO_IMAGES["Stromae"] },
-  { albumId:"d7", date:dayjs("2026-06-25"), titre:"HIT ME HARD AND SOFT 2", artiste:"Billie Eilish", type:"album", groupe:"album", lienSpotify:"#", image:DEMO_IMAGES["Billie Eilish"] },
-  { albumId:"d8", date:dayjs("2026-06-28"), titre:"GNX Deluxe", artiste:"Kendrick Lamar", type:"album", groupe:"album", lienSpotify:"#", image:DEMO_IMAGES["Kendrick Lamar"] },
-];
-const DEMO_GENRES = {
-  labels:["hip hop","pop","r&b","electronic","rap","latin","alternative","chanson française","house","indie pop"],
-  datasets:[{ label:"Artistes", data:[8,7,5,4,6,3,3,2,2,2], backgroundColor:["#1DB954","#1ed760","#17a844","#148a38","#FFCE56","#FF6384","#36A2EB","#4BC0C0","#9966FF","#FF9F40"], borderColor:"#121212", borderWidth:2 }],
-};
-
-const Avatar = ({ name = "", image, size = 38, style = {} }) => (
-  <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, overflow: "hidden", position: "relative", background: getGrad(name), ...style }}>
-    {image
-      ? <img src={image} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
-      : <span style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", fontFamily: '"Fraunces", serif', fontSize: size * 0.42, color: "rgba(0,0,0,.5)", fontWeight: 500 }}>{name[0]}</span>}
-  </div>
-);
-
-const Cover = ({ name = "", image, size = 22, radius = 4, style = {} }) => (
-  <div style={{ width: size, height: size, borderRadius: radius, flexShrink: 0, overflow: "hidden", position: "relative", background: getGrad(name), ...style }}>
-    {image
-      ? <img src={image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
-      : <span style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", fontFamily: '"Fraunces", serif', fontSize: size * 0.45, color: "rgba(0,0,0,.45)", fontWeight: 500 }}>{name[0]}</span>}
-  </div>
-);
 
 const Calendar = () => {
   const [moisActuel, setMoisActuel] = useState(dayjs());
@@ -226,29 +156,6 @@ const Calendar = () => {
     const id = setInterval(update, 30000);
     return () => clearInterval(id);
   }, [featuredRelease, featuredIsUpcoming]);
-
-  const getGreeting = () => {
-    const h = dayjs().hour();
-    if (h < 6)  return "Bonne nuit,";
-    if (h < 12) return "Bonjour,";
-    if (h < 18) return "Bon après-midi,";
-    return "Bonsoir,";
-  };
-
-  const getReleaseTag = (tag) => {
-    if (!tag) return null;
-    if (tag.diff === -1) return "Hier";
-    if (tag.diff === 0)  return "Aujourd'hui";
-    if (tag.diff <= 7)   return `J-${tag.diff}`;
-    return tag.date.format("D MMM");
-  };
-
-  const getWhenLabel = (date) => {
-    const d = date.diff(aujourdHui, "day");
-    if (d === 0) return { label: "Aujourd'hui", urgent: true };
-    if (d === 1) return { label: "Demain", urgent: true };
-    return { label: date.format("ddd D"), urgent: false };
-  };
 
   const upcomingThisMonth = useMemo(() =>
     sortiesGlobales.filter(s => s.date.isAfter(aujourdHui) && s.date.isSame(moisActuel, "month")).length,
@@ -461,172 +368,36 @@ const Calendar = () => {
       return b.titre.localeCompare(a.titre);
     }), [toutesSorties, filtrePeriode, filtreType, triHistorique, aujourdHui]);
 
-  const TABS = [
-    { id:"artists",    label:"Calendrier" },
-    { id:"découvertes",label:"Découvertes" },
-    { id:"history",    label:"Historique" },
-    { id:"genres",     label:"Genres" },
-  ];
+  const deselectionnerArtiste = () => { setArtisteChoisi(null); setToutesSorties([]); setSortiesArtiste([]); };
+
+  const toggleArtiste = (artiste, isActive) => {
+    if (isActive) deselectionnerArtiste();
+    else { setArtisteChoisi(artiste); recupererSortiesArtiste(artiste.id); }
+  };
+
+  const toggleEmail = () => {
+    const next = !emailEnabled;
+    setEmailEnabled(next);
+    setEmailPreferences(next).catch(() => setEmailEnabled(!next));
+  };
 
   return (
     <div
       style={{ fontFamily:'"DM Sans", system-ui, sans-serif', background:BG, color:INK, WebkitFontSmoothing:"antialiased" }}
       className="flex h-screen overflow-hidden p-2 gap-2"
     >
-      <button
-        className="md:hidden fixed top-3 left-3 z-50 w-9 h-9 flex items-center justify-center rounded-full"
-        style={{ background:SURF2, border:`1px solid ${HAIR}` }}
-        onClick={() => setSidebarOuverte(s => !s)}
-        aria-label="Menu"
-      >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke={INK_S} strokeWidth="1.6" strokeLinecap="round">
-          {sidebarOuverte
-            ? <><path d="M2 2l10 10M12 2L2 12"/></>
-            : <><path d="M1 3.5h12M1 7h12M1 10.5h12"/></>}
-        </svg>
-      </button>
-
-      {sidebarOuverte && (
-        <div className="md:hidden fixed inset-0 bg-black/60 z-30" onClick={() => setSidebarOuverte(false)} />
-      )}
-
-      <aside
-        className={`fixed md:relative top-0 left-0 h-full w-[280px] flex-shrink-0 flex flex-col z-40 transform transition-transform duration-300 ease-in-out ${sidebarOuverte ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
-        style={{ background:SURF, borderRadius:16, border:`1px solid ${HAIR2}`, overflow:"hidden" }}
-      >
-        <div style={{ padding:"22px 22px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <button onClick={() => navigate("/")} style={{ display:"inline-flex", alignItems:"center", gap:10, fontWeight:700, fontSize:16, letterSpacing:"-0.01em", color:INK }}>
-            <span style={{ width:26, height:26, background:GREEN, borderRadius:7, position:"relative", display:"grid", placeItems:"center", flexShrink:0 }}>
-              <span style={{ position:"absolute", top:-3, left:6, right:6, height:5, borderLeft:`2px solid ${GREEN}`, borderRight:`2px solid ${GREEN}` }}/>
-              <span style={{ width:6, height:6, background:BG, borderRadius:"50%" }}/>
-            </span>
-            <span>Spot<span style={{ color:INK_M, fontWeight:500 }}>Calendar</span></span>
-          </button>
-          <button
-            onClick={deconnexion}
-            style={{ width:32, height:32, borderRadius:8, display:"grid", placeItems:"center", color:INK_S, background:"none", border:"none", cursor:"pointer" }}
-            title="Déconnexion"
-          >
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 2h3.5a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5H9M6 4.5l3 3-3 3M9 7.5H2"/>
-            </svg>
-          </button>
-        </div>
-
-        <div style={{ margin:"0 16px 16px", background:SURF2, border:`1px solid ${HAIR}`, borderRadius:10, display:"flex", alignItems:"center", padding:"0 12px", height:38, gap:10 }}>
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke={INK_M} strokeWidth="1.6"><circle cx="6" cy="6" r="4.5"/><path d="m9.4 9.4 3 3"/></svg>
-          <input
-            type="text"
-            placeholder="Rechercher un artiste…"
-            value={rechercheArtiste}
-            onChange={e => setRechercheArtiste(e.target.value)}
-            style={{ border:0, background:"transparent", color:INK, fontFamily:"inherit", fontSize:13.5, outline:"none", width:"100%" }}
-          />
-          <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:10.5, color:INK_M, padding:"2px 6px", border:`1px solid ${HAIR}`, borderRadius:4 }}>⌘K</span>
-        </div>
-
-        <div style={{ padding:"0 16px 16px", display:"flex", gap:6, overflowX:"auto", scrollbarWidth:"none" }}>
-          {["tous", ...genresDisponibles.slice(0,6)].map(g => (
-            <button
-              key={g}
-              onClick={() => setFiltreGenre(g)}
-              style={{
-                padding:"6px 12px", borderRadius:999, fontSize:12, whiteSpace:"nowrap", cursor:"pointer", transition:"all .15s",
-                background: filtreGenre===g ? INK : SURF2,
-                color: filtreGenre===g ? BG : INK_S,
-                border: `1px solid ${filtreGenre===g ? INK : HAIR}`,
-                fontWeight: filtreGenre===g ? 500 : 400,
-              }}
-            >{g === "tous" ? "Tous" : g}</button>
-          ))}
-        </div>
-
-        <div style={{ padding:"8px 22px", fontSize:10.5, fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", color:INK_M, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <span>Artistes suivis</span>
-          <span style={{ background:SURF3, color:INK_S, padding:"2px 7px", borderRadius:999, fontSize:10, letterSpacing:0 }}>{artistes.length}</span>
-        </div>
-
-        <div style={{ flex:1, overflowY:"auto", padding:"0 8px 12px", scrollbarWidth:"thin", scrollbarColor:`${HAIR} transparent` }}>
-          {chargement
-            ? [...Array(5)].map((_,i) => (
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"8px 12px" }}>
-                  <div style={{ width:38, height:38, borderRadius:"50%", background:SURF3, flexShrink:0 }}/>
-                  <div style={{ flex:1 }}>
-                    <div style={{ height:10, background:SURF3, borderRadius:4, width:"60%", marginBottom:6 }}/>
-                    <div style={{ height:8,  background:SURF3, borderRadius:4, width:"40%" }}/>
-                  </div>
-                </div>
-              ))
-            : artistesFiltres.map((artiste, idx) => {
-                const tag    = artistReleaseTagMap[artiste.name];
-                const tagStr = getReleaseTag(tag);
-                const isActive = artisteChoisi?.id === artiste.id;
-                return (
-                  <div
-                    key={artiste.id}
-                    onClick={() => {
-                      if (isActive) { setArtisteChoisi(null); setToutesSorties([]); setSortiesArtiste([]); }
-                      else { setArtisteChoisi(artiste); recupererSortiesArtiste(artiste.id); }
-                    }}
-                    style={{
-                      display:"flex", alignItems:"center", gap:12, padding:"8px 12px", borderRadius:10,
-                      cursor:"pointer", position:"relative", transition:"background .15s",
-                      background: isActive ? SURF3 : "transparent",
-                    }}
-                    onMouseEnter={e => { if(!isActive) e.currentTarget.style.background=SURF2; }}
-                    onMouseLeave={e => { if(!isActive) e.currentTarget.style.background="transparent"; }}
-                  >
-                    {tag && (
-                      <span style={{ position:"absolute", left:4, top:"50%", transform:"translateY(-50%)", width:4, height:4, borderRadius:"50%", background:GREEN, boxShadow:"0 0 0 3px rgba(29,185,84,.15)" }}/>
-                    )}
-                    <Avatar name={artiste.name} image={artiste.images?.[0]?.url} size={38} />
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <b style={{ display:"block", fontSize:13.5, fontWeight:500, color:INK, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{artiste.name}</b>
-                      <span style={{ display:"block", fontSize:11.5, color:INK_M }}>{artiste.genres?.[0] || "Artiste"}</span>
-                    </div>
-                    {tagStr && (
-                      <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:10, color:GREEN, padding:"3px 7px", background:"rgba(29,185,84,.14)", borderRadius:999, flexShrink:0 }}>{tagStr}</span>
-                    )}
-                  </div>
-                );
-              })}
-        </div>
-
-        <div style={{ padding:"12px 16px 16px", borderTop:`1px solid ${HAIR2}`, display:"flex", flexDirection:"column", gap:10 }}>
-          {!isDemo && (
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, padding:"8px" }}>
-              <div>
-                <b style={{ fontSize:12.5, fontWeight:500, display:"block", color:INK }}>Récap hebdomadaire</b>
-                <span style={{ fontSize:11, color:INK_M }}>Chaque lundi matin</span>
-              </div>
-              <button
-                onClick={() => { const next=!emailEnabled; setEmailEnabled(next); setEmailPreferences(next).catch(()=>setEmailEnabled(!next)); }}
-                style={{ width:32, height:18, background:emailEnabled?GREEN:SURF3, borderRadius:999, position:"relative", cursor:"pointer", flexShrink:0, border:"none", transition:"background .2s" }}
-                aria-label="Emails hebdo"
-              >
-                <span style={{ position:"absolute", width:14, height:14, borderRadius:"50%", background:"#fff", top:2, right:emailEnabled?2:undefined, left:emailEnabled?undefined:2, boxShadow:"0 1px 2px rgba(0,0,0,.3)", transition:"all .2s" }}/>
-              </button>
-            </div>
-          )}
-          {isDemo ? (
-            <button
-              onClick={() => navigate("/login")}
-              style={{ width:"100%", background:GREEN, color:"#000", fontWeight:700, fontSize:13.5, padding:"10px 0", borderRadius:999, border:"none", cursor:"pointer" }}
-            >Se connecter avec Spotify</button>
-          ) : (
-            <div style={{ display:"flex", alignItems:"center", gap:10, padding:8, borderRadius:10, cursor:"pointer" }}>
-              <Avatar name={utilisateur?.display_name||"U"} image={utilisateur?.images?.[0]?.url} size={30} />
-              <div style={{ flex:1, minWidth:0 }}>
-                <span style={{ fontSize:13, fontWeight:500, display:"block", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{utilisateur?.display_name||"Chargement…"}</span>
-                <span style={{ fontSize:11, color:INK_M }}>Plan Gratuit</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </aside>
+      <Sidebar
+        sidebarOuverte={sidebarOuverte} setSidebarOuverte={setSidebarOuverte}
+        navigate={navigate} deconnexion={deconnexion}
+        rechercheArtiste={rechercheArtiste} setRechercheArtiste={setRechercheArtiste}
+        genresDisponibles={genresDisponibles} filtreGenre={filtreGenre} setFiltreGenre={setFiltreGenre}
+        chargement={chargement} artistesFiltres={artistesFiltres} artistesCount={artistes.length}
+        artistReleaseTagMap={artistReleaseTagMap} artisteChoisi={artisteChoisi} onToggleArtiste={toggleArtiste}
+        isDemo={isDemo} emailEnabled={emailEnabled} onToggleEmail={toggleEmail} utilisateur={utilisateur}
+      />
 
       <main
-        style={{ flex:1, background:SURF, borderRadius:16, border:`1px solid ${HAIR2}`, overflowY:"auto", scrollbarWidth:"thin", scrollbarColor:`${HAIR} transparent`, display:"flex", flexDirection:"column" }}
+        style={{ flex:1, background:SURF, borderRadius:16, border:`1px solid ${HAIR2}`, overflowY:"auto", overflowX:"hidden", scrollbarWidth:"thin", scrollbarColor:`${HAIR} transparent`, display:"flex", flexDirection:"column" }}
       >
         {isDemo && (
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 24px", background:"rgba(29,185,84,.08)", borderBottom:`1px solid rgba(29,185,84,.18)` }}>
@@ -639,652 +410,74 @@ const Calendar = () => {
           </div>
         )}
 
-        <div style={{ position:"sticky", top:0, zIndex:10, background:SURF, padding:"16px 28px 12px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, borderBottom:`1px solid ${HAIR2}` }}>
-          <div style={{ display:"flex", gap:2, background:SURF2, border:`1px solid ${HAIR}`, borderRadius:10, padding:3 }}>
-            {TABS.map(({ id, label }) => (
-              <button
-                key={id}
-                onClick={() => setOngletActif(id)}
-                style={{
-                  padding:"7px 14px", borderRadius:7, fontSize:13, fontWeight:500, border:"none", cursor:"pointer",
-                  background: ongletActif===id ? SURF3 : "transparent",
-                  color: ongletActif===id ? INK : INK_M,
-                  boxShadow: ongletActif===id ? "0 1px 2px rgba(0,0,0,.3)" : "none",
-                  transition:"all .15s",
-                }}
-              >{label}</button>
-            ))}
-          </div>
-        </div>
+        {!isMobile && <TopTabs ongletActif={ongletActif} setOngletActif={setOngletActif} />}
 
         <div style={{ padding:"24px 32px 32px", flex:1 }}>
 
           {ongletActif === "artists" && (
-            <>
-              <div style={{ marginBottom:22 }}>
-                {!isMobile && (
-                  <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:24, marginBottom:0 }}>
-                    <div>
-                      <h1 style={{ fontSize:28, fontWeight:600, margin:"0 0 4px", letterSpacing:"-0.02em" }}>
-                        {getGreeting()}{" "}
-                        <em style={{ fontFamily:'"Fraunces",serif', fontStyle:"italic", fontWeight:400, color:PEACH }}>
-                          {utilisateur?.display_name || (isDemo ? "ami(e)" : "…")}
-                        </em>
-                      </h1>
-                      <p style={{ fontSize:13.5, color:INK_M, margin:0 }}>
-                        {chargementCalendrier
-                          ? "Chargement des sorties…"
-                          : upcomingThisMonth > 0
-                          ? `${upcomingThisMonth} sortie${upcomingThisMonth>1?"s":""} t'attend${upcomingThisMonth>1?"ent":""} ce mois-ci — dont ${cetteSemagineReleases.length} cette semaine.`
-                          : "Aucune sortie à venir ce mois-ci."}
-                      </p>
-                    </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:12, flexShrink:0 }}>
-                      <button onClick={() => vue==="semaine" ? setMoisActuel(m=>m.subtract(7,"day")) : moisPrecedent()} style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${HAIR}`, background:SURF2, display:"grid", placeItems:"center", color:INK_S, cursor:"pointer" }}>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m8.5 3.5-3.5 3.5 3.5 3.5"/></svg>
-                      </button>
-                      <span style={{ fontFamily:'"Fraunces",serif', fontSize:22, fontWeight:400, color:INK, padding:"0 12px", letterSpacing:"-0.01em", textTransform:"capitalize" }}>
-                        {vue==="semaine"
-                          ? `${moisActuel.startOf("week").format("D")} – ${moisActuel.endOf("week").format("D MMM YYYY")}`
-                          : moisActuel.format("MMMM YYYY")}
-                      </span>
-                      <button onClick={() => vue==="semaine" ? setMoisActuel(m=>m.add(7,"day")) : moisSuivant()} style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${HAIR}`, background:SURF2, display:"grid", placeItems:"center", color:INK_S, cursor:"pointer" }}>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m5.5 3.5 3.5 3.5-3.5 3.5"/></svg>
-                      </button>
-                      <button onClick={allerAujourdHui} style={{ padding:"8px 16px", background:INK, color:BG, borderRadius:999, fontSize:12, fontWeight:600, border:"none", cursor:"pointer" }}>
-                        Aujourd'hui
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {isMobile && (
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
-                    <button onClick={() => vue==="semaine" ? setMoisActuel(m=>m.subtract(7,"day")) : moisPrecedent()} style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${HAIR}`, background:SURF2, display:"grid", placeItems:"center", color:INK_S, cursor:"pointer", flexShrink:0 }}>
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m8.5 3.5-3.5 3.5 3.5 3.5"/></svg>
-                    </button>
-                    <div style={{ textAlign:"center" }}>
-                      <span style={{ fontFamily:'"Fraunces",serif', fontSize:20, fontWeight:400, color:INK, letterSpacing:"-0.01em", textTransform:"capitalize", display:"block" }}>
-                        {vue==="semaine"
-                          ? `${moisActuel.startOf("week").format("D")} – ${moisActuel.endOf("week").format("D MMM")}`
-                          : moisActuel.format("MMMM YYYY")}
-                      </span>
-                    </div>
-                    <button onClick={() => vue==="semaine" ? setMoisActuel(m=>m.add(7,"day")) : moisSuivant()} style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${HAIR}`, background:SURF2, display:"grid", placeItems:"center", color:INK_S, cursor:"pointer", flexShrink:0 }}>
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m5.5 3.5 3.5 3.5-3.5 3.5"/></svg>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Hero row — always visible */}
-              <div className="grid grid-cols-1 md:grid-cols-[1.1fr_1fr]" style={{ gap:14, marginBottom:28 }}>
-
-                {/* Featured card */}
-                <div className="p-4 sm:p-[22px]" style={{
-                  position:"relative", borderRadius:18, overflow:"hidden", minHeight:200,
-                  background: featuredRelease
-                    ? `linear-gradient(135deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.15) 60%,rgba(0,0,0,.7) 100%),${getGrad(featuredRelease.artiste)}`
-                    : `linear-gradient(135deg,rgba(0,0,0,.4) 0%,rgba(0,0,0,.1) 100%),${SURF3}`,
-                  border:`1px solid ${HAIR}`, display:"flex", flexDirection:"column", justifyContent:"space-between",
-                }}>
-                  <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(rgba(255,240,220,.04) 1px,transparent 1.2px)", backgroundSize:"4px 4px", pointerEvents:"none" }}/>
-                  {featuredRelease ? (
-                    <>
-                      <span style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:10.5, letterSpacing:"0.08em", textTransform:"uppercase", color:"rgba(244,237,224,.85)", fontWeight:600, position:"relative", flexWrap:"wrap" }}>
-                        {featuredIsUpcoming
-                          ? <span style={{ width:6, height:6, borderRadius:"50%", background:GREEN, boxShadow:"0 0 0 4px rgba(29,185,84,.2)", animation:"pulse 2.4s ease-in-out infinite", flexShrink:0 }}/>
-                          : <span style={{ width:6, height:6, borderRadius:"50%", background:PEACH, flexShrink:0 }}/>
-                        }
-                        {featuredIsUpcoming ? "Prochaine sortie" : "Sortie ce mois"} · {featuredRelease.date.format("dddd D MMMM")}
-                      </span>
-                      <div style={{ position:"relative" }}>
-                        <div style={{ display:"flex", gap:14, alignItems:"flex-end", marginTop:14, flexWrap:"wrap" }}>
-                          <Cover name={featuredRelease.artiste} image={featuredRelease.image} size={80} radius={10} style={{ boxShadow:"0 12px 30px -10px rgba(0,0,0,.6)" }}/>
-                          <div style={{ minWidth:0, flex:1 }}>
-                            <h2 className="text-[20px] sm:text-[26px]" style={{ fontFamily:'"Fraunces",serif', fontWeight:400, lineHeight:1.1, margin:"0 0 4px", letterSpacing:"-0.015em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{featuredRelease.titre}</h2>
-                            <div style={{ fontSize:13, color:"rgba(244,237,224,.75)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{featuredRelease.artiste} · {featuredRelease.type === "album" ? "Album" : featuredRelease.type === "single" ? "Single" : "EP"}</div>
-                          </div>
-                        </div>
-                        <div style={{ marginTop:16, display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap" }}>
-                          {featuredIsUpcoming ? (
-                            <div style={{ display:"flex", alignItems:"baseline", gap:5 }}>
-                              <span className="text-[30px] sm:text-[38px]" style={{ fontFamily:'"Fraunces",serif', fontWeight:400, lineHeight:1, color:INK }}>{countdown.days}</span>
-                              <span style={{ fontSize:11, textTransform:"uppercase", letterSpacing:"0.08em", color:"rgba(244,237,224,.6)" }}>
-                                j · {String(countdown.hours).padStart(2,"0")} h · {String(countdown.mins).padStart(2,"0")} min
-                              </span>
-                            </div>
-                          ) : (
-                            <span style={{ fontSize:12, color:"rgba(244,237,224,.55)", fontStyle:"italic" }}>Déjà sorti</span>
-                          )}
-                          <a href={featuredRelease.lienSpotify} target="_blank" rel="noopener noreferrer" style={{ padding:"9px 16px", background:"rgba(255,255,255,.94)", color:BG, borderRadius:999, fontSize:12.5, fontWeight:600, display:"inline-flex", alignItems:"center", gap:8, textDecoration:"none", flexShrink:0 }}>
-                            {featuredIsUpcoming ? (
-                              <>
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M2 1.5v9M2 1.5c4.5 0 4.5 3.75 0 3.75M2 10.5h2M10 5l-3-2.5v5Z" fill="currentColor"/></svg>
-                                Me prévenir
-                              </>
-                            ) : (
-                              <>
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polygon points="3,1.5 10.5,6 3,10.5" fill="currentColor"/></svg>
-                                Écouter
-                              </>
-                            )}
-                          </a>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{ display:"flex", flexDirection:"column", justifyContent:"center", flex:1, gap:10, position:"relative" }}>
-                      <span style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:10.5, letterSpacing:"0.08em", textTransform:"uppercase", color:INK_M, fontWeight:600 }}>
-                        <span style={{ width:6, height:6, borderRadius:"50%", background:INK_F }}/>
-                        Sortie du mois
-                      </span>
-                      <div style={{ marginTop:8 }}>
-                        <p style={{ fontFamily:'"Fraunces",serif', fontWeight:400, fontSize:22, margin:"0 0 6px", color:INK_S, fontStyle:"italic" }}>Rien ce mois-ci…</p>
-                        <p style={{ fontSize:13, color:INK_M, margin:0 }}>Aucune sortie annoncée pour tes artistes. Ça ne devrait pas tarder.</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Week strip */}
-                <div style={{ background:SURF2, borderRadius:18, border:`1px solid ${HAIR}`, padding:18, display:"flex", flexDirection:"column", gap:10 }}>
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", paddingBottom:6 }}>
-                    <b style={{ fontSize:13, fontWeight:600 }}>
-                      Cette semaine{" "}
-                      <em style={{ fontFamily:'"Fraunces",serif', fontStyle:"italic", color:INK_M, fontWeight:400, fontSize:12 }}>
-                        {cetteSemagineReleases.length > 0 ? `· ${cetteSemagineReleases.length} sortie${cetteSemagineReleases.length>1?"s":""}` : "· rien cette semaine"}
-                      </em>
-                    </b>
-                    <button onClick={() => setOngletActif("history")} style={{ fontSize:11.5, color:INK_M, background:"none", border:"none", cursor:"pointer" }}>Voir tout →</button>
-                  </div>
-                  {cetteSemagineReleases.length > 0 ? (
-                    <div style={{ display:"flex", flexDirection:"column", gap:4, overflowY:"auto", maxHeight:170 }}>
-                      {cetteSemagineReleases.map((s, i) => {
-                        const isPast = s.date.isBefore(aujourdHui, "day");
-                        const isToday = s.date.isSame(aujourdHui, "day");
-                        const when = getWhenLabel(s.date);
-                        return (
-                          <a key={i} href={s.lienSpotify} target="_blank" rel="noopener noreferrer"
-                            style={{ display:"flex", alignItems:"center", gap:12, padding:8, borderRadius:10, cursor:"pointer", transition:"background .15s", textDecoration:"none", color:"inherit", opacity: isPast ? 0.6 : 1 }}
-                            onMouseEnter={e => e.currentTarget.style.background=SURF3}
-                            onMouseLeave={e => e.currentTarget.style.background="transparent"}
-                          >
-                            <Cover name={s.artiste} image={s.image} size={36} radius={6} />
-                            <div style={{ flex:1, minWidth:0 }}>
-                              <b style={{ display:"block", fontSize:12.5, fontWeight:500, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{s.titre}</b>
-                              <span style={{ display:"block", fontSize:11, color:INK_M }}>{s.artiste} · {s.type==="album"?"Album":s.type==="single"?"Single":"EP"}</span>
-                            </div>
-                            {isToday ? (
-                              <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:10.5, padding:"3px 8px", borderRadius:999, flexShrink:0, color:GREEN, background:"rgba(29,185,84,.14)", border:"1px solid rgba(29,185,84,.28)" }}>Aujourd'hui</span>
-                            ) : isPast ? (
-                              <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:10.5, padding:"3px 8px", borderRadius:999, flexShrink:0, color:INK_F, background:SURF, border:`1px solid ${HAIR}` }}>Sorti</span>
-                            ) : (
-                              <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:10.5, padding:"3px 8px", borderRadius:999, flexShrink:0, color: when.urgent ? GREEN : INK_S, background: when.urgent ? "rgba(29,185,84,.14)" : SURF, border:`1px solid ${when.urgent ? "rgba(29,185,84,.28)" : HAIR}` }}>{when.label}</span>
-                            )}
-                          </a>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, padding:"16px 0" }}>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={INK_F} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-                      </svg>
-                      <p style={{ fontSize:12.5, color:INK_M, margin:0, textAlign:"center" }}>Aucune sortie<br/>cette semaine</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* View switcher + Filtrer */}
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, gap:12 }}>
-                <div style={{ display:"inline-flex", alignItems:"center", background:SURF2, border:`1px solid ${HAIR}`, borderRadius:999, padding:4, gap:2 }}>
-                  {[{id:"mois",label:"Mois"},{id:"semaine",label:"Semaine"},{id:"agenda",label:"Agenda"}].map(({id,label}) => (
-                    <button key={id} onClick={() => setVue(id)} style={{
-                      padding: isMobile ? "5px 12px" : "6px 16px", borderRadius:999, fontSize:13, fontWeight:600, cursor:"pointer", border:"none", outline:"none",
-                      background: vue===id ? INK : "transparent",
-                      color:      vue===id ? BG  : INK_M,
-                      transition:"all .15s",
-                    }}>{label}</button>
-                  ))}
-                </div>
-
-                <div style={{ position:"relative" }}>
-                  <button onClick={() => setFiltreOuvert(f=>!f)} style={{
-                    display:"flex", alignItems:"center", gap:8, padding:"8px 16px",
-                    background: filtreOuvert ? SURF3 : SURF2,
-                    border:`1px solid ${HAIR}`, borderRadius:999, fontSize:13, fontWeight:500,
-                    color: filtreOuvert ? INK : INK_S, cursor:"pointer", outline:"none", transition:"all .15s",
-                  }}>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M1 3h12M3 7h8M5 11h4"/></svg>
-                    {!isMobile && "Filtrer"}
-                  </button>
-                  {filtreOuvert && (
-                    <>
-                      <div style={{ position:"fixed", inset:0, zIndex:19 }} onClick={() => setFiltreOuvert(false)}/>
-                      <div style={{ position:"absolute", right:0, top:"calc(100% + 8px)", background:SURF, border:`1px solid ${HAIR}`, borderRadius:14, padding:16, zIndex:20, minWidth:200, boxShadow:"0 8px 32px rgba(0,0,0,.5)" }}>
-                        <p style={{ fontSize:10.5, fontWeight:700, color:INK_M, margin:"0 0 10px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Type</p>
-                        <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
-                          {[["tous","Tous"],["album","Albums"],["single","Singles"],["compilation","Compilations"]].map(([v,l]) => (
-                            <button key={v} onClick={() => { setFiltreType(v); setFiltreOuvert(false); }} style={{
-                              padding:"5px 12px", borderRadius:999, fontSize:12, fontWeight:500, cursor:"pointer", border:`1px solid ${filtreType===v ? INK : HAIR}`, outline:"none",
-                              background: filtreType===v ? INK : SURF2,
-                              color:      filtreType===v ? BG  : INK_S,
-                            }}>{l}</button>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Vue Mois */}
-              {vue === "mois" && (
-                <>
-                  {!isMobile && (
-                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-                      <h3 style={{ fontSize:13, fontWeight:600, margin:0, color:INK_S, letterSpacing:"0.04em", textTransform:"uppercase" }}>
-                        Toutes les sorties · {moisActuel.format("MMMM")}
-                      </h3>
-                      <div style={{ display:"flex", alignItems:"center", gap:14, fontSize:11.5, color:INK_M }}>
-                        <span><span style={{ width:8, height:8, borderRadius:"50%", background:PEACH, display:"inline-block", marginRight:6, verticalAlign:"middle" }}/>Aujourd'hui</span>
-                        <span><span style={{ width:8, height:8, borderRadius:"50%", background:GREEN, display:"inline-block", marginRight:6, verticalAlign:"middle" }}/>Sortie</span>
-                      </div>
-                    </div>
-                  )}
-                  <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap: isMobile ? 3 : 6 }}>
-                    {joursSemaine.map(j => (
-                      <div key={j} style={{ fontSize:10.5, fontWeight:600, textTransform:"uppercase", letterSpacing:"0.06em", color:INK_M, padding: isMobile ? "4px 2px 6px" : "6px 4px 8px", textAlign:"center" }}>
-                        {isMobile ? j[0] : j}
-                      </div>
-                    ))}
-                    {genererJours.map((jour, index) => {
-                      const isOutside = jour === "";
-                      const isWeekend = (index % 7) >= 5;
-                      const isToday   = jour === aujourdHui.date() && moisActuel.isSame(aujourdHui, "month");
-                      const sourceSorties = artisteChoisi ? toutesSorties : sortiesGlobales;
-                      const events = jour ? sourceSorties.filter(s => s.date.date()===jour && s.date.isSame(moisActuel,"month")) : [];
-                      const isFeatured = events.some(e => e.albumId === nextRelease?.albumId);
-                      return (
-                        <div key={index}
-                          onClick={() => { if (jour && events.length) { setEvenementsSelectionnes(events); setAfficherPopup(true); } }}
-                          role={events.length ? "button" : undefined} tabIndex={events.length ? 0 : undefined}
-                          onKeyDown={e => { if (events.length && (e.key==="Enter"||e.key===" ")) { setEvenementsSelectionnes(events); setAfficherPopup(true); } }}
-                          style={{
-                            position:"relative", minHeight: isMobile ? 48 : 110, borderRadius: isMobile ? 8 : 12,
-                            padding: isMobile ? "6px 4px" : 10, display:"flex", flexDirection:"column", gap: isMobile ? 4 : 6,
-                            overflow:"hidden", transition:"all .15s",
-                            background: isOutside ? "transparent" : isToday ? undefined : isWeekend ? BG : isFeatured ? "linear-gradient(135deg,rgba(232,184,100,.1),rgba(240,194,148,.05))" : SURF2,
-                            border: isOutside ? "1px solid transparent" : isToday ? `1px solid rgba(240,194,148,.35)` : isFeatured ? "1px solid rgba(240,194,148,.22)" : `1px solid ${HAIR2}`,
-                            backgroundImage: isToday ? `radial-gradient(circle at 50% 0%,rgba(240,194,148,.12) 0%,transparent 70%),${SURF2}` : undefined,
-                            cursor: events.length ? "pointer" : "default",
-                          }}
-                        >
-                          <div style={{ fontSize: isMobile ? 11 : 13, fontWeight:600, color: isOutside ? INK_F : isToday ? PEACH : INK_S, display:"flex", alignItems:"center", justifyContent: isMobile ? "center" : "space-between" }}>
-                            {jour || ""}
-                            {!isMobile && events.length > 1 && (
-                              <span style={{ fontSize:9.5, fontWeight:600, color:GREEN, background:"rgba(29,185,84,.14)", padding:"1px 5px", borderRadius:999, border:"1px solid rgba(29,185,84,.28)" }}>{events.length}</span>
-                            )}
-                          </div>
-                          {isMobile ? (
-                            events.length > 0 && (
-                              <div style={{ display:"flex", gap:3, justifyContent:"center", flexWrap:"wrap" }}>
-                                {events.slice(0,3).map((ev,i) => (
-                                  <span key={i} style={{ width:5, height:5, borderRadius:"50%", flexShrink:0, background: isFeatured && i===0 ? PEACH : GREEN }}/>
-                                ))}
-                              </div>
-                            )
-                          ) : (
-                            <>
-                              {events.slice(0,2).map((ev,i) => (
-                                <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:5, borderRadius:7, background: isFeatured && i===0 ? "linear-gradient(90deg,rgba(240,194,148,.18),rgba(240,194,148,.05))" : SURF3, border: isFeatured && i===0 ? "1px solid rgba(240,194,148,.2)" : "none", minHeight:32 }}>
-                                  <Cover name={ev.artiste} image={ev.image} size={22} radius={4} />
-                                  <div style={{ flex:1, minWidth:0 }}>
-                                    <b style={{ display:"block", fontSize:11, fontWeight:500, color:INK, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", lineHeight:1.2 }}>
-                                      {artisteChoisi ? ev.titre : ev.artiste}
-                                    </b>
-                                    <span style={{ display:"block", fontSize:9.5, color:INK_M, lineHeight:1.2, textTransform:"uppercase", letterSpacing:"0.04em" }}>
-                                      {ev.type==="album"?"Album":ev.type==="single"?"Single":"EP"}
-                                    </span>
-                                  </div>
-                                </div>
-                              ))}
-                              {events.length > 2 && <div style={{ fontSize:10.5, color:INK_M, padding:"4px 8px" }}>+ {events.length-2} autre{events.length-2>1?"s":""}</div>}
-                            </>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-
-              {/* Vue Semaine */}
-              {vue === "semaine" && (
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:8 }}>
-                  {Array.from({length:7}, (_,i) => {
-                    const day = debutSemaineVue.add(i,"day");
-                    const isToday   = day.isSame(aujourdHui,"day");
-                    const isWeekend = i >= 5;
-                    const events = sortiesGlobales.filter(s => s.date.isSame(day,"day"));
-                    return (
-                      <div key={i} style={{ borderRadius:12, overflow:"hidden", border:`1px solid ${isToday ? "rgba(240,194,148,.35)" : HAIR2}`, background: isToday ? undefined : isWeekend ? BG : SURF2, backgroundImage: isToday ? `radial-gradient(circle at 50% 0%,rgba(240,194,148,.12),transparent 70%),${SURF2}` : undefined }}>
-                        <div style={{ padding:"10px 8px 8px", borderBottom:`1px solid ${HAIR2}`, textAlign:"center" }}>
-                          <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", color: isToday ? PEACH : INK_M, marginBottom:4 }}>
-                            {joursSemaine[i]}
-                          </div>
-                          <div style={{ fontFamily:'"Fraunces",serif', fontSize:22, fontWeight:400, lineHeight:1, color: isToday ? PEACH : INK_S }}>
-                            {day.format("D")}
-                          </div>
-                        </div>
-                        <div style={{ padding:8, display:"flex", flexDirection:"column", gap:5, minHeight:80 }}>
-                          {events.length === 0 ? (
-                            <p style={{ fontSize:11, color:INK_F, textAlign:"center", padding:"16px 0", margin:0 }}>—</p>
-                          ) : events.map((ev, j) => (
-                            <a key={j} href={ev.lienSpotify} target="_blank" rel="noopener noreferrer"
-                              style={{ display:"flex", gap:8, padding:7, borderRadius:8, background:SURF3, textDecoration:"none", color:"inherit", transition:"background .15s" }}
-                              onMouseEnter={e=>e.currentTarget.style.background=HAIR}
-                              onMouseLeave={e=>e.currentTarget.style.background=SURF3}
-                            >
-                              <Cover name={ev.artiste} image={ev.image} size={32} radius={5}/>
-                              <div style={{ flex:1, minWidth:0 }}>
-                                <b style={{ display:"block", fontSize:11, fontWeight:500, color:INK, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{ev.artiste}</b>
-                                <span style={{ display:"block", fontSize:9.5, color:INK_M, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{ev.titre}</span>
-                              </div>
-                            </a>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Vue Agenda */}
-              {vue === "agenda" && (
-                <div style={{ display:"flex", flexDirection:"column" }}>
-                  {agendaGroups.length === 0 ? (
-                    <div style={{ textAlign:"center", padding:"60px 0" }}>
-                      <p style={{ fontFamily:'"Fraunces",serif', fontSize:20, color:INK_S, fontStyle:"italic", margin:"0 0 6px" }}>Rien à venir…</p>
-                      <p style={{ fontSize:13, color:INK_M, margin:0 }}>Aucune sortie annoncée pour vos artistes.</p>
-                    </div>
-                  ) : agendaGroups.map((g, gi) => {
-                    const isToday = g.date.isSame(aujourdHui,"day");
-                    const isPast  = g.date.isBefore(aujourdHui,"day");
-                    return (
-                      <div key={gi}>
-                        <div style={{ display:"flex", alignItems:"center", gap:14, padding:"18px 0 8px" }}>
-                          <div style={{ fontFamily:'"Fraunces",serif', fontSize:isMobile?22:28, fontWeight:400, lineHeight:1, color: isToday ? PEACH : isPast ? INK_F : INK_S, minWidth:30, textAlign:"right", flexShrink:0 }}>
-                            {g.date.format("D")}
-                          </div>
-                          <div>
-                            <div style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.06em", color: isToday ? PEACH : INK_M, lineHeight:1.3 }}>
-                              {g.date.format("dddd")}
-                            </div>
-                            <div style={{ fontSize:10.5, color:INK_F }}>{g.date.format("MMMM YYYY")}</div>
-                          </div>
-                          {isToday && <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:9.5, padding:"2px 8px", borderRadius:999, color:GREEN, background:"rgba(29,185,84,.14)", border:"1px solid rgba(29,185,84,.28)", flexShrink:0 }}>Aujourd'hui</span>}
-                          <div style={{ flex:1, height:1, background:HAIR2 }}/>
-                        </div>
-                        <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
-                          {g.items.map((r, ri) => (
-                            <a key={ri} href={r.lienSpotify} target="_blank" rel="noopener noreferrer"
-                              style={{ display:"flex", alignItems:"center", gap:14, padding:"10px 12px", borderRadius:12, background:SURF2, border:`1px solid ${HAIR2}`, textDecoration:"none", color:"inherit", opacity: isPast ? 0.5 : 1, transition:"background .15s,border-color .15s" }}
-                              onMouseEnter={e=>{ e.currentTarget.style.background=SURF3; e.currentTarget.style.borderColor=HAIR; }}
-                              onMouseLeave={e=>{ e.currentTarget.style.background=SURF2; e.currentTarget.style.borderColor=HAIR2; }}
-                            >
-                              <Cover name={r.artiste} image={r.image} size={44} radius={8}/>
-                              <div style={{ flex:1, minWidth:0 }}>
-                                <b style={{ display:"block", fontSize:13.5, fontWeight:500, color:INK, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.titre}</b>
-                                <span style={{ display:"block", fontSize:12, color:INK_M }}>{r.artiste}</span>
-                              </div>
-                              <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:10.5, padding:"3px 8px", borderRadius:999, color:INK_S, background:SURF, border:`1px solid ${HAIR}`, flexShrink:0 }}>
-                                {r.type==="album"?"Album":r.type==="single"?"Single":"EP"}
-                              </span>
-                            </a>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </>
+            <ArtistsTab
+              isMobile={isMobile}
+              utilisateur={utilisateur} isDemo={isDemo} chargementCalendrier={chargementCalendrier}
+              upcomingThisMonth={upcomingThisMonth} cetteSemagineReleases={cetteSemagineReleases}
+              vue={vue} setVue={setVue} moisActuel={moisActuel} setMoisActuel={setMoisActuel}
+              moisPrecedent={moisPrecedent} moisSuivant={moisSuivant} allerAujourdHui={allerAujourdHui} aujourdHui={aujourdHui}
+              filtreOuvert={filtreOuvert} setFiltreOuvert={setFiltreOuvert} filtreType={filtreType} setFiltreType={setFiltreType}
+              featuredRelease={featuredRelease} featuredIsUpcoming={featuredIsUpcoming} countdown={countdown}
+              setOngletActif={setOngletActif}
+              joursSemaine={joursSemaine} genererJours={genererJours} artisteChoisi={artisteChoisi}
+              toutesSorties={toutesSorties} sortiesGlobales={sortiesGlobales} nextRelease={nextRelease}
+              onSelectEvents={(events) => { setEvenementsSelectionnes(events); setAfficherPopup(true); }}
+              debutSemaineVue={debutSemaineVue} agendaGroups={agendaGroups}
+            />
           )}
 
           {ongletActif === "découvertes" && <SmartReleases isDemo={isDemo} />}
 
           {ongletActif === "history" && (
-            <div>
-              {/* Header */}
-              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
-                {artisteChoisi && (
-                  <button onClick={() => { setArtisteChoisi(null); setToutesSorties([]); setSortiesArtiste([]); }}
-                    style={{ width:34, height:34, display:"grid", placeItems:"center", borderRadius:"50%", background:SURF2, border:`1px solid ${HAIR}`, color:INK_S, cursor:"pointer", fontSize:16, flexShrink:0 }}>←</button>
-                )}
-                <div style={{ flex:1, minWidth:0 }}>
-                  <h2 style={{ fontFamily:'"Fraunces",serif', fontWeight:400, fontSize:26, margin:"0 0 2px", letterSpacing:"-0.02em", color:INK }}>
-                    {artisteChoisi ? artisteChoisi.name : "Historique"}
-                  </h2>
-                  {!artisteChoisi && <p style={{ color:INK_M, fontSize:13.5, margin:0 }}>Explorez les sorties de chacun de vos artistes</p>}
-                </div>
-                {artisteChoisi && <Avatar name={artisteChoisi.name} image={artisteChoisi.images?.[0]?.url} size={40} style={{ flexShrink:0 }}/>}
-              </div>
-
-              {artisteChoisi ? (
-                <div>
-                  {/* Filters */}
-                  <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
-                    {[
-                      { val:filtreType,    set:setFiltreType,                  opts:[["tous","Tous"],["album","Albums"],["single","Singles"],["compilation","Compilations"],["appears_on","Feats"]] },
-                      { val:filtrePeriode, set:v=>setFiltrePeriode(Number(v)), opts:[[1,"1 mois"],[3,"3 mois"],[6,"6 mois"],[12,"12 mois"]] },
-                      { val:triHistorique, set:setTriHistorique,               opts:[["date-desc","Récent d'abord"],["date-asc","Ancien d'abord"],["title-asc","A→Z"],["title-desc","Z→A"]] },
-                    ].map((sel,i) => (
-                      <select key={i} value={sel.val} onChange={e=>sel.set(e.target.value)}
-                        style={{ padding:"7px 14px", background:SURF2, border:`1px solid ${HAIR}`, borderRadius:999, fontSize:12.5, color:INK_S, cursor:"pointer", outline:"none", fontWeight:500 }}>
-                        {sel.opts.map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                      </select>
-                    ))}
-                  </div>
-
-                  {/* Releases grid */}
-                  {chargement ? (
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))", gap:14 }}>
-                      {[...Array(8)].map((_,i) => (
-                        <div key={i} style={{ background:SURF2, borderRadius:14, padding:14 }}>
-                          <div style={{ aspectRatio:"1/1", background:SURF3, borderRadius:10, marginBottom:12 }}/>
-                          <div style={{ height:10, background:SURF3, borderRadius:4, width:"70%", marginBottom:7 }}/>
-                          <div style={{ height:8,  background:SURF3, borderRadius:4, width:"50%" }}/>
-                        </div>
-                      ))}
-                    </div>
-                  ) : sortiesFiltreesEtTriees.length ? (
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))", gap:14 }}>
-                      {sortiesFiltreesEtTriees.map((s,i) => (
-                        <a key={i} href={s.lienSpotify} target="_blank" rel="noopener noreferrer" onClick={()=>handleSpotifyLinkClick(s.titre)}
-                          style={{ display:"block", background:SURF2, border:`1px solid ${HAIR2}`, borderRadius:14, padding:14, textDecoration:"none", transition:"background .15s,border-color .15s" }}
-                          onMouseEnter={e=>{ e.currentTarget.style.background=SURF3; e.currentTarget.style.borderColor=HAIR; }}
-                          onMouseLeave={e=>{ e.currentTarget.style.background=SURF2; e.currentTarget.style.borderColor=HAIR2; }}
-                        >
-                          <div style={{ aspectRatio:"1/1", background:getGrad(s.titre), borderRadius:10, marginBottom:12, overflow:"hidden", position:"relative" }}>
-                            {s.image && <img src={s.image} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} loading="lazy"/>}
-                          </div>
-                          <p style={{ fontSize:13, fontWeight:500, color:INK, margin:"0 0 4px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.titre}</p>
-                          <p style={{ fontSize:11, color:INK_M, margin:0 }}>{s.date.format("DD/MM/YY")} · {s.type==="album"?"Album":s.type==="single"?"Single":"EP"}</p>
-                        </a>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"60px 0", gap:8, textAlign:"center" }}>
-                      <p style={{ fontFamily:'"Fraunces",serif', fontWeight:400, fontSize:20, color:INK_S, fontStyle:"italic", margin:0 }}>Rien ici…</p>
-                      <p style={{ color:INK_M, fontSize:13, margin:0 }}>Aucune sortie pour ces filtres.</p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                /* Artist picker grid */
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))", gap:12 }}>
-                  {artistes.map(a => (
-                    <button key={a.id} onClick={() => { setArtisteChoisi(a); recupererSortiesArtiste(a.id); }}
-                      style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10, padding:"18px 14px 14px", background:SURF2, border:`1px solid ${HAIR2}`, borderRadius:16, cursor:"pointer", transition:"background .15s,border-color .15s", outline:"none" }}
-                      onMouseEnter={e=>{ e.currentTarget.style.background=SURF3; e.currentTarget.style.borderColor=HAIR; }}
-                      onMouseLeave={e=>{ e.currentTarget.style.background=SURF2; e.currentTarget.style.borderColor=HAIR2; }}
-                    >
-                      <Avatar name={a.name} image={a.images?.[0]?.url} size={60}/>
-                      <div style={{ textAlign:"center", width:"100%" }}>
-                        <p style={{ fontSize:13, fontWeight:500, color:INK, margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{a.name}</p>
-                        {a.genres?.[0] && <p style={{ fontSize:10.5, color:INK_M, margin:"3px 0 0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", textTransform:"capitalize" }}>{a.genres[0]}</p>}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <HistoryTab
+              artisteChoisi={artisteChoisi} artistes={artistes} chargement={chargement}
+              sortiesFiltreesEtTriees={sortiesFiltreesEtTriees}
+              filtreType={filtreType} setFiltreType={setFiltreType}
+              filtrePeriode={filtrePeriode} setFiltrePeriode={setFiltrePeriode}
+              triHistorique={triHistorique} setTriHistorique={setTriHistorique}
+              onBack={deselectionnerArtiste}
+              onSelectArtiste={(a) => { setArtisteChoisi(a); recupererSortiesArtiste(a.id); }}
+              handleSpotifyLinkClick={handleSpotifyLinkClick}
+            />
           )}
 
           {ongletActif === "genres" && (
-            <div style={{ maxWidth:640 }}>
-              {/* Header */}
-              <div style={{ marginBottom:28 }}>
-                <h2 style={{ fontFamily:'"Fraunces",serif', fontWeight:400, fontSize:26, margin:"0 0 4px", letterSpacing:"-0.02em", color:INK }}>Genres</h2>
-                <p style={{ color:INK_M, fontSize:13.5, margin:0 }}>Basé sur vos artistes suivis et vos écoutes récentes</p>
-              </div>
-
-              {chargement ? (
-                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                  {[...Array(8)].map((_,i) => (
-                    <div key={i} style={{ display:"flex", alignItems:"center", gap:16, padding:"12px 14px" }}>
-                      <div style={{ width:18, height:9, background:SURF3, borderRadius:4, flexShrink:0 }}/>
-                      <div style={{ flex:1 }}>
-                        <div style={{ height:10, background:SURF3, borderRadius:4, width:"30%", marginBottom:8 }}/>
-                        <div style={{ height:3, background:SURF3, borderRadius:2 }}/>
-                      </div>
-                      <div style={{ width:44, height:9, background:SURF3, borderRadius:4, flexShrink:0 }}/>
-                    </div>
-                  ))}
-                </div>
-              ) : donneesGenres.labels.length ? (
-                <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
-                  {donneesGenres.labels.map((genre, i) => {
-                    const data = donneesGenres.datasets[0].data;
-                    const val = data[i], pct = Math.round((val / Math.max(...data)) * 100);
-                    const isTop = i === 0;
-                    const barColor = isTop ? GREEN : i < 3 ? "#4acf78" : HAIR;
-                    const rowBg    = isTop ? "rgba(29,185,84,.07)" : "transparent";
-                    const rowBgHov = isTop ? "rgba(29,185,84,.11)" : SURF2;
-                    return (
-                      <div key={i} onClick={() => setGenreChoisi({ genre, artists:artistesParGenre[genre]||[] })}
-                        style={{ display:"flex", alignItems:"center", gap:14, padding:"11px 14px", borderRadius:12, cursor:"pointer", background:rowBg, border:`1px solid transparent`, transition:"background .15s,border-color .15s" }}
-                        onMouseEnter={e=>{ e.currentTarget.style.background=rowBgHov; if(!isTop) e.currentTarget.style.borderColor=HAIR; }}
-                        onMouseLeave={e=>{ e.currentTarget.style.background=rowBg;    e.currentTarget.style.borderColor="transparent"; }}
-                      >
-                        <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:11, fontWeight:700, width:20, textAlign:"right", flexShrink:0, color:isTop ? GREEN : INK_F }}>
-                          {i + 1}
-                        </span>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", marginBottom:7, gap:8 }}>
-                            <span style={{ fontSize:14, fontWeight: isTop ? 600 : 500, color: isTop ? INK : INK_S, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", textTransform:"capitalize" }}>{genre}</span>
-                            <span style={{ fontSize:11, color:INK_M, flexShrink:0, fontFamily:'"JetBrains Mono",monospace' }}>{val} artiste{val>1?"s":""}</span>
-                          </div>
-                          <div style={{ height:3, background:SURF3, borderRadius:2, overflow:"hidden" }}>
-                            <div style={{ height:"100%", width:`${pct}%`, background:barColor, borderRadius:2, transition:"width .4s ease" }}/>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"60px 0", gap:8, textAlign:"center" }}>
-                  <p style={{ fontFamily:'"Fraunces",serif', fontWeight:400, fontSize:20, color:INK_S, fontStyle:"italic", margin:0 }}>Aucun genre détecté…</p>
-                  <p style={{ color:INK_M, fontSize:13, margin:0 }}>Suivez des artistes pour voir vos genres apparaître ici.</p>
-                </div>
-              )}
-            </div>
+            <GenresTab
+              chargement={chargement} donneesGenres={donneesGenres}
+              artistesParGenre={artistesParGenre}
+              onSelectGenre={setGenreChoisi}
+            />
           )}
 
         </div>
 
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t flex" style={{ background:"rgba(12,11,10,.95)", backdropFilter:"blur(12px)", borderColor:HAIR2 }}>
-          {TABS.map(({ id, label }) => (
-            <button key={id} onClick={() => setOngletActif(id)}
-              style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, padding:"10px 0", color:ongletActif===id?INK:INK_M, background:"none", border:"none", cursor:"pointer", fontSize:10, fontWeight:ongletActif===id?600:400 }}>
-              {label}
-            </button>
-          ))}
-        </div>
+        {isMobile && <BottomNav ongletActif={ongletActif} setOngletActif={setOngletActif} />}
       </main>
 
       {genreChoisi && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.7)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, padding:16 }} onClick={() => setGenreChoisi(null)}>
-          <div ref={genreModalRef} tabIndex={-1} style={{ background:SURF, borderRadius:20, width:"100%", maxWidth:440, overflow:"hidden", outline:"none" }} onClick={e=>e.stopPropagation()}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 20px", borderBottom:`1px solid ${HAIR2}` }}>
-              <div>
-                <h3 style={{ fontWeight:700, fontSize:16, margin:"0 0 2px", textTransform:"capitalize" }}>{genreChoisi.genre}</h3>
-                <p style={{ color:INK_M, fontSize:12, margin:0 }}>{genreChoisi.artists.length} artiste{genreChoisi.artists.length>1?"s":""}</p>
-              </div>
-              <button onClick={()=>setGenreChoisi(null)} style={{ width:36, height:36, display:"grid", placeItems:"center", background:SURF2, borderRadius:"50%", border:`1px solid ${HAIR}`, color:INK_S, cursor:"pointer" }}>✕</button>
-            </div>
-            <div style={{ maxHeight:"60vh", overflowY:"auto", padding:16 }}>
-              {genreChoisi.artists.length ? (
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                  {genreChoisi.artists.map((a,i) => {
-                    const sel = artisteChoisi?.id === a.id;
-                    return (
-                      <div key={i} onClick={() => { if(sel){setArtisteChoisi(null);setToutesSorties([]);setSortiesArtiste([]);}else{setArtisteChoisi(a);recupererSortiesArtiste(a.id);setOngletActif("artists");} setGenreChoisi(null); }}
-                        style={{ display:"flex", alignItems:"center", gap:12, padding:12, borderRadius:14, cursor:"pointer", background:sel?"rgba(29,185,84,.15)":SURF2, border:`1px solid ${sel?"rgba(29,185,84,.4)":HAIR2}`, transition:"all .15s" }}>
-                        <Avatar name={a.name} image={a.images?.[0]?.url} size={40}/>
-                        <span style={{ fontSize:13, fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", color:sel?GREEN:INK }}>{a.name}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : <p style={{ color:INK_M, fontSize:14, textAlign:"center", padding:"24px 0" }}>Aucun artiste trouvé.</p>}
-            </div>
-          </div>
-        </div>
+        <GenreModal
+          genreChoisi={genreChoisi} modalRef={genreModalRef} artisteChoisi={artisteChoisi}
+          onClose={() => setGenreChoisi(null)}
+          onSelectArtist={(a, sel) => {
+            if (sel) deselectionnerArtiste();
+            else { setArtisteChoisi(a); recupererSortiesArtiste(a.id); setOngletActif("artists"); }
+            setGenreChoisi(null);
+          }}
+        />
       )}
 
       {afficherPopup && evenementsSelectionnes.length > 0 && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.7)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, padding:16 }}>
-          <div ref={eventPopupRef} tabIndex={-1} style={{ background:SURF, borderRadius:20, width:"100%", maxWidth:380, overflow:"hidden", outline:"none" }}>
-            <div style={{ position:"relative", height:160, overflow:"hidden", background:getGrad(evenementsSelectionnes[0].artiste) }}>
-              {evenementsSelectionnes[0].image && <img src={evenementsSelectionnes[0].image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} loading="lazy"/>}
-              <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(22,20,18,1) 0%,rgba(22,20,18,.5) 50%,transparent 100%)" }}/>
-              <button onClick={()=>setAfficherPopup(false)} style={{ position:"absolute", top:12, right:12, width:28, height:28, display:"grid", placeItems:"center", background:"rgba(0,0,0,.4)", borderRadius:"50%", border:"none", color:INK, cursor:"pointer", fontSize:12 }}>✕</button>
-              <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 20px 16px" }}>
-                <h3 style={{ fontWeight:700, fontSize:14, margin:"0 0 2px", textTransform:"capitalize" }}>{evenementsSelectionnes[0].date.format("dddd D MMMM YYYY")}</h3>
-                <p style={{ color:INK_S, fontSize:11, margin:0 }}>{evenementsSelectionnes.length} sortie{evenementsSelectionnes.length>1?"s":""}</p>
-              </div>
-            </div>
-            <div style={{ maxHeight:"45vh", overflowY:"auto", padding:"12px" }}>
-              {[{ label:"À venir", filter: e => e.date.isAfter(aujourdHui) }, { label:"Passées", filter: e => !e.date.isAfter(aujourdHui) }].map(section => {
-                const filtered = evenementsSelectionnes.filter(section.filter);
-                if (!filtered.length) return null;
-                return (
-                  <div key={section.label} style={{ marginBottom:12 }}>
-                    <p style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", color:section.label==="À venir"?GREEN:INK_M, padding:"0 8px 8px", margin:0 }}>{section.label}</p>
-                    {filtered.map((ev, i) => (
-                      <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"8px", borderRadius:10, transition:"background .15s" }}
-                        onMouseEnter={e=>e.currentTarget.style.background=SURF2} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                        <Cover name={ev.artiste} image={ev.image} size={36} radius={6} style={{ opacity:section.label==="Passées"?0.6:1 }}/>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <a href={ev.lienSpotify} target="_blank" rel="noopener noreferrer" onClick={()=>handleSpotifyLinkClick(ev.titre)}
-                            style={{ fontSize:14, fontWeight:500, color:section.label==="À venir"?INK:INK_S, textDecoration:"none", display:"block", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{ev.titre}</a>
-                          {!artisteChoisi && ev.artiste && <span style={{ fontSize:11, color:INK_M }}>{ev.artiste}</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ padding:"12px 20px 16px", borderTop:`1px solid ${HAIR2}` }}>
-              <button onClick={()=>setAfficherPopup(false)} style={{ width:"100%", background:INK, color:BG, fontSize:14, fontWeight:700, padding:"10px 0", borderRadius:999, border:"none", cursor:"pointer" }}>Fermer</button>
-            </div>
-          </div>
-        </div>
+        <EventPopup
+          evenementsSelectionnes={evenementsSelectionnes} aujourdHui={aujourdHui}
+          popupRef={eventPopupRef} artisteChoisi={artisteChoisi}
+          onClose={() => setAfficherPopup(false)}
+          handleSpotifyLinkClick={handleSpotifyLinkClick}
+        />
       )}
 
       <style>{`@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(29,185,84,.2)}50%{box-shadow:0 0 0 7px rgba(29,185,84,.05)}}`}</style>

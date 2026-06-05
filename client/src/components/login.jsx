@@ -22,7 +22,6 @@ const POWDER = "#91b6d1";
 const ROSE  = "#e89aa3";
 const AMBER = "#e8b864";
 
-// Decorative mini-calendar cells (4 weeks)
 const MINI_CELLS = [
   { d:"",   bars:[] },         { d:"",   bars:[] },        { d:"1",  bars:[] },
   { d:"2",  bars:[] },         { d:"3",  bars:[PEACH] },   { d:"4",  bars:[] },
@@ -99,7 +98,6 @@ const Login = () => {
         minHeight:"100vh", padding:14, gap:14, background:BG,
       }}>
 
-        {/* ── LEFT SCENE ── */}
         <aside className="login-scene" style={{
           borderRadius:22, padding:28, overflow:"hidden", position:"relative",
           display:"flex", flexDirection:"column", justifyContent:"space-between",
@@ -107,13 +105,11 @@ const Login = () => {
                       radial-gradient(ellipse at 72% 82%, rgba(29,185,84,.08) 0%, transparent 50%), ${SURF2}`,
           border:`1px solid ${HAIR}`,
         }}>
-          {/* Grain */}
           <div style={{ position:"absolute", inset:0, pointerEvents:"none", borderRadius:22, opacity:.35,
             backgroundImage:`url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E")`,
             backgroundSize:"140px",
           }}/>
 
-          {/* Top bar */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", position:"relative", zIndex:2 }}>
             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
               <div style={{ width:32, height:32, borderRadius:8, background:GREEN, display:"grid", placeItems:"center", flexShrink:0 }}>
@@ -128,10 +124,8 @@ const Login = () => {
             <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:INK_M, letterSpacing:"0.06em" }}>{heure}</span>
           </div>
 
-          {/* Preview stack */}
           <div style={{ position:"relative", flex:1, display:"flex", alignItems:"center", justifyContent:"center", margin:"28px 0 20px" }}>
 
-            {/* Artist orbit chip */}
             <div style={{
               position:"absolute", top:-10, left:-4, zIndex:4,
               transform:"rotate(-4deg)",
@@ -146,7 +140,6 @@ const Login = () => {
               <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11.5, fontWeight:500, color:INK_S, marginLeft:8, whiteSpace:"nowrap" }}>3 sorties en cours</span>
             </div>
 
-            {/* Mini calendar */}
             <div style={{
               transform:"rotate(-3deg)", position:"relative", zIndex:2,
               background:SURF, border:`1px solid ${HAIR}`, borderRadius:16,
@@ -187,7 +180,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Floating release card */}
             <div style={{
               position:"absolute", bottom:0, right:-12, zIndex:4,
               transform:"rotate(4deg)",
@@ -216,7 +208,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Scene footer */}
           <div style={{ display:"flex", gap:20, paddingTop:16, borderTop:`1px solid ${HAIR}`, position:"relative", zIndex:2 }}>
             {[{val:"1 200",label:"mélomanes"},{val:"87k",label:"sorties"},{val:"0 €",label:"en bêta"}].map(({val,label},i,arr) => (
               <div key={i} style={{ paddingRight: i<arr.length-1?20:0, borderRight: i<arr.length-1?`1px solid ${HAIR}`:"none" }}>
@@ -227,17 +218,14 @@ const Login = () => {
           </div>
         </aside>
 
-        {/* ── RIGHT FORM ── */}
         <main className="login-form-side" style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"32px 24px" }}>
           <div style={{ width:"100%", maxWidth:400 }}>
 
-            {/* Eyebrow */}
             <div style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:11.5, fontWeight:600, textTransform:"uppercase", letterSpacing:"0.1em", color:INK_M, marginBottom:22 }}>
               <span style={{ width:6, height:6, borderRadius:"50%", background:PEACH, flexShrink:0 }}/>
               Connexion · Bêta
             </div>
 
-            {/* Headline */}
             <h1 style={{ fontSize:"clamp(28px,3.5vw,42px)", fontWeight:600, letterSpacing:"-0.025em", lineHeight:1.1, marginBottom:14, color:INK }}>
               Tes sorties,{" "}
               <em style={{ fontFamily:"'Fraunces',serif", fontStyle:"italic", fontWeight:400, color:PEACH }}>au bon moment.</em>
@@ -253,7 +241,6 @@ const Login = () => {
               </div>
             )}
 
-            {/* Spotify CTA */}
             <button onClick={gererConnexion} className="login-btn-spotify" style={{
               width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:12,
               padding:"15px 24px", borderRadius:14, border:"none", cursor:"pointer",
@@ -272,7 +259,6 @@ const Login = () => {
               Apple Music arrive dans quelques semaines.
             </p>
 
-            {/* Trust strip */}
             <div style={{ background:SURF, border:`1px solid ${HAIR}`, borderRadius:14, overflow:"hidden", marginTop:28 }}>
               {[
                 { text:"Accès en lecture seule", svg:<path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7l-9-5z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/> },
@@ -286,7 +272,6 @@ const Login = () => {
               ))}
             </div>
 
-            {/* Footer */}
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:24, gap:12 }}>
               <a href="/" style={{ fontSize:12.5, color:INK_M, textDecoration:"none", display:"inline-flex", alignItems:"center", gap:5, transition:"color .15s" }}
                 onMouseEnter={e=>e.currentTarget.style.color=INK_S}

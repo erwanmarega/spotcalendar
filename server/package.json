@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run --config vitest.config.mjs",
     "start": "node server.js",
     "build": "echo 'No build step required for server'"
   },
@@ -24,5 +24,9 @@
   },
   "engines": {
     "node": ">=22.x"
+  },
+  "devDependencies": {
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.7"
   }
 }

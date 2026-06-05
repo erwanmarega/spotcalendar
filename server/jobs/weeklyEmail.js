@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const db = require('../db');
 const { refreshSpotifyToken, computeMissedReleases } = require('../services/spotifyService');
 const { sendMissedReleasesEmail, generateUnsubscribeToken } = require('../services/emailService');
+const { decrypt } = require('../utils/tokenCrypto');
 
 cron.schedule('0 9 * * 1', async () => {
   console.log('[CRON] Démarrage envoi emails hebdomadaires...');
@@ -11,7 +12,7 @@ cron.schedule('0 9 * * 1', async () => {
 
   for (const user of users) {
     try {
-      const accessToken = await refreshSpotifyToken(user.refresh_token);
+      const accessToken = await refreshSpotifyToken(decrypt(user.refresh_token));
       const releases = await computeMissedReleases(accessToken);
 
       if (releases.length > 0) {
