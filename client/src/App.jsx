@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./components/login";
-import Callback from "./components/callback";
-import Calendar from "./components/calendar";
-import IntroVideo from "./components/introvideo";
-import LegalPage from "./components/LegalPage";
-import Landing from "./components/Landing";
+import Login from "./pages/Login";
+import Callback from "./pages/Callback";
+import Calendar from "./pages/Calendar";
+import IntroVideo from "./pages/IntroVideo";
+import LegalPage from "./pages/LegalPage";
+import Landing from "./pages/Landing";
 
 function App() {
   const [showIntro, setShowIntro] = useState(true);

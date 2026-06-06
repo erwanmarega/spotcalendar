@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import Login from '../components/login';
+import Login from '../pages/Login';
 
 vi.mock('../api', () => ({
   checkTokens: vi.fn(),

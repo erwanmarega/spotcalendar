@@ -14,16 +14,16 @@ import {
   setEmailPreferences,
   getDemoData,
 } from "../api";
-import SmartReleases from "./SmartReleases";
-import { BG, SURF, HAIR, HAIR2, INK, INK_S, GREEN } from "./calendar/theme";
-import { DEMO_ARTISTES, DEMO_SORTIES_GLOBALES, DEMO_GENRES } from "./calendar/demoData";
-import Sidebar from "./calendar/Sidebar";
-import ArtistsTab from "./calendar/ArtistsTab";
-import HistoryTab from "./calendar/HistoryTab";
-import GenresTab from "./calendar/GenresTab";
-import GenreModal from "./calendar/GenreModal";
-import EventPopup from "./calendar/EventPopup";
-import { TopTabs, BottomNav } from "./calendar/Tabs";
+import SmartReleases from "../components/SmartReleases";
+import { BG, SURF, HAIR, HAIR2, INK, INK_S, GREEN } from "../components/calendar/theme";
+import { DEMO_ARTISTES, DEMO_SORTIES_GLOBALES, DEMO_GENRES } from "../components/calendar/demoData";
+import Sidebar from "../components/calendar/Sidebar";
+import ArtistsTab from "../components/calendar/ArtistsTab";
+import HistoryTab from "../components/calendar/HistoryTab";
+import GenresTab from "../components/calendar/GenresTab";
+import GenreModal from "../components/calendar/GenreModal";
+import EventPopup from "../components/calendar/EventPopup";
+import { TopTabs, BottomNav } from "../components/calendar/Tabs";
 
 dayjs.locale("fr");
 

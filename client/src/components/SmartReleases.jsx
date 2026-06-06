@@ -30,7 +30,6 @@ const getGrad = (seed) => {
 const SOURCE_BADGE = {
   followed: { label:"Suivi",        color:GREEN,    bg:"rgba(29,185,84,.15)",    border:"rgba(29,185,84,.28)"    },
   top:      { label:"Top écouté",   color:PEACH,    bg:"rgba(240,194,148,.15)",  border:"rgba(240,194,148,.28)"  },
-  both:     { label:"Suivi · Top",  color:"#e8d08a",bg:"rgba(232,208,138,.12)", border:"rgba(232,208,138,.25)" },
 };
 
 function formatType(type) {
@@ -54,7 +53,6 @@ const FILTRES = [
   { id:"tous",     label:"Tous" },
   { id:"followed", label:"Suivis" },
   { id:"top",      label:"Top écoutés" },
-  { id:"both",     label:"Les deux" },
 ];
 
 const SmartReleases = ({ isDemo = false }) => {
