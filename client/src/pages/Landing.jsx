@@ -103,35 +103,48 @@ const Landing = () => {
         >
 
           <div className="relative md:hidden">
-            <div
+            <video
               className="w-full"
+              autoPlay
+              muted
+              loop
+              playsInline
+              poster="/hero-lofi.webp"
               style={{
                 aspectRatio: "4 / 3",
-                backgroundImage: "url('/hero-lofi.webp')",
-                backgroundSize: "cover",
-                backgroundPosition: "50% 40%",
+                objectFit: "cover",
+                objectPosition: "50% 40%",
                 WebkitMaskImage: "linear-gradient(180deg, #000 0%, #000 78%, transparent 100%)",
                 maskImage: "linear-gradient(180deg, #000 0%, #000 78%, transparent 100%)",
               }}
-            />
+            >
+              <source src="/hero-lofi-video.mp4" type="video/mp4" />
+            </video>
             <AlbumChip
               className="absolute z-[5]"
               style={{ bottom: "-18px", right: "50%", transform: "translateX(50%) rotate(-2deg)" }}
             />
           </div>
 
-          <div
+          <video
             aria-hidden="true"
             className="hidden md:block absolute top-0 bottom-0 right-0 z-0"
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster="/hero-lofi.webp"
             style={{
               width: "58%",
-              backgroundImage: "url('/hero-lofi.webp')",
-              backgroundSize: "cover",
-              backgroundPosition: "68% center",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "68% center",
               WebkitMaskImage: "linear-gradient(90deg, transparent 0%, #000 18%, #000 100%)",
               maskImage: "linear-gradient(90deg, transparent 0%, #000 18%, #000 100%)",
             }}
-          />
+          >
+            <source src="/hero-lofi-video.mp4" type="video/mp4" />
+          </video>
           <div
             aria-hidden="true"
             className="hidden md:block absolute inset-0 z-[1]"
