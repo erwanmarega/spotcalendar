@@ -344,7 +344,7 @@ const Calendar = () => {
 
   const deconnexion = useCallback(() => {
     toast.info("Déconnexion en cours... 👋", { position:"bottom-right", autoClose:2000, theme:"dark" });
-    setTimeout(async () => { try { await logout(); } catch {} finally { navigate("/login", {replace:true,state:{fromLogout:true}}); } }, 2000);
+    setTimeout(async () => { try { await logout(); } catch {} finally { navigate("/", {replace:true,state:{fromLogout:true}}); } }, 2000);
   }, [navigate]);
 
   const handleSpotifyLinkClick = useCallback((titre) => {
