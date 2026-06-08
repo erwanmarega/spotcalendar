@@ -18,7 +18,6 @@ function encrypt(plaintext) {
 }
 
 function decrypt(stored) {
-  // Tokens not yet migrated are returned as-is
   if (!stored.startsWith(ENC_PREFIX)) return stored;
 
   const [, ivHex, authTagHex, dataHex] = stored.split(':');

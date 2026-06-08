@@ -314,7 +314,7 @@ const Calendar = () => {
       } catch {
         isDemoRef.current = true; setIsDemo(true);
         setArtistes(DEMO_ARTISTES);
-        setTopArtistes(DEMO_ARTISTES); // demo: use same list as top artists
+        setTopArtistes(DEMO_ARTISTES);
         setGenresDisponibles(["hip hop","pop","r&b","electronic","rap","latin","alternative","chanson française","house","indie pop"]);
         setSortiesGlobales(DEMO_SORTIES_GLOBALES);
         setDonneesGenres(DEMO_GENRES);

@@ -197,21 +197,20 @@ const Landing = () => {
                 </button>
 
                 <div className="inline-flex flex-col items-end max-[760px]:items-end gap-1.5 max-[760px]:w-full">
-                  <span className="text-[10.5px] font-semibold tracking-[0.06em] uppercase text-[#fc3c44] bg-[#ffe9eb] px-2.5 py-[3px] rounded-full mr-2.5 max-[760px]:mr-0 max-[760px]:mb-0.5">
+                  <span className="text-[10.5px] font-semibold tracking-[0.06em] uppercase text-[#A238FF] bg-[#f3e9ff] px-2.5 py-[3px] rounded-full mr-2.5 max-[760px]:mr-0 max-[760px]:mb-0.5">
                     Bientôt
                   </span>
                   <button
                     onClick={handleAppleClick}
-                    className="inline-flex items-center justify-center gap-3 px-[22px] py-[14px] max-[380px]:py-[14px] max-[380px]:px-[18px] rounded-full text-[15px] max-[380px]:text-[14.5px] font-semibold text-[#fc3c44] bg-white border border-[#f6d2d4] transition-all hover:-translate-y-px hover:bg-[#fff5f5] active:translate-y-0 whitespace-nowrap max-[760px]:w-full"
-                    style={{ boxShadow: "0 1px 0 rgba(0,0,0,.02), 0 6px 16px -10px rgba(252,60,68,.3)" }}
+                    className="inline-flex items-center justify-center gap-3 px-[22px] py-[14px] max-[380px]:py-[14px] max-[380px]:px-[18px] rounded-full text-[15px] max-[380px]:text-[14.5px] font-semibold text-[#A238FF] bg-white border border-[#e6d2ff] transition-all hover:-translate-y-px hover:bg-[#faf5ff] active:translate-y-0 whitespace-nowrap max-[760px]:w-full"
+                    style={{ boxShadow: "0 1px 0 rgba(0,0,0,.02), 0 6px 16px -10px rgba(162,56,255,.3)" }}
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <rect x="2" y="2" width="12" height="12" rx="3" fill="#fc3c44"/>
-                      <circle cx="6.4" cy="10" r="1.4" fill="#fff"/>
-                      <circle cx="10.6" cy="9" r="1.4" fill="#fff"/>
-                      <path d="M7.8 10V5.4l4.2-1V8.6" stroke="#fff" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
+                      <rect x="2.5" y="9" width="2.4" height="4.5" rx="1.2" fill="#A238FF"/>
+                      <rect x="6.8" y="5.5" width="2.4" height="8" rx="1.2" fill="#A238FF"/>
+                      <rect x="11.1" y="2.5" width="2.4" height="11" rx="1.2" fill="#A238FF"/>
                     </svg>
-                    Continuer avec Apple Music
+                    Continuer avec Deezer
                   </button>
                 </div>
               </div>

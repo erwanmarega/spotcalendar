@@ -8,7 +8,7 @@ let migrated = 0;
 
 for (const user of users) {
   if (user.refresh_token.startsWith('enc:')) {
-    continue; // already encrypted
+    continue;
   }
   db.prepare('UPDATE users SET refresh_token = ? WHERE user_id = ?')
     .run(encrypt(user.refresh_token), user.user_id);
