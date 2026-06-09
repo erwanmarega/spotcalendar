@@ -107,6 +107,7 @@ const Landing = () => {
               className="w-full"
               autoPlay
               muted
+              preload="auto"
               loop
               playsInline
               poster="/hero-lofi.webp"
