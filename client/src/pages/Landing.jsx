@@ -20,7 +20,7 @@ const AlbumChip = ({ className = "", style = {} }) => (
     </div>
     <div className="flex flex-col leading-[1.2]">
       <b className="text-[12.5px] font-semibold">Nouveau single</b>
-      <span className="text-[10.5px] text-[#8a857f]">Demain · 00:00</span>
+      <span className="text-[10.5px] text-[#6f6a63]">Demain · 00:00</span>
     </div>
   </div>
 );
@@ -76,7 +76,7 @@ const Landing = () => {
             </span>
             <span>
               <span className="text-[#1a1a1a]">Spot</span>
-              <span className="text-[#8a857f] font-semibold">Calendar</span>
+              <span className="text-[#6f6a63] font-semibold">Calendar</span>
             </span>
           </button>
 
@@ -156,7 +156,7 @@ const Landing = () => {
 
             <div className="max-w-full md:max-w-[380px] xl:max-w-[480px] px-[22px] pt-8 pb-9 md:p-0">
 
-              <div className="inline-flex items-center gap-2.5 text-[12.5px] max-[760px]:text-[11.5px] tracking-[0.08em] uppercase text-[#8a857f] font-medium mb-7 max-[760px]:mb-[18px]">
+              <div className="inline-flex items-center gap-2.5 text-[12.5px] max-[760px]:text-[11.5px] tracking-[0.08em] uppercase text-[#6f6a63] font-medium mb-7 max-[760px]:mb-[18px]">
                 <span
                   className="w-1.5 h-1.5 rounded-full bg-[#1db954] flex-shrink-0"
                   style={{ boxShadow: "0 0 0 4px rgba(29,185,84,.15)" }}
@@ -211,7 +211,7 @@ const Landing = () => {
                 </button>
 
                 <div className="inline-flex flex-col items-end max-[760px]:items-end gap-1.5 max-[760px]:w-full">
-                  <span className="text-[10.5px] font-semibold tracking-[0.06em] uppercase text-[#A238FF] bg-[#f3e9ff] px-2.5 py-[3px] rounded-full mr-2.5 max-[760px]:mr-0 max-[760px]:mb-0.5">
+                  <span className="text-[10.5px] font-semibold tracking-[0.06em] uppercase text-[#7c1fce] bg-[#f3e9ff] px-2.5 py-[3px] rounded-full mr-2.5 max-[760px]:mr-0 max-[760px]:mb-0.5">
                     Bientôt
                   </span>
                   <button
@@ -233,14 +233,14 @@ const Landing = () => {
                 <div className="mt-4 max-[760px]:mt-3">
                   <button
                     onClick={() => navigate("/calendar")}
-                    className="text-[13px] text-[#8a857f] hover:text-[#4b4744] transition-colors underline underline-offset-2 decoration-[#ddd5c7]"
+                    className="text-[13px] text-[#6f6a63] hover:text-[#4b4744] transition-colors underline underline-offset-2 decoration-[#ddd5c7]"
                   >
                     Voir la démo sans compte →
                   </button>
                 </div>
               )}
 
-              <div className="flex flex-wrap items-center gap-2.5 max-[760px]:gap-2 mt-5 max-[760px]:mt-4 text-[#8a857f] text-[13px] max-[760px]:text-[12.5px]">
+              <div className="flex flex-wrap items-center gap-2.5 max-[760px]:gap-2 mt-5 max-[760px]:mt-4 text-[#6f6a63] text-[13px] max-[760px]:text-[12.5px]">
                 <span className="inline-flex">
                   {[{ bg: "#f6d3b8" }, { bg: "#d8d2ef" }, { bg: "#c9dceb" }, { bg: "#b4c9a5" }].map((dot, i) => (
                     <span
@@ -269,7 +269,7 @@ const Landing = () => {
               />
               <div className="flex flex-col leading-[1.2]">
                 <b className="text-[12.5px] font-semibold">Vendredi 22</b>
-                <span className="text-[10.5px] text-[#8a857f]">3 sorties prévues</span>
+                <span className="text-[10.5px] text-[#6f6a63]">3 sorties prévues</span>
               </div>
             </div>
 
@@ -284,9 +284,9 @@ const Landing = () => {
             >
               Une oreille attentive,
               <br className="hidden md:block" />
-              {" "}<em style={{ fontFamily: '"Fraunces", serif', fontWeight: 400, fontStyle: "italic", color: "#8a857f" }}>sans effort.</em>
+              {" "}<em style={{ fontFamily: '"Fraunces", serif', fontWeight: 400, fontStyle: "italic", color: "#6f6a63" }}>sans effort.</em>
             </h2>
-            <p className="text-[#8a857f] text-[15px] max-w-[320px] m-0">
+            <p className="text-[#6f6a63] text-[15px] max-w-[320px] m-0">
               Connecte ton compte, et laisse SpotCalendar faire le reste. On t'évite la veille manuelle et les notifications inutiles.
             </p>
           </div>
@@ -348,7 +348,7 @@ const Landing = () => {
                 </div>
                 <h3 className="text-[17px] font-semibold tracking-[-0.01em] m-0">{f.title}</h3>
                 <p className="text-[#4b4744] text-[14.5px] m-0 leading-relaxed">{f.desc}</p>
-                <span className="mt-auto text-[11px] text-[#8a857f] tracking-[0.05em]" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
+                <span className="mt-auto text-[11px] text-[#6f6a63] tracking-[0.05em]" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
                   {f.num}
                 </span>
               </div>
@@ -356,7 +356,7 @@ const Landing = () => {
           </div>
         </section>
 
-        <footer className="border-t border-[#f3efe8] py-8 max-[760px]:py-7 flex max-[760px]:flex-col max-[760px]:items-start justify-between items-center text-[#8a857f] text-[13px] gap-4 max-[760px]:gap-3.5">
+        <footer className="border-t border-[#f3efe8] py-8 max-[760px]:py-7 flex max-[760px]:flex-col max-[760px]:items-start justify-between items-center text-[#6f6a63] text-[13px] gap-4 max-[760px]:gap-3.5">
           <div className="flex items-center gap-3.5">
             <span className="relative w-5 h-5 bg-[#1a1a1a] rounded-[5px] grid place-items-center flex-shrink-0">
               <span className="w-1 h-1 bg-[#f6d3b8] rounded-full" />
