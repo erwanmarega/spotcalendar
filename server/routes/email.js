@@ -77,19 +77,46 @@ router.get('/test-email', async (req, res) => {
   }
 });
 
+function invalidLinkPage(res) {
+  return res.status(400).send(`
+    <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Lien invalide</title></head>
+    <body style="margin:0;background:#121212;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
+      <div style="text-align:center;color:#fff;">
+        <h1 style="font-size:22px;margin:16px 0 8px">Lien invalide</h1>
+        <p style="color:#B3B3B3;font-size:14px">Ce lien de désinscription est incorrect ou a expiré.</p>
+      </div>
+    </body></html>
+  `);
+}
+
 router.get('/unsubscribe/:token', (req, res) => {
   const userId = getUserIdFromToken(req.params.token);
 
   if (!userId) {
-    return res.status(400).send(`
-      <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Lien invalide</title></head>
-      <body style="margin:0;background:#121212;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
-        <div style="text-align:center;color:#fff;">
-          <h1 style="font-size:22px;margin:16px 0 8px">Lien invalide</h1>
-          <p style="color:#B3B3B3;font-size:14px">Ce lien de désinscription est incorrect ou a expiré.</p>
-        </div>
-      </body></html>
-    `);
+    return invalidLinkPage(res);
+  }
+
+  res.send(`
+    <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Se désabonner</title></head>
+    <body style="margin:0;background:#121212;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
+      <div style="text-align:center;color:#fff;">
+        <h1 style="font-size:22px;margin:16px 0 8px">Se désabonner ?</h1>
+        <p style="color:#B3B3B3;font-size:14px">Tu ne recevras plus les emails hebdomadaires de SpotCalendar.</p>
+        <form method="POST" action="/api/unsubscribe/${encodeURIComponent(req.params.token)}" style="margin-top:24px;">
+          <button type="submit" style="background:#1DB954;color:#000;border:none;font-size:14px;font-weight:700;padding:10px 28px;border-radius:24px;cursor:pointer;">
+            Confirmer la désinscription
+          </button>
+        </form>
+      </div>
+    </body></html>
+  `);
+});
+
+router.post('/unsubscribe/:token', (req, res) => {
+  const userId = getUserIdFromToken(req.params.token);
+
+  if (!userId) {
+    return invalidLinkPage(res);
   }
 
   db.prepare('UPDATE users SET email_notifications = 0 WHERE user_id = ?').run(userId);

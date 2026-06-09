@@ -40,7 +40,7 @@ const Landing = () => {
   }, []);
 
   const handleAppleClick = () => {
-    toast("Apple Music arrive bientôt !", {
+    toast("Deezer arrive bientôt !", {
       position: "bottom-center",
       autoClose: 3000,
       hideProgressBar: true,

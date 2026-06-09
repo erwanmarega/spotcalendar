@@ -60,7 +60,7 @@ export const fetchSpotifyData = async (path, options = {}) => {
   });
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(`Erreur HTTP : ${response.status} - ${errorData.error || 'Erreur inconnue'}${errorData.details ? ` (${errorData.details.error.message})` : ''}`);
+    throw new Error(`Erreur HTTP : ${response.status} - ${errorData.error || 'Erreur inconnue'}`);
   }
   return response.json();
 };

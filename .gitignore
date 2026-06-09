@@ -10,4 +10,4 @@ back-end/node_modules/
 .env.development
 .env.production
 .env.*
-.env
+.envspotcalendar.zip

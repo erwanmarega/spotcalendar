@@ -1,7 +1,11 @@
 const { Resend } = require('resend');
 const crypto = require('crypto');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient = null;
+function getResend() {
+  if (!resendClient) resendClient = new Resend(process.env.RESEND_API_KEY);
+  return resendClient;
+}
 
 function generateUnsubscribeToken(userId) {
   const sig = crypto.createHmac('sha256', process.env.UNSUBSCRIBE_SECRET).update(userId).digest('hex');
@@ -13,12 +17,31 @@ function getUserIdFromToken(token) {
     const decoded = Buffer.from(token, 'base64url').toString('utf8');
     const colonIndex = decoded.lastIndexOf(':');
     const userId = decoded.slice(0, colonIndex);
-    const sig = decoded.slice(colonIndex + 1);
-    const expected = crypto.createHmac('sha256', process.env.UNSUBSCRIBE_SECRET).update(userId).digest('hex');
-    if (sig !== expected) return null;
+    const sig = Buffer.from(decoded.slice(colonIndex + 1), 'hex');
+    const expected = crypto.createHmac('sha256', process.env.UNSUBSCRIBE_SECRET).update(userId).digest();
+    if (sig.length !== expected.length || !crypto.timingSafeEqual(sig, expected)) return null;
     return userId;
   } catch {
     return null;
+  }
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function safeHttpsUrl(value, fallback = '') {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:') return fallback;
+    return escapeHtml(url.href);
+  } catch {
+    return fallback;
   }
 }
 
@@ -28,28 +51,31 @@ function formatReleaseType(type) {
 }
 
 function generateEmailHTML(releases, unsubscribeUrl) {
-  const releaseCards = releases.map((release) => `
+  const releaseCards = releases.map((release) => {
+    const lienSpotify = safeHttpsUrl(release.lienSpotify);
+    const image = safeHttpsUrl(release.image);
+    return `
     <tr>
       <td style="padding: 12px 0; border-bottom: 1px solid #282828;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
             <td width="64" style="vertical-align: top; padding-right: 16px;">
-              <a href="${release.lienSpotify}" target="_blank" style="text-decoration: none;">
-                <img src="${release.image}" alt="${release.titre}" width="64" height="64"
+              <a href="${lienSpotify}" target="_blank" style="text-decoration: none;">
+                <img src="${image}" alt="${escapeHtml(release.titre)}" width="64" height="64"
                   style="border-radius: 6px; display: block; object-fit: cover;" />
               </a>
             </td>
             <td style="vertical-align: top;">
               <p style="margin: 0 0 4px; font-size: 14px; font-weight: 700; color: #ffffff;">
-                ${release.artiste}
+                ${escapeHtml(release.artiste)}
               </p>
               <p style="margin: 0 0 4px; font-size: 13px; color: #B3B3B3;">
-                ${release.titre}
+                ${escapeHtml(release.titre)}
               </p>
               <p style="margin: 0 0 8px; font-size: 11px; color: #727272;">
-                ${formatReleaseType(release.type)} · ${release.date}
+                ${escapeHtml(formatReleaseType(release.type))} · ${escapeHtml(release.date)}
               </p>
-              <a href="${release.lienSpotify}" target="_blank"
+              <a href="${lienSpotify}" target="_blank"
                 style="display: inline-block; background-color: #1DB954; color: #000000;
                   font-size: 11px; font-weight: 700; padding: 5px 14px; border-radius: 20px;
                   text-decoration: none;">
@@ -60,7 +86,8 @@ function generateEmailHTML(releases, unsubscribeUrl) {
         </table>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 
   return `
 <!DOCTYPE html>
@@ -100,7 +127,7 @@ function generateEmailHTML(releases, unsubscribeUrl) {
               <p style="margin: 0 0 8px; font-size: 11px; color: #535353;">
                 Tu reçois cet email car tu as activé les notifications hebdomadaires sur SpotCalendar.
               </p>
-              <a href="${unsubscribeUrl}" style="font-size: 11px; color: #727272; text-decoration: underline;">
+              <a href="${escapeHtml(unsubscribeUrl)}" style="font-size: 11px; color: #727272; text-decoration: underline;">
                 Se désabonner
               </a>
             </td>
@@ -118,11 +145,15 @@ function generateEmailHTML(releases, unsubscribeUrl) {
 async function sendMissedReleasesEmail(userEmail, releases, unsubscribeUrl) {
   const html = generateEmailHTML(releases, unsubscribeUrl);
 
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await getResend().emails.send({
     from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
     to: userEmail,
     subject: `Tu as peut-être raté ${releases.length} sortie${releases.length > 1 ? 's' : ''} cette semaine`,
     html,
+    headers: {
+      'List-Unsubscribe': `<${unsubscribeUrl}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
   });
 
   if (error) {

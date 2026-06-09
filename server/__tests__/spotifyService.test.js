@@ -1,11 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import axios from 'axios';
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+import { createRequire } from 'node:module';
 import {
   computeSmartReleases,
   computeMissedReleases,
 } from '../services/spotifyService.js';
 
-vi.mock('axios');
+// Le service est en CommonJS : vi.mock('axios') ne remplace que l'import ESM
+// du test, pas le require() du service (instance CJS distincte). On récupère
+// donc la même instance CJS via createRequire et on patche axios.get dessus.
+const require = createRequire(import.meta.url);
+const axios = require('axios');
+
+const realGet = axios.get;
+afterAll(() => {
+  axios.get = realGet;
+});
 
 function makeArtist(id, name) {
   return { id, name };
@@ -27,7 +36,7 @@ const today = new Date().toISOString().split('T')[0];
 
 describe('computeSmartReleases', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    axios.get = vi.fn();
   });
 
   it('retourne uniquement les sorties des artistes suivis ou en top, triées par date décroissante', async () => {
@@ -45,11 +54,15 @@ describe('computeSmartReleases', () => {
         return Promise.resolve({
           data: {
             albums: {
-              items: [
-                makeRelease('r1', 'a1', 'Artist A', 'Album A', '2025-01-15'),
-                makeRelease('r2', 'b1', 'Artist B', 'Single B', '2025-02-01'),
-                makeRelease('r3', 'u1', 'Unknown',  'Album X',  '2025-03-01'),
-              ],
+              // le service pagine (offset=0 puis 50) : ne renvoyer les albums
+              // que sur la première page pour éviter les doublons
+              items: url.includes('offset=0')
+                ? [
+                    makeRelease('r1', 'a1', 'Artist A', 'Album A', '2025-01-15'),
+                    makeRelease('r2', 'b1', 'Artist B', 'Single B', '2025-02-01'),
+                    makeRelease('r3', 'u1', 'Unknown',  'Album X',  '2025-03-01'),
+                  ]
+                : [],
             },
           },
         });
@@ -145,7 +158,7 @@ describe('computeSmartReleases', () => {
 
 describe('computeMissedReleases', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    axios.get = vi.fn();
   });
 
   it('exclut les artistes récemment écoutés', async () => {
@@ -204,6 +217,10 @@ describe('computeMissedReleases', () => {
 
   it('trie les résultats par date décroissante', async () => {
     const artist = makeArtist('a1', 'Artist A');
+    // dans la fenêtre des 30 jours, sinon la sortie est filtrée
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+    const tenDaysAgoStr = tenDaysAgo.toISOString().split('T')[0];
 
     axios.get.mockImplementation((url) => {
       if (url.includes('/me/following'))
@@ -214,7 +231,7 @@ describe('computeMissedReleases', () => {
         return Promise.resolve({
           data: {
             items: [
-              makeRelease('r1', 'a1', 'Artist A', 'Older', '2025-01-01'),
+              makeRelease('r1', 'a1', 'Artist A', 'Older', tenDaysAgoStr),
               makeRelease('r2', 'a1', 'Artist A', 'Newer', today),
             ],
           },

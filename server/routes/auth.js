@@ -74,7 +74,7 @@ router.post('/token', async (req, res) => {
     res.json({ message: 'Tokens stockés dans les cookies' });
   } catch (error) {
     console.error("Erreur lors de l'échange du code :", error.response?.data);
-    res.status(500).json({ error: "Échec de l'échange du code contre le jeton", details: error.response?.data });
+    res.status(500).json({ error: "Échec de l'échange du code contre le jeton" });
   }
 });
 
@@ -101,10 +101,11 @@ router.post('/refresh-token', async (req, res) => {
     setCookies(res, response.data);
 
     if (response.data.refresh_token) {
+      const isProd = process.env.NODE_ENV === 'production';
       res.cookie('refresh_token', response.data.refresh_token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: isProd,
+        sameSite: isProd ? 'strict' : 'lax',
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
     }
@@ -112,7 +113,7 @@ router.post('/refresh-token', async (req, res) => {
     res.json({ message: 'Tokens rafraîchis' });
   } catch (error) {
     console.error('Erreur lors du rafraîchissement du jeton :', error.response?.data);
-    res.status(500).json({ error: 'Échec du rafraîchissement du jeton', details: error.response?.data });
+    res.status(500).json({ error: 'Échec du rafraîchissement du jeton' });
   }
 });
 
