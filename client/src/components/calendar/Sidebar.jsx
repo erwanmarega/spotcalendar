@@ -35,13 +35,11 @@ const Sidebar = ({
       style={{ background:SURF, borderRadius:16, border:`1px solid ${HAIR2}`, overflow:"hidden" }}
     >
       <div style={{ padding:"22px 22px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <button onClick={() => navigate("/")} style={{ display:"inline-flex", alignItems:"center", gap:10, fontWeight:700, fontSize:16, letterSpacing:"-0.01em", color:INK }}>
           <span style={{ width:26, height:26, background:GREEN, borderRadius:7, position:"relative", display:"grid", placeItems:"center", flexShrink:0 }}>
             <span style={{ position:"absolute", top:-3, left:6, right:6, height:5, borderLeft:`2px solid ${GREEN}`, borderRight:`2px solid ${GREEN}` }}/>
             <span style={{ width:6, height:6, background:BG, borderRadius:"50%" }}/>
           </span>
           <span>Spot<span style={{ color:INK_M, fontWeight:500 }}>Calendar</span></span>
-        </button>
         <button
           onClick={deconnexion}
           style={{ width:32, height:32, borderRadius:8, display:"grid", placeItems:"center", color:INK_S, background:"none", border:"none", cursor:"pointer" }}

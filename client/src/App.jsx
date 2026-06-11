@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
+import LoginApple from "./pages/LoginApple";
 import Callback from "./pages/Callback";
 import Calendar from "./pages/Calendar";
 import IntroVideo from "./pages/IntroVideo";
@@ -31,6 +32,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/login/apple" element={<LoginApple />} />
             <Route path="/callback" element={<Callback />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/privacy" element={<LegalPage />} />

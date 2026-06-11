@@ -207,15 +207,6 @@ const Login = () => {
               </div>
             </div>
           </div>
-
-          <div style={{ display:"flex", gap:20, paddingTop:16, borderTop:`1px solid ${HAIR}`, position:"relative", zIndex:2 }}>
-            {[{val:"1 200",label:"mélomanes"},{val:"87k",label:"sorties"},{val:"0 €",label:"en bêta"}].map(({val,label},i,arr) => (
-              <div key={i} style={{ paddingRight: i<arr.length-1?20:0, borderRight: i<arr.length-1?`1px solid ${HAIR}`:"none" }}>
-                <div style={{ fontFamily:"'Fraunces',serif", fontSize:20, fontWeight:400, color:INK, lineHeight:1, letterSpacing:"-0.01em" }}>{val}</div>
-                <div style={{ fontSize:11, color:INK_M, marginTop:3 }}>{label}</div>
-              </div>
-            ))}
-          </div>
         </aside>
 
         <main className="login-form-side" style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"32px 24px" }}>
@@ -263,7 +254,6 @@ const Login = () => {
               {[
                 { text:"Accès en lecture seule", svg:<path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7l-9-5z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/> },
                 { text:"Aucune donnée sensible stockée", svg:<><rect x="8" y="2" width="8" height="4" rx="1.5" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M5 4H4a2 2 0 00-2 2v13a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none"/></> },
-                { text:"Connexion en 8 secondes", svg:<><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" fill="none"/><path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none"/></> },
               ].map(({ text, svg }, i, arr) => (
                 <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", borderBottom: i < arr.length-1 ? `1px solid ${HAIR}` : "none" }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" style={{ color:PEACH, flexShrink:0 }}>{svg}</svg>

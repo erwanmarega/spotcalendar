@@ -39,21 +39,6 @@ const Landing = () => {
       .catch(() => {});
   }, []);
 
-  const handleAppleClick = () => {
-    toast("Deezer arrive bientôt !", {
-      position: "bottom-center",
-      autoClose: 3000,
-      hideProgressBar: true,
-      style: {
-        background: "#1a1a1a",
-        color: "#fff",
-        border: "1px solid #333",
-        borderRadius: "12px",
-        fontFamily: '"DM Sans", sans-serif',
-      },
-    });
-  };
-
   return (
     <div
       className="min-h-screen bg-white text-[#1a1a1a]"
@@ -215,8 +200,8 @@ const Landing = () => {
                     Bientôt
                   </span>
                   <button
-                    onClick={handleAppleClick}
-                    className="inline-flex items-center justify-center gap-3 px-[22px] py-[14px] max-[380px]:py-[14px] max-[380px]:px-[18px] rounded-full text-[15px] max-[380px]:text-[14.5px] font-semibold text-[#A238FF] bg-white border border-[#e6d2ff] transition-all hover:-translate-y-px hover:bg-[#faf5ff] active:translate-y-0 whitespace-nowrap max-[760px]:w-full"
+                     onClick={() => navigate("/login/apple")}
+                    className="inline-flex items-center justify-center gap-3 px-[22px] py-[14px] max-[380px]:py-[14px] max-[380px]:px-[18px] rounded-full text-[15px] max-[380px]:text-[14.5px] font-semibold rgba(255,255,255,0.10) transition-all hover:-translate-y-px hover:bg-[rgba(255,255,255,0.10)] active:translate-y-0 whitespace-nowrap max-[760px]:w-full"
                     style={{ boxShadow: "0 1px 0 rgba(0,0,0,.02), 0 6px 16px -10px rgba(162,56,255,.3)" }}
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -224,7 +209,7 @@ const Landing = () => {
                       <rect x="6.8" y="5.5" width="2.4" height="8" rx="1.2" fill="#A238FF"/>
                       <rect x="11.1" y="2.5" width="2.4" height="11" rx="1.2" fill="#A238FF"/>
                     </svg>
-                    Continuer avec Deezer
+                    Continuer avec Apple Music
                   </button>
                 </div>
               </div>
