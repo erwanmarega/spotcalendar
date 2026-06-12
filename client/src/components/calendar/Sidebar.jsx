@@ -11,6 +11,7 @@ const Sidebar = ({
   chargement, artistesFiltres, artistesCount,
   artistReleaseTagMap, artisteChoisi, onToggleArtiste,
   isDemo, emailEnabled, onToggleEmail, utilisateur,
+  onOpenSettings,
 }) => (
   <>
     <button
@@ -40,15 +41,27 @@ const Sidebar = ({
             <span style={{ width:6, height:6, background:BG, borderRadius:"50%" }}/>
           </span>
           <span>Spot<span style={{ color:INK_M, fontWeight:500 }}>Calendar</span></span>
-        <button
-          onClick={deconnexion}
-          style={{ width:32, height:32, borderRadius:8, display:"grid", placeItems:"center", color:INK_S, background:"none", border:"none", cursor:"pointer" }}
-          title="Déconnexion"
-        >
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 2h3.5a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5H9M6 4.5l3 3-3 3M9 7.5H2"/>
-          </svg>
-        </button>
+        <div style={{ display:"flex", alignItems:"center", gap:2 }}>
+          <button
+            onClick={onOpenSettings}
+            style={{ width:32, height:32, borderRadius:8, display:"grid", placeItems:"center", color:INK_S, background:"none", border:"none", cursor:"pointer" }}
+            title="Paramètres"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+          <button
+            onClick={deconnexion}
+            style={{ width:32, height:32, borderRadius:8, display:"grid", placeItems:"center", color:INK_S, background:"none", border:"none", cursor:"pointer" }}
+            title="Déconnexion"
+          >
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 2h3.5a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5H9M6 4.5l3 3-3 3M9 7.5H2"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div style={{ margin:"0 16px 16px", background:SURF2, border:`1px solid ${HAIR}`, borderRadius:10, display:"flex", alignItems:"center", padding:"0 12px", height:38, gap:10 }}>
@@ -182,6 +195,7 @@ Sidebar.propTypes = {
   emailEnabled: PropTypes.bool.isRequired,
   onToggleEmail: PropTypes.func.isRequired,
   utilisateur: PropTypes.object,
+  onOpenSettings: PropTypes.func,
 };
 
 export default Sidebar;

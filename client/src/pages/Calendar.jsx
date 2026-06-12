@@ -23,7 +23,10 @@ import HistoryTab from "../components/calendar/HistoryTab";
 import GenresTab from "../components/calendar/GenresTab";
 import GenreModal from "../components/calendar/GenreModal";
 import EventPopup from "../components/calendar/EventPopup";
+import Settings from "../components/calendar/Settings";
 import { TopTabs, BottomNav } from "../components/calendar/Tabs";
+import { getPalette } from "../components/calendar/palettes";
+import { useThemeMode } from "../components/calendar/useThemeMode";
 
 dayjs.locale("fr");
 
@@ -58,13 +61,17 @@ const Calendar = () => {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [vue, setVue] = useState("mois");
   const [filtreOuvert, setFiltreOuvert] = useState(false);
+  const [afficherParametres, setAfficherParametres] = useState(false);
+  const [mode, , setMode] = useThemeMode();
+  const palette = useMemo(() => getPalette("spotify", mode), [mode]);
   const tokenExpiresAtRef = useRef(null);
   const cacheAlbumsRef = useRef({});
   const isDemoRef = useRef(false);
   const genreModalRef = useRef(null);
   const eventPopupRef = useRef(null);
+  const settingsModalRef = useRef(null);
 
-  const aujourdHui = dayjs();
+  const aujourdHui = useMemo(() => dayjs(), []);
   const navigate = useNavigate();
   const joursSemaine = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
   const debutMois = moisActuel.startOf("month");
@@ -76,8 +83,9 @@ const Calendar = () => {
   const moisSuivant   = useCallback(() => setMoisActuel(m => m.add(1, "month")), []);
   const allerAujourdHui = useCallback(() => setMoisActuel(dayjs()), []);
 
-  useEffect(() => { if (genreChoisi)    genreModalRef.current?.focus(); }, [genreChoisi]);
-  useEffect(() => { if (afficherPopup)  eventPopupRef.current?.focus(); }, [afficherPopup]);
+  useEffect(() => { if (genreChoisi)        genreModalRef.current?.focus(); }, [genreChoisi]);
+  useEffect(() => { if (afficherPopup)      eventPopupRef.current?.focus(); }, [afficherPopup]);
+  useEffect(() => { if (afficherParametres) settingsModalRef.current?.focus(); }, [afficherParametres]);
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handler);
@@ -383,7 +391,7 @@ const Calendar = () => {
 
   return (
     <div
-      style={{ fontFamily:'"DM Sans", system-ui, sans-serif', background:BG, color:INK, WebkitFontSmoothing:"antialiased" }}
+      style={{ ...palette, fontFamily:'"DM Sans", system-ui, sans-serif', background:BG, color:INK, WebkitFontSmoothing:"antialiased" }}
       className="flex h-screen overflow-hidden p-2 gap-2"
     >
       <Sidebar
@@ -394,6 +402,7 @@ const Calendar = () => {
         chargement={chargement} artistesFiltres={artistesFiltres} artistesCount={artistes.length}
         artistReleaseTagMap={artistReleaseTagMap} artisteChoisi={artisteChoisi} onToggleArtiste={toggleArtiste}
         isDemo={isDemo} emailEnabled={emailEnabled} onToggleEmail={toggleEmail} utilisateur={utilisateur}
+        onOpenSettings={() => setAfficherParametres(true)}
       />
 
       <main
@@ -477,6 +486,13 @@ const Calendar = () => {
           popupRef={eventPopupRef} artisteChoisi={artisteChoisi}
           onClose={() => setAfficherPopup(false)}
           handleSpotifyLinkClick={handleSpotifyLinkClick}
+        />
+      )}
+
+      {afficherParametres && (
+        <Settings
+          modalRef={settingsModalRef} mode={mode} onSetMode={setMode}
+          onClose={() => setAfficherParametres(false)}
         />
       )}
 

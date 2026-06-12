@@ -1,15 +1,15 @@
-export const BG      = "#0c0b0a";
-export const SURF    = "#161412";
-export const SURF2   = "#1d1a17";
-export const SURF3   = "#26221d";
-export const HAIR    = "#2a2622";
-export const HAIR2   = "#1f1c19";
-export const INK     = "#f4ede0";
-export const INK_S   = "#c9bfa9";
-export const INK_M   = "#7c7468";
-export const INK_F   = "#4a443c";
-export const GREEN   = "#1db954";
-export const PEACH   = "#f0c294";
+export const BG      = "var(--cal-bg, #0c0b0a)";
+export const SURF    = "var(--cal-surf, #161412)";
+export const SURF2   = "var(--cal-surf2, #1d1a17)";
+export const SURF3   = "var(--cal-surf3, #26221d)";
+export const HAIR    = "var(--cal-hair, #2a2622)";
+export const HAIR2   = "var(--cal-hair2, #1f1c19)";
+export const INK     = "var(--cal-ink, #f4ede0)";
+export const INK_S   = "var(--cal-ink-s, #c9bfa9)";
+export const INK_M   = "var(--cal-ink-m, #7c7468)";
+export const INK_F   = "var(--cal-ink-f, #4a443c)";
+export const GREEN   = "var(--cal-accent, #1db954)";
+export const PEACH   = "var(--cal-peach, #f0c294)";
 
 const COVER_GRADS = [
   "linear-gradient(135deg,#f0c294,#8b4a2f)",

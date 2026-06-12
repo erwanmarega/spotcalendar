@@ -73,15 +73,7 @@ const LoginApple = () => {
     try {
       if (!window.MusicKit) throw new Error("MusicKit n'est pas encore chargé, réessaie.");
 
-      // TODO backend: GET /api/apple/developer-token → { token } (JWT signé clé MusicKit)
-      // const { token } = await getAppleDeveloperToken();
-      // await window.MusicKit.configure({ developerToken: token, app: { name: "SpotCalendar", build: "1.0" } });
-      // const music = window.MusicKit.getInstance();
-      // const userToken = await music.authorize();           // Music User Token (in-browser)
-      // TODO backend: POST /api/apple/session { userToken } → cookie session
-      // navigate("/calendar");
-
-      throw new Error("Connexion Apple Music bientôt disponible.");
+      navigate("/calendar/apple");
     } catch (e) {
       setErreur(e.message || "Connexion impossible.");
     } finally {
@@ -154,7 +146,6 @@ const LoginApple = () => {
               <span style={{ fontSize:11.5, fontWeight:500, color:INK_S, marginLeft:8, whiteSpace:"nowrap" }}>3 sorties en cours</span>
             </div>
 
-            {/* carte calendrier (glass) */}
             <div style={{
               transform:"rotate(-3deg)", position:"relative", zIndex:2,
               background:SURF, border:`1px solid ${HAIR2}`, borderRadius:18,

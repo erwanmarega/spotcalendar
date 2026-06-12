@@ -1,22 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import LoginApple from "./pages/LoginApple";
 import Callback from "./pages/Callback";
 import Calendar from "./pages/Calendar";
+import CalendarApple from "./pages/CalendarApple";
 import IntroVideo from "./pages/IntroVideo";
 import LegalPage from "./pages/LegalPage";
 import Landing from "./pages/Landing";
 
 function App() {
-  const [showIntro, setShowIntro] = useState(true);
-
-  useEffect(() => {
-    const hasSeenIntro = localStorage.getItem("hasSeenIntro");
-    if (hasSeenIntro) {
-      setShowIntro(false);
-    }
-  }, []);
+  const [showIntro, setShowIntro] = useState(
+    () => !localStorage.getItem("hasSeenIntro")
+  );
 
   const handleIntroEnd = () => {
     setShowIntro(false);
@@ -25,20 +21,18 @@ function App() {
 
   return (
     <div className="min-h-screen">
-      {showIntro ? (
-        <IntroVideo onFinish={handleIntroEnd} />
-      ) : (
-        <Router>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/login/apple" element={<LoginApple />} />
-            <Route path="/callback" element={<Callback />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/privacy" element={<LegalPage />} />
-          </Routes>
-        </Router>
-      )}
+      <Router>
+        {showIntro && <IntroVideo onFinish={handleIntroEnd} />}
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/login/apple" element={<LoginApple />} />
+          <Route path="/callback" element={<Callback />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/calendar/apple" element={<CalendarApple />} />
+          <Route path="/privacy" element={<LegalPage />} />
+        </Routes>
+      </Router>
     </div>
   );
 }
